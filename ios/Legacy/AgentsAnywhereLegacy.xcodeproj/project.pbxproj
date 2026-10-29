@@ -18,6 +18,7 @@
 		41FBDF18F750D6F504B65C44 /* V2AccountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06FAB80DC3D6EC268E74C57E /* V2AccountAPI.swift */; };
 		F595010257D81033F2D61059 /* V2AttachmentAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70B735659A4799D3A504DAD1 /* V2AttachmentAPI.swift */; };
 		F78062E97D6A60C6AA70EA5A /* V2ConnectorAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F2854B41084F6CB114A20E /* V2ConnectorAPI.swift */; };
+		B532961C8255800166502224 /* V2ConnectorAPI+Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079DF0E52687F96BF1A04F92 /* V2ConnectorAPI+Download.swift */; };
 		E9895928D9297E0DC6F11347 /* V2ProjectAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C17A57C702EBCC88D91D4F7 /* V2ProjectAPI.swift */; };
 		95B2D32FDB1645BEB08947CE /* V2RealtimeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C9314392ADF432751C8ED9 /* V2RealtimeAPI.swift */; };
 		C98E3794B3F27D0C3A8FE1E4 /* V2RuntimeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CBD0F9ACE99FA9FE95E735 /* V2RuntimeAPI.swift */; };
@@ -75,6 +76,7 @@
 		06FAB80DC3D6EC268E74C57E /* V2AccountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2AccountAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2AccountAPI.swift"; sourceTree = "<group>"; };
 		70B735659A4799D3A504DAD1 /* V2AttachmentAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2AttachmentAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2AttachmentAPI.swift"; sourceTree = "<group>"; };
 		D6F2854B41084F6CB114A20E /* V2ConnectorAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2ConnectorAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2ConnectorAPI.swift"; sourceTree = "<group>"; };
+		079DF0E52687F96BF1A04F92 /* V2ConnectorAPI+Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2ConnectorAPI+Download.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2ConnectorAPI+Download.swift"; sourceTree = "<group>"; };
 		1C17A57C702EBCC88D91D4F7 /* V2ProjectAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2ProjectAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2ProjectAPI.swift"; sourceTree = "<group>"; };
 		50C9314392ADF432751C8ED9 /* V2RealtimeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RealtimeAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2RealtimeAPI.swift"; sourceTree = "<group>"; };
 		C8CBD0F9ACE99FA9FE95E735 /* V2RuntimeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2RuntimeAPI.swift"; sourceTree = "<group>"; };
@@ -152,6 +154,7 @@
 				06FAB80DC3D6EC268E74C57E /* V2AccountAPI.swift */,
 				70B735659A4799D3A504DAD1 /* V2AttachmentAPI.swift */,
 				D6F2854B41084F6CB114A20E /* V2ConnectorAPI.swift */,
+				079DF0E52687F96BF1A04F92 /* V2ConnectorAPI+Download.swift */,
 				1C17A57C702EBCC88D91D4F7 /* V2ProjectAPI.swift */,
 				50C9314392ADF432751C8ED9 /* V2RealtimeAPI.swift */,
 				C8CBD0F9ACE99FA9FE95E735 /* V2RuntimeAPI.swift */,
@@ -285,6 +288,7 @@
 				41FBDF18F750D6F504B65C44 /* V2AccountAPI.swift in Sources */,
 				F595010257D81033F2D61059 /* V2AttachmentAPI.swift in Sources */,
 				F78062E97D6A60C6AA70EA5A /* V2ConnectorAPI.swift in Sources */,
+				B532961C8255800166502224 /* V2ConnectorAPI+Download.swift in Sources */,
 				E9895928D9297E0DC6F11347 /* V2ProjectAPI.swift in Sources */,
 				95B2D32FDB1645BEB08947CE /* V2RealtimeAPI.swift in Sources */,
 				C98E3794B3F27D0C3A8FE1E4 /* V2RuntimeAPI.swift in Sources */,

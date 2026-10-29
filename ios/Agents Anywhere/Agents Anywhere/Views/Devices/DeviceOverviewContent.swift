@@ -207,7 +207,7 @@ struct DeviceSessionList: View {
 
     private var filters: some View {
         DeviceFilterTags(values: V2DeviceSessionFilter.allCases,
-            selection: Binding(get: { model.sessionFilter }, set: model.setSessionFilter)) { String(localized: $0.title) }
+            selection: Binding(get: { model.sessionFilter }, set: model.setSessionFilter)) { $0.title }
     }
 
     private var scopeMenu: some View {

@@ -35,6 +35,7 @@ SHARED_FILES = [
     "API/V2/V2AccountAPI.swift",
     "API/V2/V2AttachmentAPI.swift",
     "API/V2/V2ConnectorAPI.swift",
+    "API/V2/V2ConnectorAPI+Download.swift",
     "API/V2/V2ProjectAPI.swift",
     "API/V2/V2RealtimeAPI.swift",
     "API/V2/V2RuntimeAPI.swift",
