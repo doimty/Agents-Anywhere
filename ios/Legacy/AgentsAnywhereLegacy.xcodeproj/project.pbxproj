@@ -10,6 +10,7 @@
 		849DB50884A83D5835E4B0B9 /* LegacyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2ACCB02ED040BC57895833D /* LegacyApp.swift */; };
 		A9B33CBB68B1BB673D947EC8 /* LegacyDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */; };
 		053066CA14319F836D30A8D4 /* LegacyLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */; };
+		DC8F292F007F59EF102ECA97 /* LegacyNoticesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E322649B26B282CCF024555 /* LegacyNoticesView.swift */; };
 		3DBB81CD9633598BC8B9CA6C /* LegacySessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5D2065C589304B6E4D8739 /* LegacySessionStore.swift */; };
 		630BD9DCB9B176EA78CD6642 /* LegacySessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EABD514384B4FC21BC6EFBFE /* LegacySessionView.swift */; };
 		F760C8F2AE6FE963AFA765EA /* LegacySupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C9E408DF4BEF63B64F0E15 /* LegacySupport.swift */; };
@@ -70,6 +71,7 @@
 		D2ACCB02ED040BC57895833D /* LegacyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyApp.swift"; path = "LegacySources/LegacyApp.swift"; sourceTree = "<group>"; };
 		74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyDashboardView.swift"; path = "LegacySources/LegacyDashboardView.swift"; sourceTree = "<group>"; };
 		C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyLoginView.swift"; path = "LegacySources/LegacyLoginView.swift"; sourceTree = "<group>"; };
+		5E322649B26B282CCF024555 /* LegacyNoticesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyNoticesView.swift"; path = "LegacySources/LegacyNoticesView.swift"; sourceTree = "<group>"; };
 		0F5D2065C589304B6E4D8739 /* LegacySessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacySessionStore.swift"; path = "LegacySources/LegacySessionStore.swift"; sourceTree = "<group>"; };
 		EABD514384B4FC21BC6EFBFE /* LegacySessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacySessionView.swift"; path = "LegacySources/LegacySessionView.swift"; sourceTree = "<group>"; };
 		E8C9E408DF4BEF63B64F0E15 /* LegacySupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacySupport.swift"; path = "LegacySources/LegacySupport.swift"; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				D2ACCB02ED040BC57895833D /* LegacyApp.swift */,
 				74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */,
 				C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */,
+				5E322649B26B282CCF024555 /* LegacyNoticesView.swift */,
 				0F5D2065C589304B6E4D8739 /* LegacySessionStore.swift */,
 				EABD514384B4FC21BC6EFBFE /* LegacySessionView.swift */,
 				E8C9E408DF4BEF63B64F0E15 /* LegacySupport.swift */,
@@ -286,6 +289,7 @@
 				849DB50884A83D5835E4B0B9 /* LegacyApp.swift in Sources */,
 				A9B33CBB68B1BB673D947EC8 /* LegacyDashboardView.swift in Sources */,
 				053066CA14319F836D30A8D4 /* LegacyLoginView.swift in Sources */,
+				DC8F292F007F59EF102ECA97 /* LegacyNoticesView.swift in Sources */,
 				3DBB81CD9633598BC8B9CA6C /* LegacySessionStore.swift in Sources */,
 				630BD9DCB9B176EA78CD6642 /* LegacySessionView.swift in Sources */,
 				F760C8F2AE6FE963AFA765EA /* LegacySupport.swift in Sources */,

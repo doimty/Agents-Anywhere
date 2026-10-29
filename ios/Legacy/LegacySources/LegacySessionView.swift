@@ -15,6 +15,11 @@ struct LegacySessionView: View {
                     .padding(.vertical, 6)
             }
 
+            if !store.actionableNotices.isEmpty {
+                LegacyNoticesView(notices: store.actionableNotices)
+                Divider()
+            }
+
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 12) {
@@ -55,6 +60,14 @@ struct LegacySessionView: View {
         .navigationTitle(session.title ?? "会话")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    Task { await store.reload() }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .disabled(store.isWorking)
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("中断") { Task { await store.interrupt() } }
                     .disabled(!LegacyFormat.isRunning(session.status))

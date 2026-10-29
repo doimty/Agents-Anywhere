@@ -26,6 +26,8 @@ final class LegacySessionStore: ObservableObject {
     @Published private(set) var connectors: [V2Connector] = []
     @Published private(set) var sessions: [V2SessionMeta] = []
     @Published private(set) var items: [V2TimelineItem] = []
+    @Published private(set) var notices: [V2RuntimeNotice] = []
+    @Published private(set) var respondingNoticeID: V2NoticeID?
     @Published private(set) var selectedSession: V2SessionMeta?
     @Published private(set) var hasMoreHistory = false
     @Published private(set) var isLoadingOlder = false
@@ -127,9 +129,12 @@ final class LegacySessionStore: ObservableObject {
         isWorking = true
         defer { isWorking = false }
         do {
-            let page = try await client.sessions.latestTimeline(sessionId: session.id, limit: 80)
+            async let timeline = client.sessions.latestTimeline(sessionId: session.id, limit: 80)
+            async let notices = client.runtime.notices(sessionId: session.id)
+            let (page, snapshot) = try await (timeline, notices)
             items = page.items.sorted { LegacySort.timelinePrecedes($0, $1) }
             hasMoreHistory = page.hasMore
+            self.notices = snapshot.notices
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -177,6 +182,41 @@ final class LegacySessionStore: ObservableObject {
         } catch {
             // The draft is the only copy of the user's text; put it back.
             draft = text
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Open approvals and input requests. Resolved or expired notices stay out
+    /// of the composer area so the blocking card is unmistakable.
+    var actionableNotices: [V2RuntimeNotice] {
+        notices.filter { $0.status == .open || $0.status == .responding }
+    }
+
+    func refreshNotices() async {
+        guard let client, let session = selectedSession else { return }
+        do {
+            notices = try await client.runtime.notices(sessionId: session.id).notices
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Sends one notice action. Actions that declare a required input are
+    /// answered from the sheet as `{"text": "..."}`; the schema itself is not
+    /// interpreted in this first version.
+    func respond(to notice: V2RuntimeNotice, action: V2RuntimeNoticeAction, text: String?) async {
+        guard let client, let session = selectedSession, respondingNoticeID == nil else { return }
+        respondingNoticeID = notice.id
+        defer { respondingNoticeID = nil }
+        do {
+            let input: JSONValue? = text.map { .object(["text": .string($0)]) }
+            let request = V2RuntimeNoticeRespondRequest(actionId: action.actionId, input: input)
+            _ = try await client.runtime
+                .respondToNotice(sessionId: session.id, noticeId: notice.id, request: request)
+                .requireSuccess()
+            await refreshNotices()
+            await reload()
+        } catch {
             errorMessage = error.localizedDescription
         }
     }
