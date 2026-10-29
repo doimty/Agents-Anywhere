@@ -103,6 +103,10 @@ jobs:
 
   probe-15:
     name: Probe iOS 15 deployment target
+    # Diagnostic only, and it cannot pass until Textual/swiftui-math leave the
+    # shipped target; running it on every push burns macOS capacity that the
+    # legacy build needs. Trigger it from the Actions tab when the port moves.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: macos-26
     timeout-minutes: 60
     steps:
