@@ -1,8 +1,11 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct LegacySessionView: View {
     let session: V2SessionMeta
     @EnvironmentObject private var store: LegacySessionStore
+    @State private var showsPhotos = false
+    @State private var showsFiles = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -77,23 +80,97 @@ struct LegacySessionView: View {
     }
 
     private var composer: some View {
-        HStack(alignment: .bottom, spacing: 8) {
-            // `TextField(axis:)` is iOS 16; keep a real multiline editor.
-            TextEditor(text: $store.draft)
-                .frame(minHeight: 38, maxHeight: 110)
-                .padding(6)
-                .background(Color(uiColor: .secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            Button {
-                Task { await store.sendDraft() }
-            } label: {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 30))
+        VStack(spacing: 6) {
+            if !store.attachments.isEmpty || store.isUploading {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(store.attachments) { reference in
+                            HStack(spacing: 6) {
+                                Image(systemName: "paperclip")
+                                Text(reference.name).lineLimit(1)
+                                Button {
+                                    store.removeAttachment(reference.fileId)
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                }
+                            }
+                            .font(.caption)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color(uiColor: .secondarySystemBackground))
+                            .clipShape(Capsule())
+                        }
+                        if store.isUploading {
+                            ProgressView().scaleEffect(0.8)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                }
             }
-            .disabled(store.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || store.isWorking)
+
+            HStack(alignment: .bottom, spacing: 8) {
+                Button { showsPhotos = true } label: {
+                    Image(systemName: "photo.on.rectangle").font(.system(size: 22))
+                }
+                .disabled(store.isUploading)
+
+                Button { showsFiles = true } label: {
+                    Image(systemName: "folder").font(.system(size: 22))
+                }
+                .disabled(store.isUploading)
+
+                // `TextField(axis:)` is iOS 16; keep a real multiline editor.
+                TextEditor(text: $store.draft)
+                    .frame(minHeight: 38, maxHeight: 110)
+                    .padding(6)
+                    .background(Color(uiColor: .secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                Button {
+                    Task { await store.sendDraft() }
+                } label: {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 30))
+                }
+                .disabled(!canSend || store.isWorking || store.isUploading)
+            }
+            .padding(.horizontal, 12)
         }
-        .padding(.horizontal, 12)
         .padding(.vertical, 8)
+        .sheet(isPresented: $showsPhotos) {
+            LegacyPhotoPicker(selectionLimit: 5) { files in
+                showsPhotos = false
+                Task { await store.upload(files) }
+            } onCancel: {
+                showsPhotos = false
+            }
+        }
+        .fileImporter(
+            isPresented: $showsFiles,
+            allowedContentTypes: [.item],
+            allowsMultipleSelection: true
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard !urls.isEmpty else { return }
+                var files: [LegacyPickedFile] = []
+                for url in urls.prefix(5) {
+                    do {
+                        files.append(try LegacyPickedFile.from(url: url))
+                    } catch {
+                        store.report(error.localizedDescription)
+                    }
+                }
+                guard !files.isEmpty else { return }
+                Task { await store.upload(files) }
+            case .failure(let error):
+                store.report(error.localizedDescription)
+            }
+        }
+    }
+
+    private var canSend: Bool {
+        !store.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !store.attachments.isEmpty
     }
 }
 

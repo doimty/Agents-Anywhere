@@ -28,6 +28,8 @@ final class LegacySessionStore: ObservableObject {
     @Published private(set) var items: [V2TimelineItem] = []
     @Published private(set) var notices: [V2RuntimeNotice] = []
     @Published private(set) var respondingNoticeID: V2NoticeID?
+    @Published private(set) var attachments: [V2AttachmentReference] = []
+    @Published private(set) var isUploading = false
     @Published private(set) var selectedSession: V2SessionMeta?
     @Published private(set) var hasMoreHistory = false
     @Published private(set) var isLoadingOlder = false
@@ -165,23 +167,48 @@ final class LegacySessionStore: ObservableObject {
         }
     }
 
+    /// Uploads first, then sends the message with the returned file ids. The
+    /// upload is session-scoped, so it cannot happen before a session exists.
+    func upload(_ files: [LegacyPickedFile]) async {
+        guard let client, let session = selectedSession, !files.isEmpty, !isUploading else { return }
+        isUploading = true
+        defer { isUploading = false }
+        do {
+            let payload = files.map {
+                HTTPUploadFile(fieldName: "files", fileName: $0.name, mediaType: $0.mediaType, data: $0.data)
+            }
+            let response = try await client.attachments.upload(sessionId: session.id, files: payload)
+            attachments.append(contentsOf: response.attachments)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func removeAttachment(_ fileId: V2AttachmentID) {
+        attachments.removeAll { $0.fileId == fileId }
+    }
+
     func sendDraft() async {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, let client, let session = selectedSession, !isWorking else { return }
+        let outgoing = attachments
+        guard (!text.isEmpty || !outgoing.isEmpty), let client, let session = selectedSession, !isWorking else { return }
         draft = ""
+        attachments = []
         isWorking = true
         defer { isWorking = false }
         do {
             let request = V2RuntimeMessageSendRequest(
                 content: text,
-                attachments: [],
+                attachments: outgoing.map { V2AttachmentSendReference(fileId: $0.fileId) },
                 clientMessageId: UUID().uuidString
             )
             _ = try await client.runtime.sendMessage(sessionId: session.id, request: request).requireSuccess()
             await open(session)
         } catch {
-            // The draft is the only copy of the user's text; put it back.
+            // The draft and attachments are the only copy of the user's input.
             draft = text
+            attachments = outgoing
             errorMessage = error.localizedDescription
         }
     }
