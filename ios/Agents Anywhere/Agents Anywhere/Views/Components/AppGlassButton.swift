@@ -59,12 +59,12 @@ struct AppGlassButton: View {
     var body: some View {
         if style == .prominent {
             button
-                .buttonStyle(.glassProminent)
+                .appGlassButtonStyle(prominent: true)
                 .tint(AppTheme.primaryControlBackground(colorScheme))
                 .foregroundStyle(AppTheme.primaryControlForeground(colorScheme))
         } else {
             button
-                .buttonStyle(.glass)
+                .appGlassButtonStyle()
         }
     }
 
@@ -81,7 +81,7 @@ struct AppGlassButton: View {
                 }
                 .frame(maxWidth: maxWidth)
         }
-        .buttonBorderShape(title == nil ? .circle : .capsule)
+        .appCircularButtonShape(title == nil)
         .controlSize(.large)
         .disabled(disabled || isLoading)
         .animation(.easeInOut(duration: 0.18), value: isLoading)

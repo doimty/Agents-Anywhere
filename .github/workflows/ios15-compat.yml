@@ -1,0 +1,164 @@
+﻿name: iOS 15 compatibility
+
+# The iOS app currently targets iOS 26.5 and depends on iOS 18+ packages, so it
+# cannot run on iOS 15 yet. This workflow is the feedback loop for the port:
+#
+#   inventory     static ratchet over iOS 15-incompatible API usage (gating)
+#   modern-build  the shipped target still compiles unchanged (gating)
+#   probe-15      compiles the app at IPHONEOS_DEPLOYMENT_TARGET=15.0 and keeps
+#                 the diagnostics (diagnostic, expected to fail until the
+#                 Observation/Textual/scroll work in ios/docs/ios15-compatibility.md
+#                 lands; it never turns the run green by itself)
+#
+# See ios/docs/ios15-compatibility.md for scope and remaining work.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios15-compat.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios15-compat.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios15-compat-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  # The app is developed against Xcode 27 (see ios/NATIVE_CHAT.md). If the
+  # runner image ships it under a beta path, select it explicitly.
+  PREFERRED_DEVELOPER_DIR: /Applications/Xcode-beta.app/Contents/Developer
+
+jobs:
+  inventory:
+    name: Availability inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Test the inventory script
+        run: python3 ios/Tests/test_ios15_availability.py -v
+      - name: Reject new iOS 15-incompatible usage
+        run: python3 ios/scripts/check_ios15_availability.py --check --json ios15-availability.json
+      - name: Upload inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios15-availability-inventory
+          path: ios15-availability.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  modern-build:
+    name: Modern target still builds
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+      - name: Select Xcode
+        run: |
+          set -euo pipefail
+          if [ -d "$PREFERRED_DEVELOPER_DIR" ]; then
+            sudo xcode-select -s "$PREFERRED_DEVELOPER_DIR"
+          fi
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+      - name: Build the shipped target
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project "ios/Agents Anywhere/Agents Anywhere.xcodeproj" \
+            -scheme "Agents Anywhere" \
+            -configuration Debug \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY=- \
+            CODE_SIGNING_REQUIRED=NO \
+            build \
+            2>&1 | tee "$RUNNER_TEMP/xcodebuild-modern.log"
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios15-modern-build-log
+          path: ${{ runner.temp }}/xcodebuild-modern.log
+          if-no-files-found: warn
+          retention-days: 14
+
+  probe-15:
+    name: Probe iOS 15 deployment target
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+      - name: Select Xcode
+        run: |
+          set -euo pipefail
+          if [ -d "$PREFERRED_DEVELOPER_DIR" ]; then
+            sudo xcode-select -s "$PREFERRED_DEVELOPER_DIR"
+          fi
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+      - name: Compile at the iOS 15 floor
+        # Diagnostic only: this step records the real compiler diagnostics.
+        # The inventory job is what gates the pull request.
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/ios15"
+          set +e
+          xcodebuild \
+            -project "ios/Agents Anywhere/Agents Anywhere.xcodeproj" \
+            -scheme "Agents Anywhere" \
+            -configuration Debug \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$RUNNER_TEMP/ios15/DerivedData" \
+            IPHONEOS_DEPLOYMENT_TARGET=15.0 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY=- \
+            CODE_SIGNING_REQUIRED=NO \
+            build \
+            > "$RUNNER_TEMP/ios15/xcodebuild.log" 2>&1
+          status=$?
+          set -e
+          printf 'xcodebuild_exit=%s\n' "$status" | tee "$RUNNER_TEMP/ios15/exit.txt"
+          {
+            printf '# iOS 15 probe\n\n'
+            printf 'Baseline: `%s`\n\n' "$GITHUB_SHA"
+            printf 'Exit status: %s\n\n' "$status"
+            printf '## Compiler diagnostics\n\n```\n'
+            grep -E "error:|warning: .*availability" "$RUNNER_TEMP/ios15/xcodebuild.log" | head -n 300 || true
+            printf '\n```\n'
+          } > "$RUNNER_TEMP/ios15/summary.md"
+          cat "$RUNNER_TEMP/ios15/summary.md"
+      - name: Inventory current sources
+        if: always()
+        run: |
+          python3 ios/scripts/check_ios15_availability.py --report --json "$RUNNER_TEMP/ios15/ios15-availability.json"
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios15-probe
+          path: |
+            ${{ runner.temp }}/ios15/xcodebuild.log
+            ${{ runner.temp }}/ios15/exit.txt
+            ${{ runner.temp }}/ios15/summary.md
+            ${{ runner.temp }}/ios15/ios15-availability.json
+          if-no-files-found: warn
+          retention-days: 14

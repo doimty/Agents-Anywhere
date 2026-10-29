@@ -132,3 +132,13 @@ Retired session/runtime API methods, models and the chat placeholder live in
 facade supports the existing shell through `V2ClientServices`; new session and
 runtime features use the typed resources and scoped services directly. Do not
 restore legacy routes or introduce view-owned transport/cache implementations.
+
+## iOS 15 compatibility
+
+The shipped target stays on iOS 26.5. The iOS 15 port is tracked separately in
+[ios15-compatibility.md](docs/ios15-compatibility.md): new code that needs an
+iOS 16+/17+/18+/26+ API goes through `Agents Anywhere/Compatibility/` adapters,
+`ios/scripts/check_ios15_availability.py` keeps the reviewed inventory from
+growing, and `.github/workflows/ios15-compat.yml` runs the macOS probe. Do not
+lower `IPHONEOS_DEPLOYMENT_TARGET` until that probe compiles and the inventory
+for the affected directories reaches zero.

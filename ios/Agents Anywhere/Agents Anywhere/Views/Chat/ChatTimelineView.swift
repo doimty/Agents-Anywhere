@@ -212,7 +212,7 @@ struct ChatTimelineView: View {
                 } label: {
                     Label(String(localized: "到底部"), appSymbol: "arrow.down").font(.caption.weight(.medium)).foregroundStyle(.primary)
                         .padding(.horizontal, 12).frame(height: returnPillHeight)
-                        .glassEffect(.regular.interactive(), in: .capsule)
+                        .appGlassEffect(.interactive, in: Capsule())
                         .frame(minHeight: 44).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain).accessibilityIdentifier("chat.timeline.bottom")

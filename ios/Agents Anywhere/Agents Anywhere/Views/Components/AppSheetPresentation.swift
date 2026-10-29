@@ -8,6 +8,7 @@ enum AppSheetSize: Equatable {
 extension View {
     /// Short pickers keep their chosen height across native navigation pushes.
     /// Long forms opt into the large system detent without replacing the sheet.
+    /// iOS 15 keeps a standard sheet; see `AppCompatibility.appPresentationDetents`.
     func appSheetPresentation(_ size: AppSheetSize) -> some View {
         modifier(AppSheetPresentation(size: size))
     }
@@ -15,9 +16,13 @@ extension View {
 
 private struct AppSheetPresentation: ViewModifier {
     let size: AppSheetSize
-    @State private var compactDetent: PresentationDetent = .medium
+    @State private var compactDetent: AppSheetDetent = .medium
 
-    private var selection: Binding<PresentationDetent> {
+    private var detents: Set<AppSheetDetent> {
+        size == .expanded ? [.large] : [.medium, .large]
+    }
+
+    private var selection: Binding<AppSheetDetent> {
         Binding(
             get: { size == .expanded ? .large : compactDetent },
             set: { if size == .compact { compactDetent = $0 } }
@@ -26,8 +31,8 @@ private struct AppSheetPresentation: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .presentationDetents(size == .expanded ? [.large] : [.medium, .large], selection: selection)
-            .presentationContentInteraction(.scrolls)
-            .presentationDragIndicator(.visible)
+            .appPresentationDetents(detents, selection: selection)
+            .appSheetScrollContentInteraction()
+            .appSheetDragIndicator()
     }
 }

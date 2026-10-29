@@ -1,0 +1,32 @@
+{
+  "comment": "Reviewed iOS 15 availability inventory. Counts are a ratchet: lower them as call sites are ported; never raise them without review.",
+  "rules": {
+    "button-role-close": 2,
+    "content-unavailable": 5,
+    "entry-macro": 5,
+    "geometry-change": 16,
+    "glass": 15,
+    "ios26-toolbar": 5,
+    "label-content": 8,
+    "layout-protocol": 30,
+    "localized-string-resource": 11,
+    "navigation-stack": 25,
+    "observation": 141,
+    "observation-import": 21,
+    "photos-picker": 5,
+    "scroll-edge-effect": 18,
+    "scroll-modifiers": 16,
+    "scroll-padding": 2,
+    "scroll-position": 13,
+    "scroll-transition": 4,
+    "sensory-feedback": 1,
+    "share-link": 4,
+    "smooth-animation": 5,
+    "symbol-effects": 6,
+    "task-sleep-duration": 31,
+    "textual": 22,
+    "textual-parse": 1,
+    "toolbar-new": 5,
+    "uigesture-representable": 2
+  }
+}
