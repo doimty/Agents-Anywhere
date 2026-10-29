@@ -1,16 +1,16 @@
-// swift-tools-version: 6.2
+﻿// swift-tools-version: 6.2
 import PackageDescription
 
 let package = Package(
     name: "AgentsAnywhereClient",
     platforms: [.macOS(.v13), .iOS(.v15)],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-perception", exact: "2.0.11"),
+        .package(path: "Packages/Perception"),
     ],
     targets: [
         .target(
             name: "ClientCore",
-            dependencies: [.product(name: "Perception", package: "swift-perception")],
+            dependencies: [.product(name: "Perception", package: "Perception")],
             path: "Agents Anywhere/Agents Anywhere",
             exclude: [
                 "App", "Assets.xcassets", "Resources", "Services", "Stores", "Views",
@@ -21,7 +21,7 @@ let package = Package(
         ),
         .testTarget(
             name: "ClientCoreTests",
-            dependencies: ["ClientCore", .product(name: "Perception", package: "swift-perception")],
+            dependencies: ["ClientCore", .product(name: "Perception", package: "Perception")],
             path: "Tests/ClientCoreTests",
             resources: [.copy("Fixtures")],
             swiftSettings: [.defaultIsolation(MainActor.self)]

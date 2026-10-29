@@ -220,6 +220,7 @@ private final class SampleCollection: TextLayoutCollection {
     }
     func isEqual(to other: any TextLayoutCollection) -> Bool { self === (other as? SampleCollection) }
     func needsPositionReconciliation(with other: any TextLayoutCollection) -> Bool { reconcile }
+    @available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
     func index(of layout: Text.Layout) -> Int? { nil }
 }
 
@@ -261,5 +262,6 @@ private final class HitTestCollection: TextLayoutCollection {
     var layouts: [any TextLayout] { layoutReads += 1; return [] }
     func isEqual(to other: any TextLayoutCollection) -> Bool { self === (other as? HitTestCollection) }
     func needsPositionReconciliation(with other: any TextLayoutCollection) -> Bool { false }
+    @available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
     func index(of layout: Text.Layout) -> Int? { nil }
 }

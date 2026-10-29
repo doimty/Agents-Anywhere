@@ -1,4 +1,4 @@
-name: iOS 15 original interface
+﻿name: iOS 15 original interface
 
 # Builds the original application target, not the previous Legacy application.
 # A source inventory is never a replacement for a successful Xcode build.
@@ -59,15 +59,7 @@ jobs:
             "$compat/AppNavigationCompatibility.swift" \
             "$compat/AppPhotoCompatibility.swift" \
             > "$RUNNER_TEMP/original-ui/adapters.log" 2>&1
-      - name: Test original state and scheduling semantics
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          xcrun swift test --package-path ios \
-            > "$RUNNER_TEMP/original-ui/core-tests.log" 2>&1
       - name: Build the original app for iOS 15
-        if: always()
         shell: bash
         run: |
           set -euo pipefail
@@ -90,6 +82,19 @@ jobs:
             --exit-code "$status" --output "$evidence/diagnostics.json" \
             | tee -a "$GITHUB_STEP_SUMMARY"
           test -s "$evidence/xcodebuild.log"
+          exit "$status"
+      - name: Test original state and scheduling semantics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          xcrun swift test --package-path ios \
+            > "$RUNNER_TEMP/original-ui/core-tests.log" 2>&1
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$RUNNER_TEMP/original-ui/core-tests-exit.txt"
+          tail -n 40 "$RUNNER_TEMP/original-ui/core-tests.log" | tee -a "$GITHUB_STEP_SUMMARY"
           exit "$status"
       - name: Package original-interface IPA
         if: env.ORIGINAL_UI_READY == 'true' && success()

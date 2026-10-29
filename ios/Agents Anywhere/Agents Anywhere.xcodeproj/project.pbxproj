@@ -1,4 +1,4 @@
-// !$*UTF8*$!
+﻿// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -107,7 +107,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				000000000000000300000000 /* XCLocalSwiftPackageReference "../Packages/Textual" */,
-				000000000000000400000000 /* XCRemoteSwiftPackageReference "swift-perception" */,
+				000000000000000400000000 /* XCLocalSwiftPackageReference "../Packages/Perception" */,
 			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
@@ -404,6 +404,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		000000000000000400000000 /* XCLocalSwiftPackageReference "../Packages/Perception" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/Perception;
+		};
 		000000000000000300000000 /* XCLocalSwiftPackageReference "../Packages/Textual" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/Textual;
@@ -411,14 +415,6 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		000000000000000400000000 /* XCRemoteSwiftPackageReference "swift-perception" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swift-perception";
-			requirement = {
-				kind = exactVersion;
-				version = 2.0.11;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -429,7 +425,7 @@
 		};
 		000000000000000400000001 /* Perception */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 000000000000000400000000 /* XCRemoteSwiftPackageReference "swift-perception" */;
+			package = 000000000000000400000000 /* XCLocalSwiftPackageReference "../Packages/Perception" */;
 			productName = Perception;
 		};
 /* End XCSwiftPackageProductDependency section */

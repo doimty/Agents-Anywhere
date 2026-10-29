@@ -2,10 +2,14 @@
 
 import PackageDescription
 
+// Vendored SwiftUIMath 0.1.0 (github.com/gonzalezreal/swiftui-math) with the
+// iOS 15 deployment floor used by the original-interface port. The upstream
+// snapshot-testing dependency and test target are development-only and removed
+// so app package resolution stays hermetic.
 let package = Package(
   name: "swiftui-math",
   platforms: [
-    .macOS(.v14),
+    .macOS(.v13),
     .iOS(.v15),
     .tvOS(.v17),
     .watchOS(.v10),
@@ -14,22 +18,11 @@ let package = Package(
   products: [
     .library(name: "SwiftUIMath", targets: ["SwiftUIMath"])
   ],
-  dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.7")
-  ],
   targets: [
     .target(
       name: "SwiftUIMath",
       dependencies: [],
       resources: [.copy("mathFonts.bundle")]
-    ),
-    .testTarget(
-      name: "SwiftUIMathTests",
-      dependencies: [
-        "SwiftUIMath",
-        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
-      ],
-      exclude: ["__Snapshots__"]
     ),
   ]
 )

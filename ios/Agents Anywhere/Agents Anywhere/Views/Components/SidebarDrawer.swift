@@ -619,8 +619,8 @@ private struct SidebarDrawerNativeSidebar<Header: View, Content: View>: View {
     var body: some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .scrollEdgeEffectStyle(edgeEffectStyle, for: .top)
-            .safeAreaBar(edge: .top, spacing: 0) {
+            .appScrollEdgeEffect(edgeEffectStyle, for: .top)
+            .appSafeAreaBar(edge: .top, spacing: 0) {
                 SidebarDrawerHeaderBar(
                     safeAreaInsets: EdgeInsets(),
                     header: header
@@ -653,8 +653,8 @@ private struct SidebarDrawerSidebar<Header: View, Content: View>: View {
     var body: some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .scrollEdgeEffectStyle(edgeEffectStyle, for: .top)
-            .safeAreaBar(edge: .top, spacing: 0) {
+            .appScrollEdgeEffect(edgeEffectStyle, for: .top)
+            .appSafeAreaBar(edge: .top, spacing: 0) {
                 SidebarDrawerHeaderBar(
                     safeAreaInsets: safeAreaInsets,
                     header: header

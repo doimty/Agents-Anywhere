@@ -37,6 +37,44 @@ buttons can receive input. Embedded controls publish exclusion rectangles to
 the selection overlay. The parser, syntax highlighter, formatter and upstream
 clipboard exporter remain unchanged; the app's code button copies literal text.
 
+## iOS 15 back-deployment candidate
+
+The public `StructuredText`, `InlineText`, `MarkupParser`, block styles and `.textual`
+configuration remain the same. The shared Foundation Markdown parser, presentation
+intents, Prism resources, clipboard formatter and live attachment bodies remain in
+use. The prefix tokenizer uses the same opt-in patterns through
+`NSRegularExpression`, rather than the iOS 16 Swift Regex runtime.
+
+- iOS 18+ retains `ModernTextFragment`, `Text.Layout` and the original interaction
+  metadata pipeline, with explicit availability at the modern type boundary.
+- iOS 15–17 uses the original `SwiftUI.Text` label, a public TextKit 1 geometry
+  provider and the same non-editable UIKit selection/copy/link interaction. This
+  is a low-level adapter, not a second Markdown renderer or a WebView.
+- `Attachment.sizeThatFits` accepts `TextualSizeProposal` (optional width/height,
+  `.unspecified`, `.zero`, `.infinity`) to avoid exposing unavailable SwiftUI layout
+  types. The app's image and Git badge attachment conformances use this proposal.
+- Custom style labels can mirror font/color traits to the geometry provider with
+  `.textual.textProperties(AnyTextProperty(...))`. The existing font-relative
+  `.textual.lineSpacing` modifier also mirrors its resolved line spacing.
+- Pre-Layout/Grid adapters retain the original styled block children, collapsing
+  margins, table cell styles, anchors and overflow scopes.
+- Shared observable state uses `ObservableObject`; the reflected-font cache uses
+  an internal recursive lock. The remaining `Font.Width` API is explicitly iOS 16+.
+- The dependency is the fixed local SwiftUIMath 0.1.0 source beside this package.
+  Its original typesetter/Canvas/fonts are retained and its SwiftUI boundary is
+  actually back-deployed; bundle minimum-version metadata is not used to conceal
+  an unavailable dependency.
+
+**Validation is not complete.** Windows cannot type-check Apple SDK modules or
+prove matching SwiftUI/TextKit line breaks and glyph hit testing on iOS 15.
+The original application must compile in macOS CI with a 15.0 deployment target;
+old-system device/simulator selection, attachments, Dynamic Type, RTL, overflow and
+streaming tests and original-style screenshot comparisons are still required.
+
+The Prism bundle is unchanged. A resource-level check found an existing missing
+`turtle` base for the `sparql` grammar during bundle initialization; this is a
+recorded baseline issue, not an iOS 15 port change or a completed highlighter test.
+
 Run the headless regression tests from the repository root (no app or simulator):
 
 ```sh
