@@ -180,6 +180,9 @@ jobs:
 
   legacy-ipa:
     name: Build iOS 15 legacy IPA
+    # Serialise the two macOS jobs: they share a small concurrency budget and
+    # running them side by side made one of them queue until it was cancelled.
+    needs: modern-build
     runs-on: macos-26
     timeout-minutes: 60
     steps:
