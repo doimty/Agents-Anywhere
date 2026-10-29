@@ -1,6 +1,14 @@
 import SwiftUI
 
 enum LegacyFormat {
+    /// Short relative time ("3 分钟前") from a wire ISO timestamp.
+    static func relative(_ raw: String?) -> String? {
+        guard let date = V2Timestamp.date(raw) else { return nil }
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
     static func isRunning(_ status: V2RuntimeStatus) -> Bool {
         switch status {
         case .running, .waiting, .waitingApproval, .pending, .stopping:

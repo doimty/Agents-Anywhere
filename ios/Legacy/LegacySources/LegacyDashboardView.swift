@@ -30,8 +30,13 @@ struct LegacyDashboardView: View {
             }
             .background(AppTheme.appBackground(colorScheme).ignoresSafeArea())
             .navigationBarHidden(true)
+            .overlay {
+                if store.isWorking, store.sessions.isEmpty, store.connectors.isEmpty {
+                    ProgressView("正在加载…")
+                        .font(.footnote)
+                }
+            }
         }
-        .navigationViewStyle(.stack)
     }
 
     // MARK: - Header
@@ -108,11 +113,16 @@ struct LegacyDashboardView: View {
                                 }
                             }
                             Spacer(minLength: 0)
-                            LegacyChip(
-                                text: connector.status == .online ? "在线" : "离线",
-                                color: connector.status == .online ? .green : .secondary,
-                                symbol: "circle.fill"
-                            )
+                            VStack(alignment: .trailing, spacing: 4) {
+                                LegacyChip(
+                                    text: connector.status == .online ? "在线" : "离线",
+                                    color: connector.status == .online ? .green : .secondary,
+                                    symbol: "circle.fill"
+                                )
+                                if let relative = LegacyFormat.relative(connector.lastSeenAt) {
+                                    Text(relative).font(.caption2).foregroundColor(.secondary)
+                                }
+                            }
                         }
                     }
                 }
@@ -199,10 +209,17 @@ private struct LegacySessionCard: View {
                     }
                 }
                 Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
-                    .foregroundColor(.secondary)
-                    .padding(.top, 10)
+                VStack(alignment: .trailing, spacing: 3) {
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.secondary)
+                    if let relative = LegacyFormat.relative(session.lastActivityAt ?? session.lastItemAt ?? session.updatedAt) {
+                        Text(relative)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.top, 8)
             }
         }
     }
