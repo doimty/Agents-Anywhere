@@ -55,6 +55,14 @@ SHARED_FILES = [
     "Models/Chat/TimelineDiff.swift",
     "Models/Chat/TimelineEntryPresentation.swift",
     "Stores/KeychainStore.swift",
+    "Views/AppTheme.swift",
+    "Views/Components/AppSymbol.swift",
+    "Views/Components/AppSymbolAssets.swift",
+]
+# The asset catalog ships the app's Lucide symbols so the iOS 15 client keeps the
+# same iconography as the shipped app.
+RESOURCES = [
+    ("Assets.xcassets", "../Agents Anywhere/Agents Anywhere/Assets.xcassets", "folder.assetcatalog"),
 ]
 # Excluded from the legacy compile: they depend on iOS 16+/18+ types or on the
 # modern presentation stack.
@@ -114,6 +122,25 @@ def generate() -> str:
         )
         children.append(f"\t\t\t\t{ref} /* {name} */,")
 
+    resource_build_files: list[str] = []
+    resource_refs: list[str] = []
+    for name, relative, kind in RESOURCES:
+        ref = identifier("ref:" + relative)
+        build = identifier("build:" + relative)
+        resource_build_files.append(
+            f"\t\t{build} /* {name} in Resources */ = {{isa = PBXBuildFile; fileRef = {ref} /* {name} */; }};"
+        )
+        resource_refs.append(
+            f"\t\t{ref} /* {name} */ = {{isa = PBXFileReference; lastKnownFileType = {kind}; "
+            f"name = {quote(name)}; path = {quote(relative)}; sourceTree = \"<group>\"; }};"
+        )
+        children.append(f"\t\t\t\t{ref} /* {name} */,")
+
+    resource_build_entries = "\n".join(
+        f"\t\t\t\t{identifier('build:' + relative)} /* {name} in Resources */,"
+        for name, relative, _ in RESOURCES
+    )
+
     project = identifier("project")
     target = identifier("target")
     product = identifier("product")
@@ -138,8 +165,8 @@ def generate() -> str:
 \t\t\t\tINFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 \t\t\t\tINFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 \t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 15.0;
-\t\t\t\tMARKETING_VERSION = 0.9.0;
-\t\t\t\tCURRENT_PROJECT_VERSION = 9;
+\t\t\t\tMARKETING_VERSION = 0.10.0;
+\t\t\t\tCURRENT_PROJECT_VERSION = 10;
 \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = {BUNDLE_ID};
 \t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
 \t\t\t\tSDKROOT = iphoneos;
@@ -171,11 +198,13 @@ def generate() -> str:
 
 /* Begin PBXBuildFile section */
 {chr(10).join(build_files)}
+{chr(10).join(resource_build_files)}
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 \t\t{product} /* {TARGET_NAME}.app */ = {{isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = {TARGET_NAME}.app; sourceTree = BUILT_PRODUCTS_DIR; }};
 {chr(10).join(file_refs)}
+{chr(10).join(resource_refs)}
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -271,6 +300,7 @@ def generate() -> str:
 \t\t\tisa = PBXResourcesBuildPhase;
 \t\t\tbuildActionMask = 2147483647;
 \t\t\tfiles = (
+{resource_build_entries}
 \t\t\t);
 \t\t\trunOnlyForDeploymentPostprocessing = 0;
 \t\t}};

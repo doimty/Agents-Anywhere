@@ -8,6 +8,7 @@ struct LegacyAttachmentRow: View {
     let content: V2AttachmentContent
 
     @EnvironmentObject private var store: LegacySessionStore
+    @Environment(\.colorScheme) private var colorScheme
     @State private var imageData: Data?
     @State private var isLoading = false
     @State private var showsViewer = false
@@ -53,8 +54,15 @@ struct LegacyAttachmentRow: View {
             }
         }
         .padding(10)
-        .background(Color(uiColor: .secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            AppTheme.groupedFill(colorScheme),
+            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(AppTheme.secondaryControlStroke(colorScheme).opacity(0.55), lineWidth: 0.5)
+        )
         .task {
             guard isImage, imageData == nil, !isLoading, let fileId = content.fileId else { return }
             isLoading = true

@@ -11,6 +11,7 @@
 		C0C6C5460654BF865EF39E56 /* LegacyAttachmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF499F338C229BF36FFD280 /* LegacyAttachmentView.swift */; };
 		760C83D971232C6C600484B4 /* LegacyAttachments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D2AD39CE8589004FD7154AF /* LegacyAttachments.swift */; };
 		A9B33CBB68B1BB673D947EC8 /* LegacyDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */; };
+		7809202BDEDAFA41E1638C77 /* LegacyDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABBBCE655FB611AE78D6D02 /* LegacyDesign.swift */; };
 		053066CA14319F836D30A8D4 /* LegacyLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */; };
 		F53B4B777BA516027512C4B3 /* LegacyMarkdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EFB9B8E302953F0BF6D630F /* LegacyMarkdownView.swift */; };
 		DC8F292F007F59EF102ECA97 /* LegacyNoticesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E322649B26B282CCF024555 /* LegacyNoticesView.swift */; };
@@ -42,6 +43,9 @@
 		4A15DD717F72983C85313393 /* TimelineDiff.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B524FE330C23DA25AF985D /* TimelineDiff.swift */; };
 		535594270815E834B5B00EBD /* TimelineEntryPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C20DBFC96C69D35C03FF8B /* TimelineEntryPresentation.swift */; };
 		E1E53EFFA740E64483B9E1FD /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D18195E2DFBEE8445950904 /* KeychainStore.swift */; };
+		E76704815EE756667DB352DF /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 381FE1CDE6AB7C5952D1D46B /* AppTheme.swift */; };
+		854D505E5625BF770B5F21E4 /* AppSymbol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBB9ADFF713221EB155681E7 /* AppSymbol.swift */; };
+		270F1CD23DA8A4FC441E462F /* AppSymbolAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1620B4E6EEB0E5BD2A61316 /* AppSymbolAssets.swift */; };
 		330D4A9A2918224E62A9DCD3 /* AccountAvatarImageSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */; };
 		8A30977FD26C8B40E2255A81 /* V2AccountModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A9A5CB5558AB7F9FDD9227 /* V2AccountModels.swift */; };
 		0D653584E3CB94C6D0CBD1CF /* V2AttachmentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA1477CE6C744AB8AD6EA16 /* V2AttachmentModels.swift */; };
@@ -67,6 +71,7 @@
 		93F75809FC715F0ABB723D9F /* V2SessionMeta.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D63EF4C20585B22721A487 /* V2SessionMeta.swift */; };
 		14ACE082BDDCB85E2AD531B6 /* V2SessionTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1163E417E834AEAC8397A22B /* V2SessionTimeline.swift */; };
 		AC51C1AD5B45FA613E920C95 /* V2TimelineItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09CF0B901C9C5366AE7F0E7 /* V2TimelineItem.swift */; };
+		0D0F209C275B0CA6E10CE437 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02C920FDB796A65444DE6A41 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +80,7 @@
 		9CF499F338C229BF36FFD280 /* LegacyAttachmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyAttachmentView.swift"; path = "LegacySources/LegacyAttachmentView.swift"; sourceTree = "<group>"; };
 		2D2AD39CE8589004FD7154AF /* LegacyAttachments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyAttachments.swift"; path = "LegacySources/LegacyAttachments.swift"; sourceTree = "<group>"; };
 		74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyDashboardView.swift"; path = "LegacySources/LegacyDashboardView.swift"; sourceTree = "<group>"; };
+		AABBBCE655FB611AE78D6D02 /* LegacyDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyDesign.swift"; path = "LegacySources/LegacyDesign.swift"; sourceTree = "<group>"; };
 		C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyLoginView.swift"; path = "LegacySources/LegacyLoginView.swift"; sourceTree = "<group>"; };
 		7EFB9B8E302953F0BF6D630F /* LegacyMarkdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyMarkdownView.swift"; path = "LegacySources/LegacyMarkdownView.swift"; sourceTree = "<group>"; };
 		5E322649B26B282CCF024555 /* LegacyNoticesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyNoticesView.swift"; path = "LegacySources/LegacyNoticesView.swift"; sourceTree = "<group>"; };
@@ -106,6 +112,9 @@
 		71B524FE330C23DA25AF985D /* TimelineDiff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "TimelineDiff.swift"; path = "../Agents Anywhere/Agents Anywhere/Models/Chat/TimelineDiff.swift"; sourceTree = "<group>"; };
 		34C20DBFC96C69D35C03FF8B /* TimelineEntryPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "TimelineEntryPresentation.swift"; path = "../Agents Anywhere/Agents Anywhere/Models/Chat/TimelineEntryPresentation.swift"; sourceTree = "<group>"; };
 		4D18195E2DFBEE8445950904 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "KeychainStore.swift"; path = "../Agents Anywhere/Agents Anywhere/Stores/KeychainStore.swift"; sourceTree = "<group>"; };
+		381FE1CDE6AB7C5952D1D46B /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "AppTheme.swift"; path = "../Agents Anywhere/Agents Anywhere/Views/AppTheme.swift"; sourceTree = "<group>"; };
+		CBB9ADFF713221EB155681E7 /* AppSymbol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "AppSymbol.swift"; path = "../Agents Anywhere/Agents Anywhere/Views/Components/AppSymbol.swift"; sourceTree = "<group>"; };
+		C1620B4E6EEB0E5BD2A61316 /* AppSymbolAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "AppSymbolAssets.swift"; path = "../Agents Anywhere/Agents Anywhere/Views/Components/AppSymbolAssets.swift"; sourceTree = "<group>"; };
 		4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "AccountAvatarImageSource.swift"; path = "../Agents Anywhere/Agents Anywhere/Domain/Account/AccountAvatarImageSource.swift"; sourceTree = "<group>"; };
 		57A9A5CB5558AB7F9FDD9227 /* V2AccountModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "V2AccountModels.swift"; path = "../Agents Anywhere/Agents Anywhere/Domain/Account/V2AccountModels.swift"; sourceTree = "<group>"; };
 		CAA1477CE6C744AB8AD6EA16 /* V2AttachmentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "V2AttachmentModels.swift"; path = "../Agents Anywhere/Agents Anywhere/Domain/Attachment/V2AttachmentModels.swift"; sourceTree = "<group>"; };
@@ -131,6 +140,7 @@
 		77D63EF4C20585B22721A487 /* V2SessionMeta.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "V2SessionMeta.swift"; path = "../Agents Anywhere/Agents Anywhere/Domain/Session/V2SessionMeta.swift"; sourceTree = "<group>"; };
 		1163E417E834AEAC8397A22B /* V2SessionTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "V2SessionTimeline.swift"; path = "../Agents Anywhere/Agents Anywhere/Domain/Session/V2SessionTimeline.swift"; sourceTree = "<group>"; };
 		E09CF0B901C9C5366AE7F0E7 /* V2TimelineItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "V2TimelineItem.swift"; path = "../Agents Anywhere/Agents Anywhere/Domain/Session/V2TimelineItem.swift"; sourceTree = "<group>"; };
+		02C920FDB796A65444DE6A41 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = "Assets.xcassets"; path = "../Agents Anywhere/Agents Anywhere/Assets.xcassets"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,6 +169,7 @@
 				9CF499F338C229BF36FFD280 /* LegacyAttachmentView.swift */,
 				2D2AD39CE8589004FD7154AF /* LegacyAttachments.swift */,
 				74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */,
+				AABBBCE655FB611AE78D6D02 /* LegacyDesign.swift */,
 				C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */,
 				7EFB9B8E302953F0BF6D630F /* LegacyMarkdownView.swift */,
 				5E322649B26B282CCF024555 /* LegacyNoticesView.swift */,
@@ -190,6 +201,9 @@
 				71B524FE330C23DA25AF985D /* TimelineDiff.swift */,
 				34C20DBFC96C69D35C03FF8B /* TimelineEntryPresentation.swift */,
 				4D18195E2DFBEE8445950904 /* KeychainStore.swift */,
+				381FE1CDE6AB7C5952D1D46B /* AppTheme.swift */,
+				CBB9ADFF713221EB155681E7 /* AppSymbol.swift */,
+				C1620B4E6EEB0E5BD2A61316 /* AppSymbolAssets.swift */,
 				4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */,
 				57A9A5CB5558AB7F9FDD9227 /* V2AccountModels.swift */,
 				CAA1477CE6C744AB8AD6EA16 /* V2AttachmentModels.swift */,
@@ -215,6 +229,7 @@
 				77D63EF4C20585B22721A487 /* V2SessionMeta.swift */,
 				1163E417E834AEAC8397A22B /* V2SessionTimeline.swift */,
 				E09CF0B901C9C5366AE7F0E7 /* V2TimelineItem.swift */,
+				02C920FDB796A65444DE6A41 /* Assets.xcassets */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -285,6 +300,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0D0F209C275B0CA6E10CE437 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,6 +315,7 @@
 				C0C6C5460654BF865EF39E56 /* LegacyAttachmentView.swift in Sources */,
 				760C83D971232C6C600484B4 /* LegacyAttachments.swift in Sources */,
 				A9B33CBB68B1BB673D947EC8 /* LegacyDashboardView.swift in Sources */,
+				7809202BDEDAFA41E1638C77 /* LegacyDesign.swift in Sources */,
 				053066CA14319F836D30A8D4 /* LegacyLoginView.swift in Sources */,
 				F53B4B777BA516027512C4B3 /* LegacyMarkdownView.swift in Sources */,
 				DC8F292F007F59EF102ECA97 /* LegacyNoticesView.swift in Sources */,
@@ -330,6 +347,9 @@
 				4A15DD717F72983C85313393 /* TimelineDiff.swift in Sources */,
 				535594270815E834B5B00EBD /* TimelineEntryPresentation.swift in Sources */,
 				E1E53EFFA740E64483B9E1FD /* KeychainStore.swift in Sources */,
+				E76704815EE756667DB352DF /* AppTheme.swift in Sources */,
+				854D505E5625BF770B5F21E4 /* AppSymbol.swift in Sources */,
+				270F1CD23DA8A4FC441E462F /* AppSymbolAssets.swift in Sources */,
 				330D4A9A2918224E62A9DCD3 /* AccountAvatarImageSource.swift in Sources */,
 				8A30977FD26C8B40E2255A81 /* V2AccountModels.swift in Sources */,
 				0D653584E3CB94C6D0CBD1CF /* V2AttachmentModels.swift in Sources */,
@@ -406,8 +426,8 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.9.0;
-				CURRENT_PROJECT_VERSION = 9;
+				MARKETING_VERSION = 0.10.0;
+				CURRENT_PROJECT_VERSION = 10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.agentsanywhere.legacy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -430,8 +450,8 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.9.0;
-				CURRENT_PROJECT_VERSION = 9;
+				MARKETING_VERSION = 0.10.0;
+				CURRENT_PROJECT_VERSION = 10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.agentsanywhere.legacy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

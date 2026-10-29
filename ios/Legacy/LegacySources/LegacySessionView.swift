@@ -5,47 +5,97 @@ struct LegacySessionView: View {
     let session: V2SessionMeta
     @EnvironmentObject private var store: LegacySessionStore
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showsPhotos = false
     @State private var showsFiles = false
 
     var body: some View {
         VStack(spacing: 0) {
+            header
+
             if let message = store.errorMessage {
-                Text(message)
-                    .font(.footnote)
-                    .foregroundColor(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 6)
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
+                    Text(message).font(.footnote).frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, LegacyStyle.gutter)
+                .padding(.vertical, 8)
+                .background(Color.orange.opacity(0.08))
             }
 
+            transcript
+            Divider()
+            composer
+        }
+        .background(AppTheme.appBackground(colorScheme).ignoresSafeArea())
+        .navigationTitle(session.title ?? "会话")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 10) {
+                    if store.isRealtimeConnected {
+                        Circle().fill(Color.green).frame(width: 7, height: 7)
+                            .accessibilityLabel("实时更新已连接")
+                    }
+                    Button {
+                        Task { await store.reload() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .disabled(store.isWorking)
+                    Button("中断") { Task { await store.interrupt() } }
+                        .font(.footnote)
+                        .disabled(!LegacyFormat.isRunning(session.status))
+                }
+            }
+        }
+        .task { await store.open(session) }
+        .task { await store.pollTimeline() }
+        .task { await store.realtimeSignals() }
+        .onChange(of: scenePhase) { phase in
+            if phase == .active { Task { await store.refreshNow() } }
+        }
+    }
+
+    // MARK: - Header
+
+    private var header: some View {
+        HStack(spacing: 6) {
+            LegacyChip(text: session.runtimeName ?? session.runtimeType ?? "Runtime",
+                       color: AppTheme.secondaryText(colorScheme))
+            LegacyChip(text: LegacyFormat.statusLabel(session.status),
+                       color: LegacyFormat.statusColor(session.status),
+                       symbol: "circle.fill")
+            if let cwd = session.cwd, !cwd.isEmpty {
+                Text((cwd as NSString).lastPathComponent)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, LegacyStyle.gutter)
+        .padding(.vertical, 8)
+    }
+
+    // MARK: - Transcript
+
+    private var transcript: some View {
+        VStack(spacing: 0) {
             if !store.actionableNotices.isEmpty {
                 LegacyNoticesView(notices: store.actionableNotices)
-                Divider()
             }
-
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 12) {
+                    LazyVStack(alignment: .leading, spacing: 14) {
                         if store.hasMoreHistory {
-                            Button {
-                                Task { await store.loadOlder() }
-                            } label: {
-                                HStack(spacing: 6) {
-                                    if store.isLoadingOlder { ProgressView() }
-                                    Text(store.isLoadingOlder ? "正在加载…" : "加载更早的消息")
-                                }
-                                .frame(maxWidth: .infinity)
-                                .font(.footnote)
-                            }
-                            .disabled(store.isLoadingOlder)
+                            historyButton
                         }
-
                         ForEach(store.items.filter(\.isVisibleInChat)) { item in
                             LegacyTimelineRow(item: item, cwd: session.cwd).id(item.id)
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, LegacyStyle.gutter)
                     .padding(.vertical, 12)
                 }
                 .onChange(of: store.items.count) { _ in
@@ -57,40 +107,27 @@ struct LegacySessionView: View {
                     proxy.scrollTo(last.id, anchor: .bottom)
                 }
             }
-
-            Divider()
-            composer
-        }
-        .navigationTitle(session.title ?? "会话")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                if store.isRealtimeConnected {
-                    Circle().fill(Color.green).frame(width: 8, height: 8)
-                        .accessibilityLabel("实时更新已连接")
-                }
-            }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    Task { await store.reload() }
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                }
-                .disabled(store.isWorking)
-            }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("中断") { Task { await store.interrupt() } }
-                    .disabled(!LegacyFormat.isRunning(session.status))
-            }
-        }
-        .task { await store.open(session) }
-        .task { await store.pollTimeline() }
-        .task { await store.realtimeSignals() }
-        .onChange(of: scenePhase) { phase in
-            // Returning from the background should not wait for the next tick.
-            if phase == .active { Task { await store.refreshNow() } }
         }
     }
+
+    private var historyButton: some View {
+        Button {
+            Task { await store.loadOlder() }
+        } label: {
+            HStack(spacing: 6) {
+                if store.isLoadingOlder { ProgressView().scaleEffect(0.7) }
+                Text(store.isLoadingOlder ? "正在加载…" : "加载更早的消息")
+                    .font(.caption.weight(.medium))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .background(AppTheme.groupedFill(colorScheme), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(store.isLoadingOlder)
+    }
+
+    // MARK: - Composer
 
     private var composer: some View {
         VStack(spacing: 6) {
@@ -99,57 +136,74 @@ struct LegacySessionView: View {
                     HStack(spacing: 8) {
                         ForEach(store.attachments) { reference in
                             HStack(spacing: 6) {
-                                Image(systemName: "paperclip")
-                                Text(reference.name).lineLimit(1)
+                                Image(systemName: "paperclip").font(.caption2)
+                                Text(reference.name).font(.caption).lineLimit(1)
                                 Button {
                                     store.removeAttachment(reference.fileId)
                                 } label: {
-                                    Image(systemName: "xmark.circle.fill")
+                                    Image(systemName: "xmark.circle.fill").font(.caption)
                                 }
                             }
-                            .font(.caption)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(Color(uiColor: .secondarySystemBackground))
-                            .clipShape(Capsule())
+                            .background(AppTheme.groupedFill(colorScheme), in: Capsule())
                         }
-                        if store.isUploading {
-                            ProgressView().scaleEffect(0.8)
-                        }
+                        if store.isUploading { ProgressView().scaleEffect(0.8) }
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, LegacyStyle.gutter)
                 }
             }
 
-            HStack(alignment: .bottom, spacing: 8) {
-                Button { showsPhotos = true } label: {
-                    Image(systemName: "photo.on.rectangle").font(.system(size: 22))
-                }
-                .disabled(store.isUploading)
+            HStack(alignment: .bottom, spacing: 10) {
+                HStack(alignment: .bottom, spacing: 8) {
+                    Button { showsPhotos = true } label: {
+                        Image(systemName: "photo.on.rectangle").font(.system(size: 17))
+                    }
+                    .disabled(store.isUploading)
 
-                Button { showsFiles = true } label: {
-                    Image(systemName: "folder").font(.system(size: 22))
-                }
-                .disabled(store.isUploading)
+                    Button { showsFiles = true } label: {
+                        Image(systemName: "folder").font(.system(size: 17))
+                    }
+                    .disabled(store.isUploading)
 
-                // `TextField(axis:)` is iOS 16; keep a real multiline editor.
-                TextEditor(text: $store.draft)
-                    .frame(minHeight: 38, maxHeight: 110)
-                    .padding(6)
-                    .background(Color(uiColor: .secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    TextEditor(text: $store.draft)
+                        .frame(minHeight: 34, maxHeight: 110)
+                        .padding(.horizontal, 4)
+                        .background(Color.clear)
+                }
+                .foregroundColor(AppTheme.secondaryText(colorScheme))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    AppTheme.groupedFill(colorScheme),
+                    in: RoundedRectangle(cornerRadius: 20, style: .continuous)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(AppTheme.secondaryControlStroke(colorScheme).opacity(0.5), lineWidth: 0.5)
+                )
 
                 Button {
                     Task { await store.sendDraft() }
                 } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 30))
+                    ZStack {
+                        Circle().fill(
+                            AppTheme.primaryControlBackground(colorScheme)
+                                .opacity(canSend && !store.isWorking ? 1 : 0.22)
+                        )
+                        Image(systemName: "arrow.up")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(AppTheme.primaryControlForeground(colorScheme))
+                    }
+                    .frame(width: 42, height: 42)
                 }
                 .disabled(!canSend || store.isWorking || store.isUploading)
+                .accessibilityLabel("发送")
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, LegacyStyle.gutter)
         }
-        .padding(.vertical, 8)
+        .padding(.top, 8)
+        .padding(.bottom, 6)
         .sheet(isPresented: $showsPhotos) {
             LegacyPhotoPicker(selectionLimit: 5) { files in
                 showsPhotos = false
@@ -187,11 +241,14 @@ struct LegacySessionView: View {
     }
 }
 
+// MARK: - Rows
+
 private struct LegacyTimelineRow: View {
     let item: V2TimelineItem
     let cwd: String?
 
     @State private var isExpanded = false
+    @Environment(\.colorScheme) private var colorScheme
 
     private var entry: TimelineEntryPresentation {
         TimelineEntryPresentation(item: item, cwd: cwd)
@@ -202,86 +259,101 @@ private struct LegacyTimelineRow: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            if case let .attachment(content) = item.content {
-                LegacyAttachmentRow(content: content)
-            } else if item.type == .tool || item.type == .artifact {
-                toolRow
+        if case let .attachment(content) = item.content {
+            LegacyAttachmentRow(content: content)
+        } else if item.type == .tool || item.type == .artifact {
+            toolRow
+        } else {
+            messageRow
+        }
+    }
+
+    private var messageRow: some View {
+        VStack(alignment: item.role == .user ? .trailing : .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                if item.role == .user { Spacer(minLength: 0) }
+                Text(LegacyFormat.speaker(for: item))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundColor(.secondary)
+                if item.status == .failed {
+                    Text("失败").font(.caption2).foregroundColor(.red)
+                } else if item.status.isActive {
+                    Text("进行中").font(.caption2).foregroundColor(.secondary)
+                }
+                if item.role != .user { Spacer(minLength: 0) }
+            }
+
+            if item.displayText.isEmpty {
+                Text(LegacyFormat.placeholder(for: item))
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            } else if item.role == .user {
+                LegacyMarkdownView(text: item.displayText)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(
+                        AppTheme.primaryControlBackground(colorScheme).opacity(0.07),
+                        in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    )
+                    .frame(maxWidth: 340, alignment: .trailing)
+            } else if item.role == .assistant {
+                LegacyMarkdownView(text: item.displayText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             } else {
-                HStack(spacing: 6) {
-                    Text(LegacyFormat.speaker(for: item))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    if item.status == .failed {
-                        Text("失败").font(.caption2).foregroundColor(.red)
-                    } else if item.status == .running || item.status == .pending {
-                        Text("进行中").font(.caption2).foregroundColor(.secondary)
-                    }
-                    Spacer(minLength: 0)
-                }
-                if item.displayText.isEmpty {
-                    Text(LegacyFormat.placeholder(for: item))
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                } else if item.role == .user || item.role == .assistant {
-                    LegacyMarkdownView(text: item.displayText)
-                } else {
-                    Text(item.displayText)
-                        .font(.body)
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                Text(item.displayText)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .padding(10)
-        .background(background)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .frame(maxWidth: .infinity, alignment: item.role == .user ? .trailing : .leading)
     }
 
     private var toolRow: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .top, spacing: 8) {
-                Image(systemName: entry.symbol)
-                    .font(.caption)
-                    .frame(width: 18)
-                    .foregroundColor(.secondary)
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(entry.title)
-                        .font(.subheadline.weight(.medium))
-                        .lineLimit(isExpanded ? nil : 2)
-                    if let command = entry.command, !command.isEmpty {
-                        Text(command)
-                            .font(.system(.caption, design: .monospaced))
-                            .foregroundColor(.secondary)
-                            .lineLimit(isExpanded ? nil : 3)
+        LegacyCard {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 10) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            .fill(AppTheme.primaryControlBackground(colorScheme).opacity(0.05))
+                        Image(systemName: entry.symbol)
+                            .font(.system(size: 13))
+                            .foregroundColor(AppTheme.secondaryText(colorScheme))
                     }
-                    if !isExpanded, let output = entry.output, !output.isEmpty, item.status == .failed {
-                        Text(output)
-                            .font(.caption)
-                            .foregroundColor(.red)
-                            .lineLimit(3)
+                    .frame(width: 30, height: 30)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(entry.title)
+                            .font(.subheadline.weight(.medium))
+                            .lineLimit(isExpanded ? nil : 2)
+                        if let command = entry.command, !command.isEmpty {
+                            Text(command)
+                                .font(.system(.caption2, design: .monospaced))
+                                .foregroundColor(.secondary)
+                                .lineLimit(isExpanded ? nil : 2)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                    VStack(alignment: .trailing, spacing: 4) {
+                        LegacyChip(text: item.status.label,
+                                   color: item.status.isFailure ? .red : .secondary)
+                        if hasDetails {
+                            Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
-                Spacer(minLength: 0)
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(item.status.label)
-                        .font(.caption2)
-                        .foregroundColor(item.status.isFailure ? .red : .secondary)
-                    if hasDetails {
-                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
+                if isExpanded {
+                    expandedDetails
                 }
             }
-            if isExpanded {
-                expandedDetails
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard hasDetails else { return }
+                withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() }
             }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            guard hasDetails else { return }
-            withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() }
         }
     }
 
@@ -319,14 +391,6 @@ private struct LegacyTimelineRow: View {
             .padding(8)
             .background(Color(uiColor: .tertiarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        }
-    }
-
-    private var background: Color {
-        switch item.role {
-        case .user: return Color.accentColor.opacity(0.12)
-        case .assistant: return Color(uiColor: .secondarySystemBackground)
-        default: return Color(uiColor: .tertiarySystemBackground)
         }
     }
 }

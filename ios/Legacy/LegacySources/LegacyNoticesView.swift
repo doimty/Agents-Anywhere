@@ -53,8 +53,14 @@ struct LegacyNoticesView: View {
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(uiColor: .secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .background(
+                    Color.orange.opacity(0.10),
+                    in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color.orange.opacity(0.35), lineWidth: 0.75)
+                )
             }
         }
         .padding(.horizontal, 16)
