@@ -213,7 +213,7 @@ private struct LegacySessionCard: View {
                     Image(systemName: "chevron.right")
                         .font(.caption.weight(.semibold))
                         .foregroundColor(.secondary)
-                    if let relative = LegacyFormat.relative(session.lastActivityAt ?? session.lastItemAt ?? session.updatedAt) {
+                    if let relative = LegacyFormat.relative(session.lastActivityAt ?? session.lastItemAt ?? session.sortAt ?? session.createdAt) {
                         Text(relative)
                             .font(.caption2)
                             .foregroundColor(.secondary)
