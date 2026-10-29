@@ -54,7 +54,6 @@ SHARED_FILES = [
     "Models/APIModels.swift",
     "Models/Chat/TimelineDiff.swift",
     "Models/Chat/TimelineEntryPresentation.swift",
-    "Models/Chat/TimelineRowStructure.swift",
     "Stores/KeychainStore.swift",
 ]
 # Excluded from the legacy compile: they depend on iOS 16+/18+ types or on the
