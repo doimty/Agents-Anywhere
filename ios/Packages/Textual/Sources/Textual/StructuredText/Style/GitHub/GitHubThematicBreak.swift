@@ -3,13 +3,14 @@ import SwiftUI
 extension StructuredText {
   /// A thematic break style inspired by GitHub’s rendering.
   public struct GitHubThematicBreakStyle: ThematicBreakStyle {
+    @Environment(\.colorEnvironment) private var colors
     /// Creates the GitHub thematic break style.
     public init() {}
 
     public func makeBody(configuration _: Configuration) -> some View {
       Divider()
         .textual.frame(height: .fontScaled(0.25))
-        .overlay(DynamicColor.gitHubBorder)
+        .overlay(DynamicColor.gitHubBorder.bestMatch(for: colors) ?? .clear)
         .textual.blockSpacing(.init(top: 24, bottom: 24))
     }
   }

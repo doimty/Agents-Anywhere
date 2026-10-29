@@ -1,13 +1,13 @@
 import Foundation
-import Observation
+import Perception
 
-@MainActor @Observable final class ProjectSidebarPreferences {
+@MainActor @Perceptible final class ProjectSidebarPreferences {
     static let sessionListKey = "aa.native.sidebar.session-list"
     static let compactSessionListKey = "aa.native.sidebar.session-list.compact"
     var expandedProjects: Set<String> { didSet { persist() } }
     var projectsExpanded: Bool { didSet { persist() } }
-    @ObservationIgnored private let defaults: UserDefaults
-    @ObservationIgnored private let key: String?
+    @PerceptionIgnored private let defaults: UserDefaults
+    @PerceptionIgnored private let key: String?
 
     private struct Saved: Codable {
         var expandedProjects: Set<String> = []

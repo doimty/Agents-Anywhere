@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 struct SessionInteractionContent: View {
@@ -52,7 +53,7 @@ struct SessionInteractionContent: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
-            .background(Color(uiColor: .secondarySystemBackground), in: .rect(cornerRadius: 22))
+            .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         }
         .sheet(isPresented: $showsDetails) { SessionInteractionDetailsSheet(item: item, chat: chat) }
         .confirmationDialog(String(localized: "回应结果尚未确认。再次回应前，请确认 Agent 仍在等待此操作。"), isPresented: $confirmsRetry, titleVisibility: .visible) {
@@ -176,8 +177,8 @@ private struct NoticeTextInput: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .font(.body).padding(10).background(.quaternary.opacity(0.5), in: .rect(cornerRadius: 12))
-        .onChange(of: draft.isFocused) { _, focused in if focused { onFocus() } }
-        .onChange(of: value, initial: true) { _, text in
+        .appOnChange(of: draft.isFocused) { _, focused in if focused { onFocus() } }
+        .appOnChange(of: value, initial: true) { _, text in
             if !draft.isComposing, draft.text != text { draft.text = text }
         }
         // Delegate callbacks commit current native text. Only release the IME

@@ -1,10 +1,10 @@
 import Foundation
-import Observation
+import Perception
 
 /// Editors bind to each row, never to an index in the parent's mutable array.
 /// A field can finish an edit after deletion or reset without accessing another
 /// row or writing the removed row back into the configuration.
-@MainActor @Observable
+@MainActor @Perceptible
 final class RuntimeEnvironmentRow: Identifiable {
     let id = UUID()
     var key: String
@@ -18,7 +18,7 @@ final class RuntimeEnvironmentRow: Identifiable {
     }
 }
 
-@MainActor @Observable
+@MainActor @Perceptible
 final class RuntimeEffortRow: Identifiable {
     let id = UUID()
     var effortID: String
@@ -30,7 +30,7 @@ final class RuntimeEffortRow: Identifiable {
     }
 }
 
-@MainActor @Observable
+@MainActor @Perceptible
 final class RuntimeCustomModelRow: Identifiable {
     let id = UUID()
     var modelID: String

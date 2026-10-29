@@ -1,5 +1,5 @@
 import Foundation
-import Observation
+import Perception
 
 struct RuntimeGatewayDraft: Equatable {
     var baseURL = ""
@@ -8,7 +8,7 @@ struct RuntimeGatewayDraft: Equatable {
 
 /// The editable draft keeps row identities and incomplete text independently
 /// from the JSON sent to the runtime. Reconnects do not replace this draft.
-@MainActor @Observable
+@MainActor @Perceptible
 final class RuntimeConfigurationModel {
     let schema: V2RuntimeConfigSchema
     var textValues: [String: String] = [:]
@@ -20,7 +20,7 @@ final class RuntimeConfigurationModel {
     private(set) var errors: [String: String] = [:]
     private var original: [String: JSONValue]
     private var base: [String: JSONValue]
-    @ObservationIgnored private var initialDraft: DraftSnapshot?
+    @PerceptionIgnored private var initialDraft: DraftSnapshot?
 
     var hasChanges: Bool { snapshot != initialDraft }
     private struct DraftSnapshot: Equatable {

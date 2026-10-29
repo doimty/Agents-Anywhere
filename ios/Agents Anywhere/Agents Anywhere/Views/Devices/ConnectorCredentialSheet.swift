@@ -11,7 +11,7 @@ struct ConnectorCredentialSheet: View {
     @State private var copiedField: ConnectorCredentialField?
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     Label(String(localized: "Connector disconnected"), appSymbol: "key.horizontal")
@@ -21,19 +21,19 @@ struct ConnectorCredentialSheet: View {
                         .foregroundStyle(.secondary)
 
                     ConnectorCredentialValue(
-                        title: "Server URL",
+                        title: String(localized: "Server URL"),
                         value: serverURL.absoluteString,
                         copied: copiedField == .serverURL,
                         onCopy: { copy(serverURL.absoluteString, field: .serverURL) }
                     )
                     ConnectorCredentialValue(
-                        title: "Connector ID",
+                        title: String(localized: "Connector ID"),
                         value: connector.id,
                         copied: copiedField == .connectorId,
                         onCopy: { copy(connector.id, field: .connectorId) }
                     )
                     ConnectorCredentialValue(
-                        title: "Connector token",
+                        title: String(localized: "Connector token"),
                         value: connectorToken,
                         copied: copiedField == .connectorToken,
                         onCopy: { copy(connectorToken, field: .connectorToken) }
@@ -71,7 +71,7 @@ private enum ConnectorCredentialField: Hashable {
 }
 
 private struct ConnectorCredentialValue: View {
-    let title: LocalizedStringResource
+    let title: String
     let value: String
     let copied: Bool
     let onCopy: () -> Void
@@ -94,8 +94,8 @@ private struct ConnectorCredentialValue: View {
                         .frame(width: 32, height: 32)
                 }
                 .buttonStyle(.bordered)
-                .buttonBorderShape(.circle)
-                .accessibilityLabel(copied ? String(localized: "Copied") : String(localized: "Copy \(String(localized: title))"))
+                .appCircularButtonShape(true)
+                .accessibilityLabel(copied ? String(localized: "Copied") : String(localized: "Copy \(title)"))
             }
         }
         .padding(14)

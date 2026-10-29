@@ -50,7 +50,7 @@ struct EmojiResourceAttachment: Attachment {
   }
 
   @usableFromInline
-  func sizeThatFits(_: ProposedViewSize, in environment: TextEnvironmentValues) -> CGSize {
+  func sizeThatFits(_: TextualSizeProposal, in environment: TextEnvironmentValues) -> CGSize {
     environment.emojiProperties.size.resolve(in: environment)
   }
 

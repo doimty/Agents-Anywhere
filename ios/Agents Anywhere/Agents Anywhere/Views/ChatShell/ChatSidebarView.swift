@@ -123,9 +123,9 @@ struct ChatSidebarView: View {
             .padding(.top, 10)
             .padding(.bottom, safeAreaInsets.bottom + 82)
         }
-        .refreshable { await repository?.refresh() }
-        .scrollIndicators(.hidden)
-        .scrollEdgeEffectStyle(.soft, for: .bottom)
+        .appPageRefreshable { await repository?.refresh() }
+        .appHiddenScrollIndicators()
+        .appScrollEdgeEffect(.soft, for: .bottom)
         .overlay(alignment: .bottom) {
             if let account {
                 ChatSidebarBottomControls(
@@ -179,7 +179,7 @@ struct ChatSidebarListMenu<Filters: View>: View {
             }
             filters()
             Divider()
-            Button(String(localized: "归档会话"), systemImage: "archivebox", action: onShowArchives)
+            AppPageSystemButton(String(localized: "归档会话"), systemImage: "archivebox", action: onShowArchives)
         } label: {
             Label(String(localized: "列表选项"), appSymbol: "ellipsis")
         }
@@ -196,7 +196,7 @@ struct ChatSidebarIconControlStyle: ViewModifier {
         content
             .labelStyle(.iconOnly)
             .buttonStyle(.borderless)
-            .buttonBorderShape(.circle)
+            .appCircularButtonShape(true)
             .controlSize(.large)
             .frame(width: 44, height: 44)
     }
@@ -207,7 +207,7 @@ struct ChatSidebarHeaderView: View {
         AAWordmark(fontSize: 24)
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             .padding(.horizontal, 18)
-            .containerCornerOffset(.horizontal, sizeToFit: true)
+            .appPageHorizontalContainerCornerOffset()
     }
 }
 
@@ -257,11 +257,11 @@ private struct ChatSidebarDeviceSection: View {
 }
 
 private struct ChatSidebarSessionSection: View {
-    let title: LocalizedStringResource?
+    let title: LocalizedStringKey?
     let sessions: [ChatSidebarSession]
     let selectedSessionId: V2SessionID?
     var isLoading = false
-    let emptyMessage: LocalizedStringResource
+    let emptyMessage: LocalizedStringKey
     var context: ((ChatSidebarSession, ChatSidebarSession?) -> String?)? = nil
     let onOpen: (V2SessionID) -> Void
     let onRename: (V2SessionID, String) -> Void
@@ -297,7 +297,7 @@ private struct ChatSidebarSessionSection: View {
 }
 
 private struct ChatSidebarSectionLabel: View {
-    let title: LocalizedStringResource
+    let title: LocalizedStringKey
 
     var body: some View {
         Text(title)
@@ -423,12 +423,8 @@ struct ChatSidebarSessionRow: View {
                 Label(String(localized: "Copy session ID"), systemImage: "doc.on.doc")
             }
         }
-        .alert(String(localized: "Rename session"), isPresented: $isRenaming) {
-            TextField(String(localized: "Session title"), text: $titleDraft)
-            Button(String(localized: "Cancel"), role: .cancel) {}
-            Button(String(localized: "Save"), action: submitRename)
-                .disabled(titleDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-        }
+        .appPageTextInputAlert(String(localized: "Rename session"), isPresented: $isRenaming,
+            text: $titleDraft, placeholder: String(localized: "Session title"), onSave: submitRename)
     }
 
     private func beginRename() {
@@ -450,7 +446,7 @@ struct ChatSidebarSessionIndicator: View {
         case .waitingApproval:
             Text(String(localized: "等待批准")).font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.mint).padding(.horizontal, 8).padding(.vertical, 3)
-                .background(.mint.opacity(0.16), in: .capsule)
+                .background(.mint.opacity(0.16), in: Capsule())
                 .fixedSize().accessibilityLabel(String(localized: "等待批准"))
         case .running:
             ProgressView().controlSize(.mini).tint(.primary)
@@ -464,7 +460,7 @@ struct ChatSidebarSessionIndicator: View {
 }
 
 private struct ChatSidebarLoadingRow: View {
-    let title: LocalizedStringResource
+    let title: LocalizedStringKey
 
     var body: some View {
         HStack(spacing: 8) {
@@ -480,7 +476,7 @@ private struct ChatSidebarLoadingRow: View {
 }
 
 private struct ChatSidebarEmptyRow: View {
-    let title: LocalizedStringResource
+    let title: LocalizedStringKey
 
     var body: some View {
         Text(title)
@@ -515,8 +511,8 @@ private struct ChatSidebarBottomControls: View {
             } label: {
                 ChatSidebarAvatar(account: account)
             }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
+            .appGlassButtonStyle()
+            .appCircularButtonShape(true)
             .accessibilityLabel(String(localized: "Account"))
         }
         .frame(maxWidth: .infinity, alignment: .leading)

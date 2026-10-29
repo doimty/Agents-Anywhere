@@ -27,7 +27,7 @@ extension Label where Title == Text, Icon == AppSymbol {
     init(_ title: String, appSymbol: String) {
         self.init { Text(verbatim: title) } icon: { AppSymbol(appSymbol) }
     }
-    init(_ title: LocalizedStringResource, appSymbol: String) {
+    init(_ title: LocalizedStringKey, appSymbol: String) {
         self.init { Text(title) } icon: { AppSymbol(appSymbol) }
     }
 }
@@ -38,6 +38,7 @@ extension Button where Label == SwiftUI.Label<Text, AppSymbol> {
     }
 }
 
+@available(iOS 17.0, *)
 extension ContentUnavailableView where Label == SwiftUI.Label<Text, AppSymbol>, Description == Text?, Actions == EmptyView {
     init(_ title: String, appSymbol: String, description: Text? = nil) {
         self.init {

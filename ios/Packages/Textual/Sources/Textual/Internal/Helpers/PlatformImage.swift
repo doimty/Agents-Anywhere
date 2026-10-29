@@ -29,8 +29,10 @@ extension PlatformImage {
       PlatformImage(
         named: name,
         in: bundle,
-        compatibleWith: UITraitCollection(userInterfaceStyle: .init(environment.colorScheme))
-          .modifyingTraits { $0.accessibilityContrast = .init(environment.colorSchemeContrast) }
+        compatibleWith: UITraitCollection(traitsFrom: [
+          UITraitCollection(userInterfaceStyle: .init(environment.colorScheme)),
+          UITraitCollection(accessibilityContrast: .init(environment.colorSchemeContrast)),
+        ])
       )
     #else
       PlatformImage(named: name, in: bundle, with: nil)

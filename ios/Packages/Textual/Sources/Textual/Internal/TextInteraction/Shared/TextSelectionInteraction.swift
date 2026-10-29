@@ -14,9 +14,9 @@ import SwiftUI
 struct TextSelectionInteraction: ViewModifier {
   #if TEXTUAL_ENABLE_TEXT_SELECTION
     @Environment(\.textSelection) private var textSelection
-    @Environment(TextSelectionCoordinator.self) private var coordinator: TextSelectionCoordinator?
+    @Environment(\.textSelectionCoordinator) private var coordinator: TextSelectionCoordinator?
 
-    @State private var model = TextSelectionModel(
+    @StateObject private var model = TextSelectionModel(
       readsLayoutOnDemand: PlatformTextSelectionInteraction.readsLayoutOnDemand
     )
   #endif
@@ -29,7 +29,7 @@ struct TextSelectionInteraction: ViewModifier {
         content
           .overlayTextLayoutCollection(isEnabled: model.readsLayout) { layoutCollection in
             Color.clear
-              .onChange(of: AnyTextLayoutCollection(layoutCollection), initial: true) {
+              .textualOnChange(of: AnyTextLayoutCollection(layoutCollection), initial: true) {
                 model.setCoordinator(coordinator)
                 model.setLayoutCollection(layoutCollection)
               }

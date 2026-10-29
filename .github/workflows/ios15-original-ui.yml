@@ -1,0 +1,126 @@
+name: iOS 15 original interface
+
+# Builds the original application target, not the previous Legacy application.
+# A source inventory is never a replacement for a successful Xcode build.
+on:
+  push:
+    branches: [fix/ios/ios15-original-ui]
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios15-original-ui.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios15-original-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+  ORIGINAL_UI_READY: "false"
+
+jobs:
+  original-ui:
+    name: Original app at iOS 15 floor
+    runs-on: macos-26
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v6
+      - name: Record the selected compiler and SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d "$DEVELOPER_DIR"
+          mkdir -p "$RUNNER_TEMP/original-ui"
+          {
+            git rev-parse HEAD
+            xcodebuild -version
+            xcrun --sdk iphoneos --show-sdk-version
+            xcrun swift --version
+          } | tee "$RUNNER_TEMP/original-ui/toolchain.txt"
+      - name: Cache Swift package builds
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/.build
+            ${{ runner.temp }}/SourcePackages
+          key: original-ios15-xcode266-${{ hashFiles('ios/Package.swift', 'ios/Packages/**/Package.swift') }}
+      - name: Type-check portable SwiftUI adapters at iOS 15
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdk="$(xcrun --sdk iphoneos --show-sdk-path)"
+          compat="ios/Agents Anywhere/Agents Anywhere/Views/Compatibility"
+          xcrun swiftc -typecheck -swift-version 5 -default-isolation MainActor \
+            -target arm64-apple-ios15.0 -sdk "$sdk" \
+            "$compat/AppSwiftUICompatibility.swift" \
+            "$compat/AppNavigationCompatibility.swift" \
+            "$compat/AppPhotoCompatibility.swift" \
+            > "$RUNNER_TEMP/original-ui/adapters.log" 2>&1
+      - name: Test original state and scheduling semantics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcrun swift test --package-path ios \
+            > "$RUNNER_TEMP/original-ui/core-tests.log" 2>&1
+      - name: Build the original app for iOS 15
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/original-ui"
+          set +e
+          xcodebuild \
+            -project "ios/Agents Anywhere/Agents Anywhere.xcodeproj" \
+            -scheme "Agents Anywhere" \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/OriginalDerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
+            -resultBundlePath "$evidence/original-app.xcresult" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO \
+            build > "$evidence/xcodebuild.log" 2>&1
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$evidence/xcodebuild-exit.txt"
+          python3 ios/scripts/summarize_ios15_build.py "$evidence/xcodebuild.log" \
+            --exit-code "$status" --output "$evidence/diagnostics.json" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+          test -s "$evidence/xcodebuild.log"
+          exit "$status"
+      - name: Package original-interface IPA
+        if: env.ORIGINAL_UI_READY == 'true' && success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="$RUNNER_TEMP/OriginalDerivedData/Build/Products/Debug-iphoneos/Agents Anywhere.app"
+          test -f "$app/Info.plist"
+          floor="$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$app/Info.plist")"
+          test "$floor" = '15.0'
+          exe="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Info.plist")"
+          xcrun vtool -show-build "$app/$exe" | tee "$RUNNER_TEMP/original-ui/macho.txt"
+          otool -L "$app/$exe" | tee "$RUNNER_TEMP/original-ui/dependencies.txt"
+          mkdir -p "$RUNNER_TEMP/original-ui/ipa/Payload"
+          cp -R "$app" "$RUNNER_TEMP/original-ui/ipa/Payload/"
+          (
+            cd "$RUNNER_TEMP/original-ui/ipa"
+            zip -qry AgentsAnywhere-original-ui-ios15.ipa Payload
+            shasum -a 256 AgentsAnywhere-original-ui-ios15.ipa > SHA256SUMS
+          )
+      - name: Upload all compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-ui-ios15-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/original-ui/*.txt
+            ${{ runner.temp }}/original-ui/*.log
+            ${{ runner.temp }}/original-ui/*.json
+            ${{ runner.temp }}/original-ui/ipa/*.ipa
+            ${{ runner.temp }}/original-ui/ipa/SHA256SUMS
+            ${{ runner.temp }}/SourcePackages/Package.resolved
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,7 +1,8 @@
+import Perception
 import SwiftUI
 
 struct ProjectEditorSheet: View {
-    @Bindable var repository: V2DashboardRepository
+    @Perception.Bindable var repository: V2DashboardRepository
     var onSaved: (V2Project) -> Void
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
@@ -28,7 +29,7 @@ struct ProjectEditorSheet: View {
         return path == "~" || path.hasPrefix("~/") || path.hasPrefix("~\\") || ProjectWorkspacePath.key(path, deviceOS: device?.deviceOs) != nil
     }
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             Form {
                 Section(String(localized: "运行设备")) {
                     if draft.original != nil {

@@ -1,6 +1,5 @@
 import Foundation
-import Observation
-import Synchronization
+import Perception
 import Testing
 @testable import ClientCore
 
@@ -55,8 +54,8 @@ import Testing
         defer { connection.cancel() }
         try await eventually { model.connection == .connected }
         let row = try #require(model.timeline.first)
-        let invalidated = Mutex(false)
-        let same = withObservationTracking {
+        let invalidated = ClientMutex(false)
+        let same = withPerceptionTracking {
             repo.session(id: "session")
         } onChange: { invalidated.withLock { $0 = true } }
         #expect(same === model)

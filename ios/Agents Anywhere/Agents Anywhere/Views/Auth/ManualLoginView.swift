@@ -17,7 +17,7 @@ struct ManualLoginView: View {
     var onDashboardRequested: () -> Void = {}
 
     var body: some View {
-        NavigationStack(path: $path) {
+        AppRouteNavigationStack(path: $path) {
             AuthScreen(title: String(localized: "Manual Login"), onCancel: close) {
                 VStack(spacing: 16) {
                     AuthPrimaryButton(
@@ -40,38 +40,37 @@ struct ManualLoginView: View {
                 .frame(maxWidth: 520)
                 .frame(maxWidth: .infinity)
             }
-            .navigationDestination(for: ServerLoginRoute.self) { route in
-                switch route {
-                case .selfHosted:
-                    ServerAddressView(
-                        isSigningIn: isSigningIn,
-                        onCancel: close,
-                        onConnect: { startSignIn(server: $0) },
-                    ) {
-                        loginStatus
-                    }
-                case .success:
-                    AuthResultView(
-                        title: String(localized: "Login Success"),
-                        message: String(localized: "Your iPhone is signed in. Go to your dashboard to continue."),
-                        buttonTitle: String(localized: "Go to Dashboard"),
-                        buttonSystemImage: "arrow.right",
-                        symbolName: "checkmark.circle.fill",
-                        symbolColor: .green,
-                        isLoading: isClosing,
-                    ) {
-                        guard !isClosing else { return }
-                        isClosing = true
-                        onDashboardRequested()
-                    }
-                    .navigationBarBackButtonHidden(true)
+        } destination: { route in
+            switch route {
+            case .selfHosted:
+                ServerAddressView(
+                    isSigningIn: isSigningIn,
+                    onCancel: close,
+                    onConnect: { startSignIn(server: $0) },
+                ) {
+                    loginStatus
                 }
+            case .success:
+                AuthResultView(
+                    title: String(localized: "Login Success"),
+                    message: String(localized: "Your iPhone is signed in. Go to your dashboard to continue."),
+                    buttonTitle: String(localized: "Go to Dashboard"),
+                    buttonSystemImage: "arrow.right",
+                    symbolName: "checkmark.circle.fill",
+                    symbolColor: .green,
+                    isLoading: isClosing,
+                ) {
+                    guard !isClosing else { return }
+                    isClosing = true
+                    onDashboardRequested()
+                }
+                .navigationBarBackButtonHidden(true)
             }
         }
         .task(id: loginRequest?.id) {
             if let request = loginRequest { await signIn(request) }
         }
-        .onChange(of: path) { previous, next in
+        .appOnChange(of: path) { previous, next in
             if next.count < previous.count {
                 cancelSignIn()
                 statusMessage = nil
@@ -231,7 +230,7 @@ private struct UnderlinedTextField: View {
             .textFieldStyle(.plain)
             .textInputAutocapitalization(.never)
             .keyboardType(keyboardType)
-            .autocorrectionDisabled()
+            .appPageAutocorrectionDisabled()
             .textContentType(textContentType)
             .submitLabel(submitLabel)
             .onSubmit(onSubmit)

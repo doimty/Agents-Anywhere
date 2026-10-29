@@ -33,18 +33,54 @@ struct DeviceSection<Actions: View, Content: View>: View {
 }
 
 /// Rows separated by hairlines; the first row has none above it.
-struct DeviceRows<Content: View>: View {
-    @ViewBuilder var content: () -> Content
+struct DeviceRows<Item: Identifiable, Row: View, Footer: View>: View {
+    let items: [Item]
+    @ViewBuilder var row: (Item) -> Row
+    @ViewBuilder var footer: () -> Footer
+    private let showsFooter: Bool
+
+    init(_ items: [Item], @ViewBuilder row: @escaping (Item) -> Row) where Footer == EmptyView {
+        self.items = items
+        self.row = row
+        self.footer = { EmptyView() }
+        self.showsFooter = false
+    }
+
+    init(_ items: [Item], @ViewBuilder row: @escaping (Item) -> Row,
+        @ViewBuilder footer: @escaping () -> Footer) {
+        self.items = items
+        self.row = row
+        self.footer = footer
+        self.showsFooter = true
+    }
 
     var body: some View {
-        Group(subviews: content()) { rows in
+        if #available(iOS 18.0, *), AppCompatibility.useNativeUI {
+            Group(subviews: nativeContent) { rows in
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(rows) { row in
+                        if row.id != rows.first?.id { DeviceRowDivider() }
+                        row.frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+        } else {
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(rows) { row in
-                    if row.id != rows.first?.id { DeviceRowDivider() }
-                    row.frame(maxWidth: .infinity, alignment: .leading)
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                    if index > 0 { DeviceRowDivider() }
+                    row(item).frame(maxWidth: .infinity, alignment: .leading)
+                }
+                if showsFooter {
+                    if !items.isEmpty { DeviceRowDivider() }
+                    footer().frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
+    }
+
+    @ViewBuilder private var nativeContent: some View {
+        ForEach(items) { row($0) }
+        if showsFooter { footer() }
     }
 }
 
@@ -75,9 +111,9 @@ struct DevicePillButton: View {
                 .opacity(isLoading ? 0 : 1)
                 .overlay { if isLoading { ProgressView().controlSize(.mini) } }
                 .padding(.horizontal, 12).frame(minHeight: 30)
-                .background(AppTheme.sidebarSelectionFill(colorScheme), in: .capsule)
+                .background(AppTheme.sidebarSelectionFill(colorScheme), in: Capsule())
                 .opacity(isEnabled ? 1 : 0.45)
-                .contentShape(.capsule)
+                .contentShape(Capsule())
         }
         .buttonStyle(.plain)
     }
@@ -99,8 +135,8 @@ struct DeviceFilterTags<Value: Hashable & Identifiable>: View {
                         .font(.subheadline.weight(selected ? .semibold : .regular))
                         .foregroundStyle(selected ? .primary : .secondary)
                         .padding(.horizontal, 14).frame(minHeight: 34)
-                        .background(selected ? AppTheme.sidebarSelectionFill(colorScheme) : .clear, in: .capsule)
-                        .contentShape(.capsule)
+                        .background(selected ? AppTheme.sidebarSelectionFill(colorScheme) : .clear, in: Capsule())
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])

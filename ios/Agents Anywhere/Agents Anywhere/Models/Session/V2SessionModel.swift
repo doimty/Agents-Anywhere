@@ -1,8 +1,8 @@
 import Foundation
-import Observation
+import Perception
 
 /// Stable row identity: streamed changes only invalidate the affected row's observable value.
-@MainActor @Observable
+@MainActor @Perceptible
 final class V2TimelineItemModel: Identifiable {
     let id: V2TimelineItemID
     private(set) var value: V2TimelineItem
@@ -11,7 +11,7 @@ final class V2TimelineItemModel: Identifiable {
     func update(_ value: V2TimelineItem) { if self.value != value { self.value = value } }
 }
 
-@MainActor @Observable
+@MainActor @Perceptible
 final class V2SessionRuntimeModel {
     private(set) var state: V2RuntimeState?
     private(set) var capabilities: V2RuntimeCapabilitySnapshot?
@@ -36,7 +36,7 @@ final class V2SessionRuntimeModel {
     }
 }
 
-@MainActor @Observable
+@MainActor @Perceptible
 final class V2PendingMessage: Identifiable {
     enum Delivery: Hashable {
         case sending, accepted, confirmed
@@ -72,7 +72,7 @@ final class V2PendingMessage: Identifiable {
 
 /// SwiftUI owns a reference obtained from repository.session(id:). Use connect() in
 /// a view .task; cancellation releases that view's subscription. DTOs never own I/O.
-@MainActor @Observable
+@MainActor @Perceptible
 final class V2SessionModel: Identifiable {
     let id: V2SessionID
     let scope: V2ClientScope
@@ -98,8 +98,8 @@ final class V2SessionModel: Identifiable {
         set { composer.text = newValue }
     }
     var draftAttachmentIDs: [V2AttachmentID] = []
-    @ObservationIgnored private weak var repository: V2SessionRepository?
-    @ObservationIgnored private var rowsByID: [V2TimelineItemID: V2TimelineItemModel] = [:]
+    @PerceptionIgnored private weak var repository: V2SessionRepository?
+    @PerceptionIgnored private var rowsByID: [V2TimelineItemID: V2TimelineItemModel] = [:]
 
     init(id: V2SessionID, scope: V2ClientScope, repository: V2SessionRepository) {
         self.id = id; self.scope = scope; self.repository = repository

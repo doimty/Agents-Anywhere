@@ -36,17 +36,17 @@ struct MathAttachment: Attachment {
     -typographicBounds(in: environment).descent
   }
 
-  func sizeThatFits(_ proposal: ProposedViewSize, in environment: TextEnvironmentValues) -> CGSize {
-    typographicBounds(fitting: proposal, in: environment).size
+  func sizeThatFits(_ proposal: TextualSizeProposal, in environment: TextEnvironmentValues) -> CGSize {
+    typographicBounds(fittingWidth: proposal.width, in: environment).size
   }
 
   private func typographicBounds(
-    fitting proposal: ProposedViewSize = .unspecified,
+    fitting proposal: TextualSizeProposal = .unspecified,
     in environment: TextEnvironmentValues
   ) -> Math.TypographicBounds {
     Math.typographicBounds(
       for: latex,
-      fitting: proposal,
+      fittingWidth: proposal.width,
       font: .init(
         name: .init(environment.mathProperties.fontName),
         size: FontScaled(environment.mathProperties.fontScale).resolve(in: environment)

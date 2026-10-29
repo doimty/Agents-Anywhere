@@ -19,6 +19,7 @@ struct WeightFontModifier: FontModifier {
   }
 }
 
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 struct WidthFontModifier: FontModifier {
   var width: Font.Width
 

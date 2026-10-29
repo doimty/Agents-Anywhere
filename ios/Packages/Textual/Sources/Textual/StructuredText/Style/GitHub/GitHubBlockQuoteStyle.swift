@@ -3,6 +3,7 @@ import SwiftUI
 extension StructuredText {
   /// A block quote style inspired by GitHub’s rendering.
   public struct GitHubBlockQuoteStyle: BlockQuoteStyle {
+    @Environment(\.colorEnvironment) private var colors
     /// Creates the GitHub block quote style.
     public init() {
     }
@@ -10,10 +11,10 @@ extension StructuredText {
     public func makeBody(configuration: Configuration) -> some View {
       HStack(spacing: 0) {
         RoundedRectangle(cornerRadius: 6)
-          .fill(DynamicColor.gitHubBorder)
+          .fill(DynamicColor.gitHubBorder.bestMatch(for: colors) ?? .clear)
           .textual.frame(width: .fontScaled(0.2))
         configuration.label
-          .foregroundStyle(DynamicColor.gitHubSecondary)
+          .foregroundStyle(DynamicColor.gitHubSecondary.bestMatch(for: colors) ?? .clear)
           .textual.padding(.horizontal, .fontScaled(1))
       }
     }

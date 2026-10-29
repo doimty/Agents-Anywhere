@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 struct AccountSettingsSheet: View {
@@ -14,7 +15,7 @@ struct AccountSettingsSheet: View {
     @State private var confirmsDiscard = false
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             List {
                 if let me = appState.me {
                     Section {
@@ -49,7 +50,7 @@ struct AccountSettingsSheet: View {
                 Section(String(localized: "App")) {
                     NavigationLink { AppearanceSettingsView() } label: {
                         SettingsRow(title: String(localized: "Appearance"), symbol: "circle.lefthalf.filled",
-                            value: String(localized: (AppAppearance(rawValue: appearanceValue) ?? .system).title))
+                            value: (AppAppearance(rawValue: appearanceValue) ?? .system).title)
                     }
                     NavigationLink { SettingsLanguageView() } label: {
                         SettingsRow(title: String(localized: "Language"), symbol: "globe", value: SettingsLanguageView.currentLanguage)
@@ -109,7 +110,7 @@ struct AccountSettingsSheet: View {
             } message: { Text(signOutError ?? "") }
         }
         .overlay(alignment: .top) { ChatErrorToasts(store: toasts, isRetrying: false, onRetry: { _ in }) }
-        .onChange(of: appState.accountError) { _, error in
+        .appOnChange(of: appState.accountError) { _, error in
             guard let error else { return }
             toasts.update(source: "account", failure: .init(kind: .rejected, message: error))
             appState.dismissAccountError()

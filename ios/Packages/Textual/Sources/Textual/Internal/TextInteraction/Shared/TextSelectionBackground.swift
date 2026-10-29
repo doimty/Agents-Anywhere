@@ -8,6 +8,7 @@ import SwiftUI
 // scope. This modifier reads the fragment’s anchored `Text.Layout` and forwards it to the AppKit
 // selection view so it can convert the current selected range into highlight rectangles.
 
+@available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
 struct TextSelectionBackground: ViewModifier {
   func body(content: Content) -> some View {
     #if TEXTUAL_ENABLE_TEXT_SELECTION && canImport(AppKit) && !targetEnvironment(macCatalyst)

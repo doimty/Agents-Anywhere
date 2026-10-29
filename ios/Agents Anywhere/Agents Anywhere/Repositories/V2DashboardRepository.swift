@@ -1,9 +1,9 @@
 import Foundation
-import Observation
+import Perception
 
 /// Account-scoped list cache. HTTP, push and explicit mutations share a revision
 /// fence, so a late read cannot replace a newer snapshot or user action.
-@MainActor @Observable
+@MainActor @Perceptible
 final class V2DashboardRepository {
     let sidebarPreferences: ProjectSidebarPreferences
     private(set) var connectors: [V2Connector] = []
@@ -14,20 +14,20 @@ final class V2DashboardRepository {
     private(set) var isFresh = false
     private(set) var error: String?
     private(set) var network = V2NetworkStatus()
-    @ObservationIgnored var onChange: (() -> Void)?
-    @ObservationIgnored var reconcile: (V2SessionMeta) -> V2SessionMeta = { $0 }
-    @ObservationIgnored private let localStore: V2LocalStore?
-    @ObservationIgnored private var persistenceTask: Task<Void, Never>?
-    @ObservationIgnored private let service: V2DashboardService
-    @ObservationIgnored private var generation = 0
-    @ObservationIgnored private var isValid = true
-    @ObservationIgnored private var projectGeneration = 0
-    @ObservationIgnored private var projectRefreshTask: Task<Bool, Never>?
-    @ObservationIgnored private var projectRefreshID: UUID?
-    @ObservationIgnored private var projectRefreshGeneration: Int?
-    @ObservationIgnored private var checkedMissingProjects: Set<String> = []
+    @PerceptionIgnored var onChange: (() -> Void)?
+    @PerceptionIgnored var reconcile: (V2SessionMeta) -> V2SessionMeta = { $0 }
+    @PerceptionIgnored private let localStore: V2LocalStore?
+    @PerceptionIgnored private var persistenceTask: Task<Void, Never>?
+    @PerceptionIgnored private let service: V2DashboardService
+    @PerceptionIgnored private var generation = 0
+    @PerceptionIgnored private var isValid = true
+    @PerceptionIgnored private var projectGeneration = 0
+    @PerceptionIgnored private var projectRefreshTask: Task<Bool, Never>?
+    @PerceptionIgnored private var projectRefreshID: UUID?
+    @PerceptionIgnored private var projectRefreshGeneration: Int?
+    @PerceptionIgnored private var checkedMissingProjects: Set<String> = []
     /// Set by list mutations; loading-flag changes republish without a disk write.
-    @ObservationIgnored private var isDirty = false
+    @PerceptionIgnored private var isDirty = false
 
     init(service: V2DashboardService, localStore: V2LocalStore? = nil, scope: V2ClientScope? = nil, defaults: UserDefaults = .standard) {
         self.service = service; self.localStore = localStore
@@ -50,7 +50,7 @@ final class V2DashboardRepository {
         if persist { isDirty = true }
         guard isValid, hasLoaded, isDirty, localStore != nil, persistenceTask == nil else { return }
         persistenceTask = Task { [weak self] in
-            do { try await Task.sleep(for: .milliseconds(500)) } catch { return }
+            do { try await ClientTask.sleep(for: .milliseconds(500)) } catch { return }
             await self?.flushCache()
         }
     }

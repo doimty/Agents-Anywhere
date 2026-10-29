@@ -1,15 +1,15 @@
 import Foundation
-import Observation
+import Perception
 
 @MainActor
-@Observable
+@Perceptible
 final class WorkspaceDirectoryModel {
     private(set) var entries: [V2WorkspaceEntry] = []
     private(set) var resolvedPath = ""
     private(set) var isLoading = false
     private(set) var isTruncated = false
     private(set) var selectablePath: String?
-    @ObservationIgnored private var revision = 0
+    @PerceptionIgnored private var revision = 0
     var errorMessage: String?
 
     /// Reads and sorts a directory through the workspace-files business service.

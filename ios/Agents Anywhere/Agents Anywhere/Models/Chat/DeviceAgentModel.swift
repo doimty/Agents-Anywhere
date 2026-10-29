@@ -1,9 +1,9 @@
 import Foundation
-import Observation
+import Perception
 
 /// Shared by device management and the post-pairing sheet. Types describe what
 /// can be added; instances describe what actually exists on the device.
-@MainActor @Observable
+@MainActor @Perceptible
 final class DeviceAgentModel {
     let connectorID: String
     private(set) var inventory = V2RuntimeInventory(types: [], instances: [])
@@ -11,9 +11,9 @@ final class DeviceAgentModel {
     private(set) var busyID: String?
     private(set) var error: String?
     private(set) var connected = false
-    @ObservationIgnored private let service: V2DeviceManagementService
-    @ObservationIgnored private var version = 0
-    @ObservationIgnored private var isValid = true
+    @PerceptionIgnored private let service: V2DeviceManagementService
+    @PerceptionIgnored private var version = 0
+    @PerceptionIgnored private var isValid = true
 
     init(connectorID: String, service: V2DeviceManagementService) {
         self.connectorID = connectorID; self.service = service

@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 struct SessionInteractionDetailsSheet: View {
@@ -6,7 +7,7 @@ struct SessionInteractionDetailsSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             ScrollView {
                 SessionInteractionContent(item: item, chat: chat, showsContext: true).padding(16)
             }

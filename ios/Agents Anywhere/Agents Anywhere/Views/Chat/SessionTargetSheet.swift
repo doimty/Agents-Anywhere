@@ -1,7 +1,8 @@
+import Perception
 import SwiftUI
 
 struct SessionTargetSheet: View {
-    @Bindable var model: NewSessionModel
+    @Perception.Bindable var model: NewSessionModel
     @State private var expandedDeviceID: String?
     @State private var applying: TargetSelection?
     @State private var selectionError: String?
@@ -14,7 +15,7 @@ struct SessionTargetSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             List {
                 if devices.isEmpty {
                     ContentUnavailableView(String(localized: "No devices"), appSymbol: "desktopcomputer")

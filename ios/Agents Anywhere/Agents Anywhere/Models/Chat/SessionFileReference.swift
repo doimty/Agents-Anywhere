@@ -37,7 +37,11 @@ nonisolated struct SessionFileReference: Hashable, Identifiable {
         }
         guard scheme == nil || ["file", "sandbox"].contains(scheme ?? ""),
               url.host == nil || url.host?.isEmpty == true || url.host == "localhost" else { return nil }
-        let raw = scheme == nil ? url.relativeString : url.path(percentEncoded: true) + (url.fragment(percentEncoded: true).map { "#" + $0 } ?? "")
+        // URL.path/fragment(percentEncoded:) require iOS 16. URLComponents
+        // preserves the same escaping on iOS 15; decode only after separating
+        // location suffixes, so encoded # characters remain part of the path.
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+        let raw = scheme == nil ? url.relativeString : components.percentEncodedPath + (components.percentEncodedFragment.map { "#" + $0 } ?? "")
         guard !raw.hasPrefix("#"), !raw.hasPrefix("//"), !raw.isEmpty else { return nil }
         return parse(raw.removingPercentEncoding ?? raw)
     }

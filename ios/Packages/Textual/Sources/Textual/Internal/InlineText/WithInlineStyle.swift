@@ -34,7 +34,7 @@ struct WithInlineStyle<Content: View>: View {
 
   var body: some View {
     content(output ?? AttributedString())
-      .onChange(of: Tuple(input, style, environment), initial: true) { _, newValue in
+      .textualOnChange(of: Tuple(input, style, environment), initial: true) { _, newValue in
         resolve(
           attributedString: newValue.values.0,
           style: newValue.values.1,

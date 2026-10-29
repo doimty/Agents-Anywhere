@@ -1,6 +1,6 @@
 import Foundation
 import Network
-import Observation
+import Perception
 
 nonisolated struct V2NetworkStatus: Hashable, Sendable {
     enum Availability: Hashable, Sendable { case unknown, online, offline }
@@ -10,11 +10,11 @@ nonisolated struct V2NetworkStatus: Hashable, Sendable {
 }
 
 /// Path availability is a scheduling hint, not proof that this server is reachable.
-@MainActor @Observable
+@MainActor @Perceptible
 final class V2ConnectivityMonitor {
     private(set) var status = V2NetworkStatus()
-    @ObservationIgnored private var monitor: NWPathMonitor?
-    @ObservationIgnored var onChange: ((V2NetworkStatus) -> Void)?
+    @PerceptionIgnored private var monitor: NWPathMonitor?
+    @PerceptionIgnored var onChange: ((V2NetworkStatus) -> Void)?
 
     func start() {
         guard monitor == nil else { return }

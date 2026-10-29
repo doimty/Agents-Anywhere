@@ -1,5 +1,5 @@
 import Foundation
-import Observation
+import Perception
 
 struct NewSessionPreference: Codable {
     var draftText: String? = nil
@@ -13,7 +13,7 @@ struct NewSessionPreference: Codable {
 
 /// Account-scoped draft and target selection. A target is committed only after
 /// both the device and its configured Agent instance have been chosen.
-@MainActor @Observable
+@MainActor @Perceptible
 final class NewSessionModel {
     let draft = ComposerDraft()
     let settings = ConversationSettings()
@@ -37,22 +37,22 @@ final class NewSessionModel {
     private(set) var creationUncertain = false
     private(set) var network = V2NetworkStatus()
     var error: String?
-    @ObservationIgnored var onStaged: ((NewSessionSubmission) async -> Void)?
-    @ObservationIgnored var onFailed: ((NewSessionSubmission) -> Void)?
-    @ObservationIgnored var onBound: ((NewSessionSubmission, V2SessionCreateResponse) -> Void)?
-    @ObservationIgnored var onProjectResolved: ((V2Project) -> Void)?
-    @ObservationIgnored private let devices: V2DeviceManagementService
-    @ObservationIgnored private let preparation: V2SessionPreparationService
-    @ObservationIgnored private let creation: V2SessionCreationService
-    @ObservationIgnored private let projectAPI: V2ProjectAPI
-    @ObservationIgnored private let files: V2WorkspaceFilesService
-    @ObservationIgnored private let defaults: UserDefaults
-    @ObservationIgnored private let preferenceKey: String
-    @ObservationIgnored private var preference: NewSessionPreference
-    @ObservationIgnored private var preparationVersion = 0
-    @ObservationIgnored private var inventoryTasks: [String: Task<[V2DeviceRuntime], Error>] = [:]
-    @ObservationIgnored private var homeTasks: [String: Task<String, Error>] = [:]
-    @ObservationIgnored private var resolvedHomes: Set<String> = []
+    @PerceptionIgnored var onStaged: ((NewSessionSubmission) async -> Void)?
+    @PerceptionIgnored var onFailed: ((NewSessionSubmission) -> Void)?
+    @PerceptionIgnored var onBound: ((NewSessionSubmission, V2SessionCreateResponse) -> Void)?
+    @PerceptionIgnored var onProjectResolved: ((V2Project) -> Void)?
+    @PerceptionIgnored private let devices: V2DeviceManagementService
+    @PerceptionIgnored private let preparation: V2SessionPreparationService
+    @PerceptionIgnored private let creation: V2SessionCreationService
+    @PerceptionIgnored private let projectAPI: V2ProjectAPI
+    @PerceptionIgnored private let files: V2WorkspaceFilesService
+    @PerceptionIgnored private let defaults: UserDefaults
+    @PerceptionIgnored private let preferenceKey: String
+    @PerceptionIgnored private var preference: NewSessionPreference
+    @PerceptionIgnored private var preparationVersion = 0
+    @PerceptionIgnored private var inventoryTasks: [String: Task<[V2DeviceRuntime], Error>] = [:]
+    @PerceptionIgnored private var homeTasks: [String: Task<String, Error>] = [:]
+    @PerceptionIgnored private var resolvedHomes: Set<String> = []
 
     init(scope: V2ClientScope, devices: V2DeviceManagementService,
          preparation: V2SessionPreparationService, creation: V2SessionCreationService, projectAPI: V2ProjectAPI,
@@ -399,13 +399,13 @@ final class NewSessionModel {
     func scheduleDraftSave() {
         guard isValid, draftSaveTask == nil else { return }
         draftSaveTask = Task { [weak self] in
-            do { try await Task.sleep(for: .seconds(1)) } catch { return }
+            do { try await ClientTask.sleep(for: .seconds(1)) } catch { return }
             guard let self, !Task.isCancelled else { return }
             draftSaveTask = nil
             saveDraft()
         }
     }
-    @ObservationIgnored private var draftSaveTask: Task<Void, Never>?
+    @PerceptionIgnored private var draftSaveTask: Task<Void, Never>?
 
     private func persist() {
         if let data = try? JSONEncoder().encode(preference) { defaults.set(data, forKey: preferenceKey) }

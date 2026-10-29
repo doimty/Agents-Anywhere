@@ -6,7 +6,7 @@ import Foundation
 final class V2SessionReadCoordinator {
     var onChange: ((V2SessionID) -> Void)?
     private let send: (V2SessionID) async throws -> V2SessionMeta
-    private let sleep: (Duration) async throws -> Void
+    private let sleep: (ClientDuration) async throws -> Void
     private var records: [V2SessionID: Record] = [:]
     private var visibleSessionID: V2SessionID?
     private var isActive = true
@@ -14,7 +14,7 @@ final class V2SessionReadCoordinator {
     private var isValid = true
 
     init(send: @escaping (V2SessionID) async throws -> V2SessionMeta,
-         sleep: @escaping (Duration) async throws -> Void = { try await Task.sleep(for: $0) }) {
+         sleep: @escaping (ClientDuration) async throws -> Void = { try await ClientTask.sleep(for: $0) }) {
         self.send = send
         self.sleep = sleep
     }

@@ -12,9 +12,10 @@ import SwiftUI
 // On macOS, when text selection is enabled, object-style attachments are dimmed when they fall
 // inside the selected range. Inline-style attachments (for example, emoji) are not dimmed.
 
+@available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
 struct AttachmentView: View, Equatable {
   #if TEXTUAL_ENABLE_TEXT_SELECTION && canImport(AppKit)
-    @Environment(TextSelectionModel.self) private var textSelectionModel: TextSelectionModel?
+    @Environment(\.textSelectionModel) private var textSelectionModel: TextSelectionModel?
   #endif
   private let attachments: Set<AnyAttachment>
   private let origin: CGPoint

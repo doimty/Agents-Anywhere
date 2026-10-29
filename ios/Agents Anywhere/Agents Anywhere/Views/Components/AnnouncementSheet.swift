@@ -71,7 +71,7 @@ private struct AnnouncementSheet: View {
     let onAcknowledge: () -> Void
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     if let date = announcement.publishedDate {

@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 struct ServiceEntryView: View {
@@ -7,7 +8,7 @@ struct ServiceEntryView: View {
     var onQRCodeLogin: () -> Void = {}
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             AuthWelcomeLayout {
                 AuthBrandLockup()
 

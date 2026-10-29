@@ -13,7 +13,6 @@ import SwiftUI
 // local and non-scrollable regions.
 
 #if TEXTUAL_ENABLE_TEXT_SELECTION
-  @Observable
   final class TextSelectionCoordinator {
     private var models: [WeakBox<TextSelectionModel>] = []
 
@@ -38,6 +37,10 @@ import SwiftUI
       }
     }
   }
+  extension EnvironmentValues {
+    @Entry var textSelectionCoordinator: TextSelectionCoordinator? = nil
+    @Entry var textSelectionModel: TextSelectionModel? = nil
+  }
 #endif
 
 struct TextSelectionCoordination: ViewModifier {
@@ -47,7 +50,7 @@ struct TextSelectionCoordination: ViewModifier {
 
   func body(content: Content) -> some View {
     #if TEXTUAL_ENABLE_TEXT_SELECTION
-      content.environment(coordinator)
+      content.environment(\.textSelectionCoordinator, coordinator)
     #else
       content
     #endif

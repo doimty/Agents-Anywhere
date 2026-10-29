@@ -1,8 +1,9 @@
+import Perception
 import SwiftUI
 
 struct RuntimeConfigurationFieldView: View {
     let field: V2RuntimeConfigField
-    @Bindable var model: RuntimeConfigurationModel
+    @Perception.Bindable var model: RuntimeConfigurationModel
     @Environment(\.locale) private var locale
 
     private var title: String { RuntimeConfigCopy.title(field, locale: locale) }
@@ -142,7 +143,7 @@ struct RuntimeSecretInput: View {
 
 extension View {
     func runtimeConfigInput() -> some View {
-        self.textInputAutocapitalization(.never).autocorrectionDisabled()
+        self.textInputAutocapitalization(.never).appPageAutocorrectionDisabled()
             .textFieldStyle(.plain)
             .frame(maxWidth: .infinity, alignment: .leading)
     }

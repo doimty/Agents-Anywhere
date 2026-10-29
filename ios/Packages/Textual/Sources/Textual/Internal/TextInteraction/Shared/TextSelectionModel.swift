@@ -11,9 +11,8 @@
   // changes, the model attempts to reconcile the current selection into the new layout so the
   // selection stays stable across updates.
 
-  @Observable
-  final class TextSelectionModel {
-    var selectedRange: TextRange? {
+  final class TextSelectionModel: ObservableObject {
+    @Published var selectedRange: TextRange? {
       willSet {
         selectionWillChange?()
       }
@@ -25,16 +24,12 @@
       }
     }
 
-    @ObservationIgnored
     var selectionWillChange: (() -> Void)?
 
-    @ObservationIgnored
     var selectionDidChange: (() -> Void)?
 
-    @ObservationIgnored
     private var layoutCollection: any TextLayoutCollection
 
-    @ObservationIgnored
     private weak var coordinator: TextSelectionCoordinator?
 
     /// Whether the interaction currently reads `Text.LayoutKey`.
@@ -42,12 +37,10 @@
     /// Reading it makes SwiftUI re-query the text layout of every fragment whenever the text
     /// moves, for example on each scroll or parent translation frame. On-demand models read it
     /// only while a selection or a tap needs text positions.
-    private(set) var readsLayout: Bool
+    @Published private(set) var readsLayout: Bool
 
-    @ObservationIgnored
     let readsLayoutOnDemand: Bool
 
-    @ObservationIgnored
     private var pendingLayoutAction: ((TextSelectionModel) -> Void)?
 
     init(
@@ -125,6 +118,7 @@
       layoutCollection.url(for: point)
     }
 
+    @available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
     func layoutIndex(of layout: Text.Layout) -> Int? {
       layoutCollection.index(of: layout)
     }
@@ -178,6 +172,7 @@
       layoutCollection.selectionRects(for: range)
     }
 
+    @available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
     func selectionRects(for range: TextRange, layout: Text.Layout) -> [TextSelectionRect] {
       layoutCollection.selectionRects(for: range, layout: layout)
     }

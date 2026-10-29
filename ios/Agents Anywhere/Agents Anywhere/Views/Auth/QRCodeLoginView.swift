@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct QRCodeLoginView: View {
     let appState: AppState
@@ -9,7 +10,7 @@ struct QRCodeLoginView: View {
     var onDashboardRequested: () -> Void = {}
 
     var body: some View {
-        NavigationStack(path: $path) {
+        AppRouteNavigationStack(path: $path) {
             QRScanStepView(
                 appState: appState,
                 onCancel: { dismiss() },
@@ -17,42 +18,41 @@ struct QRCodeLoginView: View {
                     path.append(.confirm(payload))
                 },
             )
-            .navigationDestination(for: QRLoginRoute.self) { route in
-                switch route {
-                case let .confirm(payload):
-                    QRConfirmStepView(
-                        appState: appState,
-                        payload: payload,
-                        onCancel: { dismiss() },
-                        onWaiting: {
-                            path.append(.waiting(payload))
-                        },
-                    )
-                case let .waiting(payload):
-                    QRWaitingStepView(
-                        appState: appState,
-                        payload: payload,
-                        onCancel: { dismiss() },
-                        onSignedIn: {
-                            path.append(.success)
-                        },
-                    )
-                case .success:
-                    AuthResultView(
-                        title: String(localized: "Login Success"),
-                        message: String(localized: "Your iPhone is signed in. Go to your dashboard to continue."),
-                        buttonTitle: String(localized: "Go to Dashboard"),
-                        buttonSystemImage: "arrow.right",
-                        symbolName: "checkmark.circle.fill",
-                        symbolColor: .green,
-                        isLoading: isClosing,
-                    ) {
-                        guard !isClosing else { return }
-                        isClosing = true
-                        onDashboardRequested()
-                    }
-                    .navigationBarBackButtonHidden(true)
+        } destination: { route in
+            switch route {
+            case let .confirm(payload):
+                QRConfirmStepView(
+                    appState: appState,
+                    payload: payload,
+                    onCancel: { dismiss() },
+                    onWaiting: {
+                        path.append(.waiting(payload))
+                    },
+                )
+            case let .waiting(payload):
+                QRWaitingStepView(
+                    appState: appState,
+                    payload: payload,
+                    onCancel: { dismiss() },
+                    onSignedIn: {
+                        path.append(.success)
+                    },
+                )
+            case .success:
+                AuthResultView(
+                    title: String(localized: "Login Success"),
+                    message: String(localized: "Your iPhone is signed in. Go to your dashboard to continue."),
+                    buttonTitle: String(localized: "Go to Dashboard"),
+                    buttonSystemImage: "arrow.right",
+                    symbolName: "checkmark.circle.fill",
+                    symbolColor: .green,
+                    isLoading: isClosing,
+                ) {
+                    guard !isClosing else { return }
+                    isClosing = true
+                    onDashboardRequested()
                 }
+                .navigationBarBackButtonHidden(true)
             }
         }
         .appSheetPresentation(.expanded)
@@ -101,7 +101,7 @@ private struct QRScanStepView: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 9)
                         .background(AppTheme.glassScrim(colorScheme), in: Capsule())
-                        .glassEffect(.regular, in: Capsule())
+                        .appGlassEffect(.regular, in: Capsule())
                         .padding(.bottom, 18)
                 }
 
@@ -170,7 +170,7 @@ private struct QRConfirmStepView: View {
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(AppTheme.groupedFill(colorScheme), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+                .appGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
 
                 AuthPrimaryButton(
                     title: String(localized: "Log In"),
@@ -271,7 +271,7 @@ private struct QRWaitingStepView: View {
                 if !shouldContinue {
                     return
                 }
-                try? await Task.sleep(for: .seconds(1.5))
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
             }
         }
     }

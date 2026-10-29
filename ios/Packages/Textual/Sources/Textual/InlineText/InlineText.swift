@@ -117,8 +117,8 @@ public struct InlineText: View {
           .modifier(TextSelectionInteraction())
       }
     }
-    .coordinateSpace(.textContainer)
-    .onChange(of: markup, initial: true) { _, value in
+    .coordinateSpace(name: "textContainer")
+    .textualOnChange(of: markup, initial: true) { _, value in
       self.attributedString = (try? parser.attributedString(for: value)) ?? .init()
     }
   }

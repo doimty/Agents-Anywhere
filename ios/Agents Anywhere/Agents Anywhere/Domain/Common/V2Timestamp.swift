@@ -1,5 +1,4 @@
 import Foundation
-import Synchronization
 
 /// Wire timestamps are compared on every sidebar sort and dashboard tick. The
 /// server repeats the same strings across pushes, so each distinct value is
@@ -7,7 +6,7 @@ import Synchronization
 nonisolated enum V2Timestamp {
     private static let fractional = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
     private static let plain = Date.ISO8601FormatStyle()
-    private static let cache = Mutex<[String: TimeInterval]>([:])
+    private static let cache = ClientMutex<[String: TimeInterval]>([:])
     private static let capacity = 4096
 
     /// Seconds since 1970, or nil when the value is missing or not ISO 8601.

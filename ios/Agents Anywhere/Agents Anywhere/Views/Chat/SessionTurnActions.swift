@@ -15,7 +15,7 @@ struct SessionTurnActions: View, Equatable {
             .accessibilityLabel(copied ? String(localized: "已复制") : String(localized: "复制回复"))
             .task(id: copied) {
                 guard copied else { return }
-                do { try await Task.sleep(for: .seconds(2)); copied = false } catch {}
+                do { try await ClientTask.sleep(for: .seconds(2)); copied = false } catch {}
             }
             ShareLink(item: TurnReplyShareItem(action: action), preview: SharePreview(String(localized: "回复"))) {
                 AppSymbol("square.and.arrow.up").frame(width: 44, height: 44)
@@ -29,6 +29,7 @@ struct SessionTurnActions: View, Equatable {
 }
 
 /// Exports the joined reply text only when a share actually starts.
+@available(iOS 16.0, *)
 private struct TurnReplyShareItem: Transferable {
     let action: TimelineTurnAction
     var text: String { action.copyText }

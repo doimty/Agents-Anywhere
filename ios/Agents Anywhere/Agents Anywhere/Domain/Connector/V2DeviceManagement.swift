@@ -16,11 +16,11 @@ nonisolated enum V2DeviceSessionFilter: String, CaseIterable, Identifiable, Hash
 
     var id: String { rawValue }
 
-    var title: LocalizedStringResource {
+    var title: String {
         switch self {
-        case .active: "Active"
-        case .archived: "Archived"
-        case .all: "All"
+        case .active: String(localized: "Active")
+        case .archived: String(localized: "Archived")
+        case .all: String(localized: "All")
         }
     }
 

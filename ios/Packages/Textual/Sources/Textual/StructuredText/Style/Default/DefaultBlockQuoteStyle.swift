@@ -3,6 +3,7 @@ import SwiftUI
 extension StructuredText {
   /// The default block quote style used by ``StructuredText/DefaultStyle``.
   public struct DefaultBlockQuoteStyle: BlockQuoteStyle {
+    @Environment(\.colorEnvironment) private var colors
     private let backgroundColor: DynamicColor
     private let borderColor: DynamicColor
 
@@ -20,9 +21,9 @@ extension StructuredText {
         .background {
           ZStack(alignment: .leading) {
             Rectangle()
-              .fill(backgroundColor)
+              .fill(backgroundColor.bestMatch(for: colors) ?? .clear)
             Rectangle()
-              .fill(borderColor)
+              .fill(borderColor.bestMatch(for: colors) ?? .clear)
               .frame(width: 6, alignment: .leading)
           }
           .clipShape(RoundedRectangle(cornerRadius: 4))

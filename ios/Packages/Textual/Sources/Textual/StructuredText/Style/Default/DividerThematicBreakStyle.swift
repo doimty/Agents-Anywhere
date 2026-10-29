@@ -3,13 +3,14 @@ import SwiftUI
 extension StructuredText {
   /// A thematic break style that renders a `Divider`.
   public struct DividerThematicBreakStyle: ThematicBreakStyle {
+    @Environment(\.colorEnvironment) private var colors
     /// Creates a divider thematic break style.
     public init() {}
 
     public func makeBody(configuration _: Configuration) -> some View {
       Divider()
         .frame(minHeight: 1)
-        .overlay(DynamicColor.grid)
+        .overlay(DynamicColor.grid.bestMatch(for: colors) ?? .clear)
         .textual.blockSpacing(.fontScaled(top: 1.6, bottom: 1.6))
     }
   }

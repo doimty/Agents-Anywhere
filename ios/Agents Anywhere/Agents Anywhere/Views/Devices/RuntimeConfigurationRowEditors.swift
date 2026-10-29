@@ -1,7 +1,8 @@
+import Perception
 import SwiftUI
 
 struct RuntimeEnvironmentRowEditor: View {
-    @Bindable var row: RuntimeEnvironmentRow
+    @Perception.Bindable var row: RuntimeEnvironmentRow
     let onRemove: () -> Void
     @FocusState private var focusedField: RuntimeConfigurationInput?
 
@@ -16,7 +17,7 @@ struct RuntimeEnvironmentRowEditor: View {
                 }
                 Menu {
                     Toggle(String(localized: "Remove inherited variable"), isOn: $row.removesInherited)
-                    Button(String(localized: "Remove variable"), systemImage: "trash", role: .destructive) {
+                    AppPageSystemButton(String(localized: "Remove variable"), systemImage: "trash", role: .destructive) {
                         focusedField = nil
                         onRemove()
                     }
@@ -29,7 +30,7 @@ struct RuntimeEnvironmentRowEditor: View {
 }
 
 struct RuntimeCustomModelRowEditor: View {
-    @Bindable var row: RuntimeCustomModelRow
+    @Perception.Bindable var row: RuntimeCustomModelRow
     let onRemove: () -> Void
     @FocusState private var focusedField: RuntimeConfigurationInput?
 
@@ -68,7 +69,7 @@ struct RuntimeCustomModelRowEditor: View {
 }
 
 private struct RuntimeEffortRowEditor: View {
-    @Bindable var row: RuntimeEffortRow
+    @Perception.Bindable var row: RuntimeEffortRow
     let onRemove: () -> Void
     @FocusState private var focusedField: RuntimeConfigurationInput?
 

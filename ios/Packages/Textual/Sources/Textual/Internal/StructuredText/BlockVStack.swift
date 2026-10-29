@@ -20,22 +20,31 @@ extension StructuredText {
     }
 
     var body: some View {
-      Group(subviews: content) { children in
-        BlockVStackLayout(textAlignment: textAlignment) {
-          ForEach(children) {
-            BlockLayoutView($0)
+      if #available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *) {
+        Group(subviews: content) { children in
+          BlockVStackLayout(textAlignment: textAlignment) {
+            ForEach(children) { BlockLayoutView($0) }
           }
         }
+      } else {
+        _VariadicView.Tree(PortableBlockStackRoot(textAlignment: textAlignment)) { content }
       }
     }
   }
 }
 
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+extension StructuredText.BlockAlignmentKey: LayoutValueKey {}
+
 extension StructuredText {
-  struct BlockAlignmentKey: LayoutValueKey {
+  struct BlockAlignmentKey: PreferenceKey {
     static let defaultValue: TextAlignment? = nil
+    static func reduce(value: inout TextAlignment?, nextValue: () -> TextAlignment?) {
+      value = nextValue() ?? value
+    }
   }
 
+  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   fileprivate struct BlockLayoutView<Content: View>: View {
     @Environment(\.listItemSpacingEnabled) private var listItemSpacingEnabled
     @Environment(\.resolvedListItemSpacing) private var resolvedListItemSpacing
@@ -59,6 +68,7 @@ extension StructuredText {
     }
   }
 
+  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   fileprivate struct BlockVStackLayout: Layout {
     struct Cache {
       let spacings: [CGFloat]

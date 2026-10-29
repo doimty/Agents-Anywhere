@@ -27,7 +27,7 @@ struct WorkspaceFilePreviewSheet: View {
         return session.isValid && session.network.availability != .offline && session.metadata?.connectorStatus == .online
     }
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             ZStack {
                 if let url {
                     WorkspacePreviewWebView(url: url, onLoaded: { loading = false }, onFailure: {
@@ -37,11 +37,11 @@ struct WorkspaceFilePreviewSheet: View {
                         onDownloading: { isDownloading = $0 }).id(url)
                 }
                 if let error {
-                    ContentUnavailableView {
+                    AppContentUnavailableView {
                         Label(String(localized: "无法预览文件"), appSymbol: "doc.badge.ellipsis")
                     } description: { Text(error) } actions: { Button(String(localized: "重试")) { attempt += 1 }.disabled(!canRead) }
                     .background(Color(uiColor: .systemBackground))
-                } else if loading { ProgressView(String(localized: "加载预览…")).padding(20).background(.regularMaterial, in: .rect(cornerRadius: 18)) }
+                } else if loading { ProgressView(String(localized: "加载预览…")).padding(20).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous)) }
             }
             .navigationTitle(name.isEmpty ? String(localized: "文件预览") : name).navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom, spacing: 0) {

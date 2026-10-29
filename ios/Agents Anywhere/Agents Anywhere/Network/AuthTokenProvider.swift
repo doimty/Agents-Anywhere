@@ -1,5 +1,4 @@
 import Foundation
-import Synchronization
 
 nonisolated protocol AuthTokenProvider: Sendable {
     func accessToken() async throws -> String?
@@ -16,8 +15,8 @@ nonisolated struct StaticAuthTokenProvider: AuthTokenProvider {
 /// A token refresh changes authentication for the next request without replacing
 /// the account's repositories, drafts, pagination or active navigation state.
 nonisolated final class MutableAuthTokenProvider: AuthTokenProvider {
-    private let token: Mutex<String?>
-    init(token: String) { self.token = Mutex(token) }
+    private let token: ClientMutex<String?>
+    init(token: String) { self.token = ClientMutex(token) }
     func update(_ token: String?) { self.token.withLock { $0 = token } }
     func accessToken() async throws -> String? { token.withLock { $0 } }
 }

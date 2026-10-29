@@ -22,8 +22,8 @@ struct ChatMessageAttachments: View {
                             }.frame(maxWidth: .infinity, alignment: .leading)
                             AppSymbol("arrow.up.right", size: 14).foregroundStyle(.secondary)
                         }.padding(12).frame(maxWidth: 320, alignment: .leading)
-                            .background(.quaternary.opacity(0.6), in: .rect(cornerRadius: 16))
-                            .contentShape(.rect(cornerRadius: 16))
+                            .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }.buttonStyle(.plain)
                 }
             }
@@ -63,12 +63,12 @@ private struct ChatMessageImage: View {
             // Fixed preview footprint: decoding or switching from local bytes
             // to a remote thumbnail cannot move the surrounding conversation.
             .aspectRatio(4.0 / 3.0, contentMode: .fit).frame(maxWidth: 320)
-            .clipShape(.rect(cornerRadius: 16))
-            .contentShape(.rect(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain).accessibilityLabel(file.content.name ?? String(localized: "图片附件"))
         .onAppear { if image == nil, let data = file.previewData { image = UIImage(data: data) } }
-        .onScrollVisibilityChange(threshold: 0.01) { visible = $0 }
+        .appScrollVisibilityChange(threshold: 0.01) { visible = $0 }
         .task(id: Request(visible: visible, key: file.content.cacheKey, retry: retry)) {
             guard visible, image == nil else { return }
             do {

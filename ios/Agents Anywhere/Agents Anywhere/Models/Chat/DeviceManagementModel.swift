@@ -1,8 +1,8 @@
 import Foundation
-import Observation
+import Perception
 
 @MainActor
-@Observable
+@Perceptible
 final class DeviceManagementModel {
     private(set) var sessions: [V2SessionMeta] = []
     private(set) var isDeviceActionRunning = false

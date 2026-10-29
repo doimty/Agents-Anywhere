@@ -37,7 +37,7 @@ enum LocalNetworkAccessError: LocalizedError {
             }
         }
         timeout = Task { [weak self] in
-            do { try await Task.sleep(for: .seconds(30)) } catch { return }
+            do { try await ClientTask.sleep(for: .seconds(30)) } catch { return }
             guard let self else { return }
             self.finish(.failure(self.denied ? LocalNetworkAccessError.denied : URLError(.timedOut)))
         }

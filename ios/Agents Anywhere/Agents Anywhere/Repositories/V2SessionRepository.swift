@@ -17,7 +17,7 @@ final class V2SessionRepository {
     private var persistenceTask: Task<Void, Never>?
     private let policy: V2SessionCachePolicy
     private let now: () -> Date
-    private let sleep: (Duration) async throws -> Void
+    private let sleep: (ClientDuration) async throws -> Void
     private var entries: [V2SessionID: Entry] = [:]
     private var accessCounter = 0
     private var suspended = false
@@ -30,7 +30,7 @@ final class V2SessionRepository {
         policy: V2SessionCachePolicy = V2SessionCachePolicy(),
         localStore: V2LocalStore? = nil,
         now: @escaping () -> Date = Date.init,
-        sleep: @escaping (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+        sleep: @escaping (ClientDuration) async throws -> Void = { try await ClientTask.sleep(for: $0) }
     ) {
         self.scope = scope
         self.detail = detail
@@ -141,7 +141,7 @@ final class V2SessionRepository {
     private func schedulePersistence() {
         guard localStore != nil, persistenceTask == nil else { return }
         persistenceTask = Task { [weak self] in
-            do { try await Task.sleep(for: .milliseconds(2500)) } catch { return }
+            do { try await ClientTask.sleep(for: .milliseconds(2500)) } catch { return }
             await self?.flushCache()
         }
     }

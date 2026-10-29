@@ -1,119 +1,69 @@
 import Foundation
 
-// MARK: - Overview
-//
-// `PatternTokenizer` scans source text and splits it into tokens based on a small set of
-// regex patterns.
-//
-// It’s designed for postprocessing steps that need to rewrite specific constructs (like emoji
-// shortcodes) while leaving everything else untouched. Each pattern is applied as a prefix match
-// at the current cursor position, which keeps the tokenizer simple and predictable.
-//
-// This tokenizer is intentionally conservative: patterns are opt-in and processing is linear. If
-// no patterns are provided, the input is returned as a single `.text` token.
-
+/// The original opt-in prefix tokenizer, with the same patterns and captures.
+/// NSRegularExpression avoids the Swift Regex runtime's iOS 16 floor.
 struct PatternTokenizer {
   private let patterns: [Pattern]
-
-  init(patterns: [Pattern]) {
-    self.patterns = patterns
-  }
+  init(patterns: [Pattern]) { self.patterns = patterns }
 
   func tokenize(_ input: String) throws -> [Token] {
-    guard !patterns.isEmpty else {
-      return [.init(type: .text, content: input)]
-    }
-
+    guard !patterns.isEmpty else { return [.init(type: .text, content: input)] }
     var tokens: [Token] = []
     var currentIndex = input.startIndex
-
     while currentIndex < input.endIndex {
       var matchFound = false
-
-      // Try each pattern at the current position
       for pattern in patterns {
-        guard let match = try pattern.regex.prefixMatch(in: input[currentIndex...]) else {
-          continue
+        guard let match = pattern.regex.firstMatch(in: input, options: .anchored,
+          range: NSRange(currentIndex..., in: input)),
+          let range = Range(match.range, in: input), !range.isEmpty,
+          let captured = Range(match.range(at: 1), in: input)
+        else { continue }
+        if currentIndex < range.lowerBound {
+          tokens.append(.init(type: .text, content: String(input[currentIndex..<range.lowerBound])))
         }
-
-        // Add any text before the match
-        if currentIndex < match.range.lowerBound {
-          let markup = String(input[currentIndex..<match.range.lowerBound])
-          tokens.append(.init(type: .text, content: markup))
-        }
-
-        tokens.append(
-          .init(
-            type: pattern.tokenType,
-            content: String(match.0),
-            capturedContent: String(match.1)
-          )
-        )
-
-        currentIndex = match.range.upperBound
+        tokens.append(.init(type: pattern.tokenType, content: String(input[range]),
+          capturedContent: String(input[captured])))
+        currentIndex = range.upperBound
         matchFound = true
         break
       }
-
       if !matchFound {
-        // Append or create text
-        let nextIndex = input.index(after: currentIndex)
-        let content = String(input[currentIndex])
-
+        let next = input.index(after: currentIndex)
         if let last = tokens.indices.last, tokens[last].type == .text {
-          tokens[last].content += content
+          tokens[last].content += String(input[currentIndex])
         } else {
-          tokens.append(.init(type: .text, content: content))
+          tokens.append(.init(type: .text, content: String(input[currentIndex])))
         }
-        currentIndex = nextIndex
+        currentIndex = next
       }
     }
-
     return tokens
   }
 }
 
 extension PatternTokenizer {
-  struct Pattern {
-    let regex: Regex<(Substring, Substring)>
+  struct Pattern: @unchecked Sendable {
+    let regex: NSRegularExpression
     let tokenType: TokenType
   }
-}
 
-extension PatternTokenizer.Pattern {
-  static var emoji: Self {
-    .init(regex: /:([a-zA-Z0-9_+-]+):/, tokenType: .emoji)
-  }
-
-  static var mathBlock: Self {
-    .init(regex: /(?s)\$\$(.+?)\$\$/, tokenType: .mathBlock)
-  }
-
-  static var mathInline: Self {
-    .init(regex: /\$(?!\$)((?:\\\$|[^$\n])+)\$/, tokenType: .mathInline)
-  }
-}
-
-extension PatternTokenizer {
   struct Token: Hashable, Sendable {
     let type: TokenType
     var content: String
     var capturedContent: String?
   }
+
+  struct TokenType: Hashable, RawRepresentable, Sendable, ExpressibleByStringLiteral {
+    let rawValue: String
+    init(rawValue: String) { self.rawValue = rawValue }
+    init(stringLiteral value: String) { rawValue = value }
+  }
 }
 
-extension PatternTokenizer {
-  struct TokenType: Hashable, RawRepresentable, Sendable, ExpressibleByStringLiteral {
-    public let rawValue: String
-
-    public init(rawValue: String) {
-      self.rawValue = rawValue
-    }
-
-    public init(stringLiteral value: StringLiteralType) {
-      self.rawValue = value
-    }
-  }
+extension PatternTokenizer.Pattern {
+  static let emoji = Self(regex: try! NSRegularExpression(pattern: #":([a-zA-Z0-9_+-]+):"#), tokenType: .emoji)
+  static let mathBlock = Self(regex: try! NSRegularExpression(pattern: #"(?s)\$\$(.+?)\$\$"#), tokenType: .mathBlock)
+  static let mathInline = Self(regex: try! NSRegularExpression(pattern: #"\$(?!\$)((?:\\\$|[^$\n])+)\$"#), tokenType: .mathInline)
 }
 
 extension PatternTokenizer.TokenType {

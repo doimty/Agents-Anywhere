@@ -1,39 +1,31 @@
 import SwiftUI
 
-// MARK: - Overview
-//
-// TextFragment renders attributed content as SwiftUI.Text with support for inline
-// attachments, links, and selection. It uses a TextBuilder to construct and cache
-// Text values, minimizing rebuilds during resize by keying on attachment sizes.
-//
-// Attachments are represented as placeholder images tagged with AttachmentAttribute. The
-// actual attachment views are rendered in an overlay using the resolved Text.Layout
-// geometry. Three modifiers are applied at the fragment level:
-//
-// - TextSelectionBackground renders selection highlights on macOS
-// - AttachmentOverlay draws attachments at their run locations with selection-aware dimming
-// - TextLinkInteraction handles tap gestures on links
-//
-// These overlays use backgroundPreferenceValue and overlayPreferenceValue to access
-// Text.Layout and render in fragment-local coordinates. Fragment-level overlays enable
-// coordinate space isolation and keep scrollable regions interactive.
-//
-// An ancestor view must define a named coordinate space (.textContainer) for the text
-// container. TextFragment uses onGeometryChange to observe the container size and rebuild
-// Text when attachment sizes need to change.
-//
-// TextFragment is used by InlineText and StructuredText (via BlockContent) to render
-// attributed content with inline attachments, links, and selection.
-
+/// The block/style/attributed-content surface is shared; only the resolved text
+/// layout backend changes. Keep modern text types out of iOS 15 stored properties.
 struct TextFragment<Content: AttributedStringProtocol>: View {
+  private let content: Content
+  init(_ content: Content) { self.content = content }
+
+  var body: some View {
+    if #available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *) {
+      ModernTextFragment(content)
+    } else {
+      #if canImport(UIKit)
+        PortableTextFragment(content)
+      #else
+        Text(AttributedString(content))
+      #endif
+    }
+  }
+}
+
+@available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
+struct ModernTextFragment<Content: AttributedStringProtocol>: View {
   @Environment(\.textEnvironment) private var textEnvironment
   @State private var textBuilder: TextBuilder?
-
   private let content: Content
 
-  init(_ content: Content) {
-    self.content = content
-  }
+  init(_ content: Content) { self.content = content }
 
   var body: some View {
     text
@@ -42,37 +34,31 @@ struct TextFragment<Content: AttributedStringProtocol>: View {
         guard let size, let textBuilder else { return }
         textBuilder.sizeChanged(size, environment: textEnvironment)
       }
-      .onChange(of: content, initial: true) { _, newValue in
-        self.textBuilder = TextBuilder(newValue, environment: textEnvironment)
+      .onChange(of: content, initial: true) { _, value in
+        textBuilder = TextBuilder(value, environment: textEnvironment)
       }
       .modifier(TextSelectionBackground())
-      // Both scans walk every run; the builder computes them once per content.
       .modifier(AttachmentOverlay(attachments: textBuilder?.attachments ?? []))
       .modifier(TextLinkInteraction(hasLinks: textBuilder?.hasLinks ?? false))
   }
 
-  private var text: Text {
-    textBuilder?.text ?? Text(verbatim: "")
-  }
+  private var text: Text { textBuilder?.text ?? Text(verbatim: "") }
 }
 
-struct TextFragmentAttribute: TextAttribute {
-}
+@available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
+struct TextFragmentAttribute: TextAttribute {}
 
+@available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
 extension Text.Layout {
-  var isTextFragment: Bool {
-    first?.first?[TextFragmentAttribute.self] != nil
-  }
+  var isTextFragment: Bool { first?.first?[TextFragmentAttribute.self] != nil }
 }
 
+@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension CoordinateSpaceProtocol where Self == NamedCoordinateSpace {
-  static var textContainer: NamedCoordinateSpace {
-    .named("textContainer")
-  }
+  static var textContainer: NamedCoordinateSpace { .named("textContainer") }
 }
 
+@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension GeometryProxy {
-  fileprivate var textContainerSize: CGSize? {
-    bounds(of: .textContainer)?.size
-  }
+  fileprivate var textContainerSize: CGSize? { bounds(of: .textContainer)?.size }
 }

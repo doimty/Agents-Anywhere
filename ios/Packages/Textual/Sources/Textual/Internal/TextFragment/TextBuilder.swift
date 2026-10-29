@@ -16,7 +16,8 @@ import SwiftUI
 // sizeThatFits(_:in:) result. Placeholders are tagged with AttachmentAttribute so overlays
 // can identify and render the actual attachment views at the resolved layout positions.
 
-extension TextFragment {
+@available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
+extension ModernTextFragment {
   @MainActor @Observable final class TextBuilder {
     var text: Text
 
@@ -68,6 +69,7 @@ extension TextFragment {
   }
 }
 
+@available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
 extension Text {
   fileprivate init(
     attributedString: some AttributedStringProtocol,
@@ -116,9 +118,10 @@ extension Text {
   }
 }
 
+@available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
 extension AttributedStringProtocol {
   fileprivate func attachmentSizes(
-    for proposal: ProposedViewSize, in environment: TextEnvironmentValues
+    for proposal: TextualSizeProposal, in environment: TextEnvironmentValues
   ) -> [AttachmentKey: CGSize] {
     Dictionary(
       self.runs.compactMap { run in

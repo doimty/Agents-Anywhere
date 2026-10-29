@@ -4,8 +4,16 @@ struct SheetCloseButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(role: .close, action: action) {
-            Label(String(localized: "Close"), appSymbol: "xmark")
+        Group {
+            if #available(iOS 26.0, *), AppCompatibility.useNativeUI {
+                Button(role: .close, action: action) {
+                    Label(String(localized: "Close"), appSymbol: "xmark")
+                }
+            } else {
+                Button(action: action) {
+                    Label(String(localized: "Close"), appSymbol: "xmark")
+                }
+            }
         }
         .labelStyle(.iconOnly)
         .keyboardShortcut(.cancelAction)
@@ -45,12 +53,20 @@ struct SheetSaveToolbar: ToolbarContent {
 
     var body: some ToolbarContent {
         ToolbarItem(placement: .confirmationAction) {
-            Button(role: .confirm, action: onSave) {
-                Text(saveTitle).opacity(isWorking ? 0 : 1)
-                    .overlay { if isWorking { ProgressView().controlSize(.small) } }
+            Group {
+                if #available(iOS 26.0, *), AppCompatibility.useNativeUI {
+                    Button(role: .confirm, action: onSave) { saveLabel }
+                } else {
+                    Button(action: onSave) { saveLabel }
+                }
             }
             .disabled(isWorking || saveDisabled).keyboardShortcut("s", modifiers: .command)
         }
+    }
+
+    private var saveLabel: some View {
+        Text(saveTitle).opacity(isWorking ? 0 : 1)
+            .overlay { if isWorking { ProgressView().controlSize(.small) } }
     }
 }
 

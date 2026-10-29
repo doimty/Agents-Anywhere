@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 struct AccountIdentitySettingsView: View {
@@ -27,13 +28,13 @@ struct AccountIdentitySettingsView: View {
                 TextField(title, text: $draft.text)
                     .textContentType(mode == .nickname ? .nickname : .emailAddress)
                     .keyboardType(mode == .email ? .emailAddress : .default)
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                    .onChange(of: draft.text) { _, _ in draft.code = ""; codeSent = false }
+                    .textInputAutocapitalization(.never).appPageAutocorrectionDisabled()
+                    .appOnChange(of: draft.text) { _, _ in draft.code = ""; codeSent = false }
             }
             if mode == .email {
                 if draft.text == draft.initialText && !draft.initialText.isEmpty {
                     Section {
-                        LabeledContent(String(localized: "Email status"),
+                        AppLabeledContent(String(localized: "Email status"),
                             value: appState.me?.emailVerified == true ? String(localized: "Verified") : String(localized: "Not verified"))
                     }
                 }
@@ -45,7 +46,7 @@ struct AccountIdentitySettingsView: View {
                     } else if verificationRequired {
                         TextField(String(localized: "Email verification code"), text: $draft.code)
                             .textContentType(.oneTimeCode).keyboardType(.numberPad)
-                            .onChange(of: draft.code) { _, _ in draft.code = String(draft.code.filter(\.isNumber).prefix(6)) }
+                            .appOnChange(of: draft.code) { _, _ in draft.code = String(draft.code.filter(\.isNumber).prefix(6)) }
                         Button(cooldown > 0 ? String(localized: "Resend in \(cooldown) s") : String(localized: "Send verification code"), action: sendCode)
                             .disabled(!validEmail || cooldown > 0 || draft.isWorking)
                         if codeSent { Text(String(localized: "Code sent. Check your inbox.")).foregroundStyle(.secondary) }
@@ -71,7 +72,7 @@ struct AccountIdentitySettingsView: View {
         }
         .task(id: cooldown) {
             guard cooldown > 0 else { return }
-            do { try await Task.sleep(for: .seconds(1)); cooldown -= 1 } catch {}
+            do { try await Task.sleep(nanoseconds: 1_000_000_000); cooldown -= 1 } catch {}
         }
         .alert(String(localized: "Account update failed"), isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button(String(localized: "OK"), role: .cancel) { error = nil }

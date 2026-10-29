@@ -105,7 +105,7 @@ import Testing
 
     @Test func transientFailureRetriesWhileVisibleAndRetainsLocalReadProgress() async throws {
         let old = try session(), receipt = try session(read: 10), retryGate = TestGate()
-        var calls = 0, pauses: [Duration] = []
+        var calls = 0, pauses: [ClientDuration] = []
         let reads = V2SessionReadCoordinator(send: { _ in
             calls += 1
             if calls == 1 { throw URLError(.notConnectedToInternet) }

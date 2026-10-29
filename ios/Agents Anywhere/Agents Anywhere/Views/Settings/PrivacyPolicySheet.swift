@@ -5,7 +5,7 @@ struct PrivacyPolicySheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             PrivacyPolicyContent()
                 .navigationTitle(String(localized: "privacyPolicy.title"))
                 .navigationBarTitleDisplayMode(.inline)
@@ -58,7 +58,7 @@ struct PrivacyPolicyContent: View {
         .listStyle(.insetGrouped)
     }
 
-    private func paragraph(_ text: LocalizedStringResource) -> some View {
+    private func paragraph(_ text: LocalizedStringKey) -> some View {
         Text(text)
             .fixedSize(horizontal: false, vertical: true)
             .textSelection(.enabled)

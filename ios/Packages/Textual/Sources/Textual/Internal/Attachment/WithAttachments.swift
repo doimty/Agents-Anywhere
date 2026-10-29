@@ -17,7 +17,7 @@ struct WithAttachments<Content: View>: View {
   @Environment(\.emojiAttachmentLoader) private var emojiAttachmentLoader
   @Environment(\.colorEnvironment) private var colorEnvironment
 
-  @State private var model = Model()
+  @StateObject private var model = Model()
 
   private let attributedString: AttributedString
   private let content: (AttributedString) -> Content
@@ -44,8 +44,8 @@ struct WithAttachments<Content: View>: View {
 }
 
 extension WithAttachments {
-  @MainActor @Observable final class Model {
-    var resolvedAttributedString: AttributedString?
+  @MainActor final class Model: ObservableObject {
+    @Published var resolvedAttributedString: AttributedString?
 
     func resolveAttachments(
       in attributedString: AttributedString,
@@ -53,6 +53,7 @@ extension WithAttachments {
       emojiAttachmentLoader: any AttachmentLoader,
       environment: ColorEnvironmentValues
     ) async {
+      resolvedAttributedString = nil
       guard attributedString.containsValues(for: [\.imageURL, \.textual.emojiURL]) else {
         return
       }
@@ -93,6 +94,7 @@ extension WithAttachments {
         }
       }
 
+      guard !Task.isCancelled else { return }
       resolveAttachmentsFinished(
         attributedString: attributedString,
         attachments: Array(zip(ranges, attachments))

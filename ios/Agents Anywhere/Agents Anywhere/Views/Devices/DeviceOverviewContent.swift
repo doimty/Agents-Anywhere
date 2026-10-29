@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 import UIKit
 
@@ -30,15 +31,15 @@ struct DeviceProjectList: View {
                         openHint: String(localized: "Show project sessions"),
                         onOpen: { onOpen(project) }, onNewSession: { onNewSession(project) })
                     .contextMenu {
-                        Button(String(localized: "New session"), systemImage: "square.and.pencil") { onNewSession(project) }
-                        Button(String(localized: "Files"), systemImage: "folder") { onFiles(project) }.disabled(!canReadFiles)
+                        AppPageSystemButton(String(localized: "New session"), systemImage: "square.and.pencil") { onNewSession(project) }
+                        AppPageSystemButton(String(localized: "Files"), systemImage: "folder") { onFiles(project) }.disabled(!canReadFiles)
                         Divider()
-                        Button(String(localized: "Rename project"), systemImage: "pencil") { onEdit(project) }.disabled(!canManage)
-                        Button(project.pinned ? String(localized: "Unpin") : String(localized: "Pin"), systemImage: "pin") { onPin(project) }.disabled(!canManage)
-                        Button(String(localized: "Copy path"), systemImage: "doc.on.doc") { UIPasteboard.general.string = project.workspacePath }
+                        AppPageSystemButton(String(localized: "Rename project"), systemImage: "pencil") { onEdit(project) }.disabled(!canManage)
+                        AppPageSystemButton(project.pinned ? String(localized: "Unpin") : String(localized: "Pin"), systemImage: "pin") { onPin(project) }.disabled(!canManage)
+                        AppPageSystemButton(String(localized: "Copy path"), systemImage: "doc.on.doc") { UIPasteboard.general.string = project.workspacePath }
                         Divider()
-                        Button(String(localized: "Archive project sessions"), systemImage: "archivebox") { onArchive(project) }.disabled(!canManage)
-                        Button(String(localized: "Delete project"), systemImage: "trash", role: .destructive) { onDelete(project) }
+                        AppPageSystemButton(String(localized: "Archive project sessions"), systemImage: "archivebox") { onArchive(project) }.disabled(!canManage)
+                        AppPageSystemButton(String(localized: "Delete project"), systemImage: "trash", role: .destructive) { onDelete(project) }
                             .disabled(!canManage || project.sidebarSessionCounts.active + project.sidebarSessionCounts.archived > 0)
                     }
                 }
@@ -67,9 +68,9 @@ struct DeviceWorkspaceList: View {
                         openHint: String(localized: "Files"), canOpen: canReadFiles,
                         onOpen: { onOpen(workspace) }, onNewSession: { onNewSession(workspace) })
                     .contextMenu {
-                        Button(String(localized: "New session"), systemImage: "square.and.pencil") { onNewSession(workspace) }
-                        Button(String(localized: "Files"), systemImage: "folder") { onOpen(workspace) }.disabled(!canReadFiles)
-                        Button(String(localized: "Copy path"), systemImage: "doc.on.doc") { UIPasteboard.general.string = workspace.path }
+                        AppPageSystemButton(String(localized: "New session"), systemImage: "square.and.pencil") { onNewSession(workspace) }
+                        AppPageSystemButton(String(localized: "Files"), systemImage: "folder") { onOpen(workspace) }.disabled(!canReadFiles)
+                        AppPageSystemButton(String(localized: "Copy path"), systemImage: "doc.on.doc") { UIPasteboard.general.string = workspace.path }
                     }
                 }
             }
@@ -84,7 +85,7 @@ struct DeviceHeaderIconButton: View {
 
     var body: some View {
         Button(action: action) {
-            AppSymbol(symbol, size: 18).frame(width: 36, height: 36).contentShape(.rect)
+            AppSymbol(symbol, size: 18).frame(width: 36, height: 36).contentShape(Rectangle())
         }
         .buttonStyle(.plain).accessibilityLabel(title)
     }
@@ -102,14 +103,14 @@ private struct DeviceDirectoryGrid<Item: Identifiable, Card: View>: View {
                 ForEach(expanded ? items : Array(items.prefix(collapsedDirectoryCount))) { card($0) }
             }
             if items.count > collapsedDirectoryCount {
-                Button { withAnimation(.snappy) { expanded.toggle() } } label: {
+                Button { withAnimation(.appSnappy) { expanded.toggle() } } label: {
                     HStack(spacing: 4) {
                         Text(expanded ? String(localized: "Show less") :
                             String(localized: "Show all \(items.count - collapsedDirectoryCount) more"))
                         AppSymbol("chevron.right", size: 12).rotationEffect(.degrees(expanded ? -90 : 0))
                     }
                     .font(.footnote.weight(.medium)).foregroundStyle(.secondary)
-                    .frame(minHeight: 36).contentShape(.rect)
+                    .frame(minHeight: 36).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
@@ -142,22 +143,22 @@ private struct DeviceDirectoryCard: View {
                     }
                     Spacer(minLength: 0)
                 }
-                .frame(minHeight: 44).contentShape(.rect)
+                .frame(minHeight: 44).contentShape(Rectangle())
             }
             .buttonStyle(.plain).disabled(!canOpen).accessibilityHint(openHint)
             Button(action: onNewSession) {
-                AppSymbol("square.and.pencil", size: 18).frame(width: 40, height: 44).contentShape(.rect)
+                AppSymbol("square.and.pencil", size: 18).frame(width: 40, height: 44).contentShape(Rectangle())
             }
             .buttonStyle(.plain).accessibilityLabel(String(localized: "New session"))
         }
         .padding(.leading, 14).padding(.trailing, 4).padding(.vertical, 6)
-        .background(AppTheme.groupedFill(colorScheme), in: .rect(cornerRadius: 16, style: .continuous))
-        .contentShape(.contextMenuPreview, .rect(cornerRadius: 16, style: .continuous))
+        .background(AppTheme.groupedFill(colorScheme), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 }
 
 struct DeviceSessionList: View {
-    @Bindable var model: DeviceManagementModel
+    @Perception.Bindable var model: DeviceManagementModel
     let projects: [V2Project]
     let showsProjectNames: Bool
     let canManage: Bool
@@ -185,8 +186,9 @@ struct DeviceSessionList: View {
                 }
             }
         } content: {
-            ViewThatFits(in: .horizontal) {
+            AppPageHorizontalFit {
                 HStack(spacing: 8) { filters; Spacer(minLength: 8); scopeMenu }
+            } vertical: {
                 VStack(alignment: .leading, spacing: 8) { filters; scopeMenu }
             }
             .padding(.bottom, 4)
@@ -198,16 +200,14 @@ struct DeviceSessionList: View {
             if isEmpty {
                 DeviceEmptyText(text: String(localized: "No sessions here"))
             } else {
-                DeviceRows {
-                    ForEach(model.filteredSessions) { session in row(session) }
-                }
+                DeviceRows(model.filteredSessions) { session in row(session) }
             }
         }
     }
 
     private var filters: some View {
         DeviceFilterTags(values: V2DeviceSessionFilter.allCases,
-            selection: Binding(get: { model.sessionFilter }, set: model.setSessionFilter)) { String(localized: $0.title) }
+            selection: Binding(get: { model.sessionFilter }, set: model.setSessionFilter)) { $0.title }
     }
 
     private var scopeMenu: some View {
@@ -225,7 +225,7 @@ struct DeviceSessionList: View {
                 AppSymbol("chevron.down", size: 12)
             }
             .font(.subheadline).foregroundStyle(.secondary)
-            .frame(minHeight: 34).contentShape(.rect)
+            .frame(minHeight: 34).contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(showsProjectNames ? String(localized: "Project") : String(localized: "工作目录"))
@@ -260,16 +260,16 @@ struct DeviceSessionList: View {
                 }
             }
             .padding(.vertical, 10).frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
-            .contentShape(.rect)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityValue(session.status.displayName)
         .contextMenu {
-            Button(String(localized: "Open"), systemImage: "arrow.up.right") { onOpen(session.id) }
-            Button(session.archived ? String(localized: "Restore") : String(localized: "Archive"),
+            AppPageSystemButton(String(localized: "Open"), systemImage: "arrow.up.right") { onOpen(session.id) }
+            AppPageSystemButton(session.archived ? String(localized: "Restore") : String(localized: "Archive"),
                 systemImage: session.archived ? "tray.and.arrow.up" : "archivebox") { onArchive(session) }
                 .disabled(!canManage || session.id.hasPrefix("local:"))
-            Button(String(localized: "Copy session ID"), systemImage: "doc.on.doc") { UIPasteboard.general.string = session.id }
+            AppPageSystemButton(String(localized: "Copy session ID"), systemImage: "doc.on.doc") { UIPasteboard.general.string = session.id }
         }
     }
 
@@ -315,7 +315,7 @@ struct DeviceSessionSelectionDock: View {
             AppGlassButton(restores ? String(localized: "dashboard.device.unarchiveSelected") : String(localized: "dashboard.device.archiveSelected"), systemImage: restores ? "tray.and.arrow.up" : "archivebox",
                 style: .prominent, isLoading: isWorking, disabled: disabled || count == 0, maxWidth: nil, action: onSubmit)
         }
-        .padding(14).glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .padding(14).appGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .padding(.horizontal, 24).padding(.bottom, 12).frame(maxWidth: 760).frame(maxWidth: .infinity)
     }
 }

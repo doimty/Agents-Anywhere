@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 struct SessionInteractionDock: View {

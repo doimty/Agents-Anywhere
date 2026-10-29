@@ -1,7 +1,8 @@
+import Perception
 import SwiftUI
 
 struct AddDeviceAgentSheet: View {
-    @Bindable var model: DeviceAgentModel
+    @Perception.Bindable var model: DeviceAgentModel
     @Environment(\.dismiss) private var dismiss
     @State private var configuration: Configuration?
     @State private var schemaError: String?
@@ -13,7 +14,7 @@ struct AddDeviceAgentSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     if !model.connected {
@@ -69,7 +70,7 @@ struct AddDeviceAgentSheet: View {
                 }
                 AppGlassButton(String(localized: "dashboard.device.configure"), disabled: !model.connected || model.busyID != nil) { configure(type) }
             }
-        }.padding(16).background(.quaternary.opacity(0.45), in: .rect(cornerRadius: 18))
+        }.padding(16).background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     private func configure(_ type: V2RuntimeType) {

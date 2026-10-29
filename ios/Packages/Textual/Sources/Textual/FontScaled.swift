@@ -111,6 +111,7 @@ extension FontScaled where Value == EdgeInsets {
 
 // MARK: - ProposedViewSize
 
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension ProposedViewSize: FontScalable {
   public func scaled(by fontSize: CGFloat) -> ProposedViewSize {
     ProposedViewSize(

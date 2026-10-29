@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 import QuickLook
 
@@ -133,7 +134,7 @@ struct SessionChatView: View, Equatable {
             guard !hasStartedLoading, settled else { return }
             // Show feedback immediately, but let the drawer's completed
             // animation and the selection's final layout leave the main thread.
-            do { try await Task.sleep(for: .milliseconds(120)) } catch { return }
+            do { try await ClientTask.sleep(for: .milliseconds(120)) } catch { return }
             guard !Task.isCancelled else { return }
             var transaction = Transaction(animation: nil)
             transaction.disablesAnimations = true
@@ -172,20 +173,20 @@ struct SessionChatView: View, Equatable {
             return ["https", "http", "mailto"].contains(url.scheme?.lowercased() ?? "") ? .systemAction : .discarded
         })
         .quickLookPreview($previewURL)
-        .onChange(of: previewURL) { _, url in if url == nil { cleanPreview() } }
+        .appOnChange(of: previewURL) { _, url in if url == nil { cleanPreview() } }
         .onDisappear { if previewURL == nil { cleanPreview() } }
-        .onChange(of: session.failure, initial: true) { _, failure in
+        .appOnChange(of: session.failure, initial: true) { _, failure in
             toasts.update(source: "session", failure: failure, canRetry: failure?.kind != .authentication)
         }
-        .onChange(of: model.error, initial: true) { _, message in
+        .appOnChange(of: model.error, initial: true) { _, message in
             toasts.update(source: "operation", failure: message.map { V2ClientFailure(kind: .rejected, message: $0) })
         }
-        .onChange(of: model.commandFailure) { _, feedback in
+        .appOnChange(of: model.commandFailure) { _, feedback in
             // Each command failure is new, even when its text repeats a dismissed one.
             toasts.update(source: "command", failure: nil)
             toasts.update(source: "command", failure: feedback.map { V2ClientFailure(kind: .rejected, message: $0.message ?? "") }, title: feedback?.title)
         }
-        .onChange(of: model.openingError, initial: true) { _, message in
+        .appOnChange(of: model.openingError, initial: true) { _, message in
             toasts.update(source: "opening", failure: message.map { V2ClientFailure(kind: .unavailable, message: $0) })
         }
     }
@@ -276,7 +277,7 @@ private struct CommandSuccessToast: View {
         .padding(.horizontal, ChatControlMetrics.collapsedHorizontalInset)
         .accessibilityHint(String(localized: "轻点关闭"))
         .task(id: feedback.id) {
-            try? await Task.sleep(for: .seconds(4))
+            try? await ClientTask.sleep(for: .seconds(4))
             if !Task.isCancelled { onDismiss() }
         }
     }

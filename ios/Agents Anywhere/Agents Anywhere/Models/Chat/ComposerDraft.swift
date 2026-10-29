@@ -1,5 +1,5 @@
 import Foundation
-import Observation
+import Perception
 
 nonisolated struct ChatAttachment: Codable, Identifiable, Equatable {
     let id: String
@@ -21,7 +21,7 @@ nonisolated struct ChatAttachment: Codable, Identifiable, Equatable {
 }
 
 /// The editor owns marked-text state; the account/session owns the draft lifetime.
-@MainActor @Observable
+@MainActor @Perceptible
 final class ComposerDraft {
     private(set) var isValid = true
     var text = ""

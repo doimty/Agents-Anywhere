@@ -102,6 +102,7 @@ extension DynamicColor {
   }
 }
 
+@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension DynamicColor: ShapeStyle {
   public func resolve(in environment: EnvironmentValues) -> some ShapeStyle {
     bestMatch(

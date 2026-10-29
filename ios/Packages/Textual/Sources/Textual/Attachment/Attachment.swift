@@ -36,7 +36,7 @@ public protocol Attachment: Sendable, Hashable, CustomStringConvertible {
   func baselineOffset(in environment: TextEnvironmentValues) -> CGFloat
 
   /// Returns the attachment size for the given proposal.
-  func sizeThatFits(_ proposal: ProposedViewSize, in environment: TextEnvironmentValues) -> CGSize
+  func sizeThatFits(_ proposal: TextualSizeProposal, in environment: TextEnvironmentValues) -> CGSize
 
   /// Returns a PNG representation of the attachment, if available.
   ///
@@ -96,7 +96,7 @@ public struct AnyAttachment: Attachment {
   }
 
   public func sizeThatFits(
-    _ proposal: ProposedViewSize,
+    _ proposal: TextualSizeProposal,
     in environment: TextEnvironmentValues
   ) -> CGSize {
     base.sizeThatFits(proposal, in: environment)

@@ -3,7 +3,7 @@ import SwiftUI
 
 extension LayoutDirection {
   static func localeBased(locale: Locale = .current) -> LayoutDirection {
-    switch locale.language.characterDirection {
+    switch Locale.characterDirection(forLanguage: locale.languageCode ?? "en") {
     case .rightToLeft:
       return .rightToLeft
     case .leftToRight:

@@ -1,10 +1,10 @@
 import Foundation
-import Observation
+import Perception
 #if os(iOS)
 import UIKit
 #endif
 
-@MainActor @Observable
+@MainActor @Perceptible
 final class AppState {
     enum Route {
         case loading
@@ -43,23 +43,23 @@ final class AppState {
     private(set) var isAccountWorking = false
     private(set) var accountError: String?
 
-    @ObservationIgnored private let keychain = KeychainStore()
-    @ObservationIgnored private let restoration = V2RestorationStore()
-    @ObservationIgnored private var accountSyncTask: Task<Void, Never>?
-    @ObservationIgnored private var accountSyncID = UUID()
-    @ObservationIgnored private var authenticationEpoch = UUID()
-    @ObservationIgnored private let serverDefaultsKey = "agentsAnywhere.serverURL"
-    @ObservationIgnored private let tokenAccount = "accessToken"
-    @ObservationIgnored private let dashboardClientId = "ios-dashboard-\(UUID().uuidString)"
-    @ObservationIgnored private var lastDashboardRefreshAt: Date?
-    @ObservationIgnored private var dashboardUpdatesTask: Task<Void, Never>?
-    @ObservationIgnored private var cachedServices: V2ClientServices?
-    @ObservationIgnored private var cachedServicesTokenProvider: MutableAuthTokenProvider?
+    @PerceptionIgnored private let keychain = KeychainStore()
+    @PerceptionIgnored private let restoration = V2RestorationStore()
+    @PerceptionIgnored private var accountSyncTask: Task<Void, Never>?
+    @PerceptionIgnored private var accountSyncID = UUID()
+    @PerceptionIgnored private var authenticationEpoch = UUID()
+    @PerceptionIgnored private let serverDefaultsKey = "agentsAnywhere.serverURL"
+    @PerceptionIgnored private let tokenAccount = "accessToken"
+    @PerceptionIgnored private let dashboardClientId = "ios-dashboard-\(UUID().uuidString)"
+    @PerceptionIgnored private var lastDashboardRefreshAt: Date?
+    @PerceptionIgnored private var dashboardUpdatesTask: Task<Void, Never>?
+    @PerceptionIgnored private var cachedServices: V2ClientServices?
+    @PerceptionIgnored private var cachedServicesTokenProvider: MutableAuthTokenProvider?
     /// Keychain is the durable source; view bodies and task identities read
     /// this copy instead of performing a Security framework round trip each time.
-    @ObservationIgnored private var cachedToken: String?
-    @ObservationIgnored private var isInBackground = false
-    @ObservationIgnored private var visibleSessionID: V2SessionID?
+    @PerceptionIgnored private var cachedToken: String?
+    @PerceptionIgnored private var isInBackground = false
+    @PerceptionIgnored private var visibleSessionID: V2SessionID?
 
     init() {
         Task { await restoreSession() }
@@ -140,7 +140,7 @@ final class AppState {
                     restoreConnectionError = error.localizedDescription
                     // A transport failure retains the profile, route and cache.
                     // Backoff performs reads only; pending sends are never replayed.
-                    do { try await Task.sleep(for: .seconds(min(5 * (1 << min(attempt, 3)), 30))) } catch { return }
+                    do { try await ClientTask.sleep(for: .seconds(min(5 * (1 << min(attempt, 3)), 30))) } catch { return }
                     attempt += 1
                 }
             }
@@ -731,7 +731,7 @@ final class AppState {
             }
 
             do {
-                try await Task.sleep(for: .seconds(min(1 << min(attempt, 4), 15)))
+                try await ClientTask.sleep(for: .seconds(min(1 << min(attempt, 4), 15)))
                 attempt += 1
             } catch {
                 return

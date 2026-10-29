@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 import UIKit
 
@@ -21,7 +22,7 @@ struct ChatShellView: View {
             hasRegularWidth: horizontalSizeClass == .regular
         )
         sidebarLayout(layout)
-        .onChange(of: layout, initial: true) { _, next in sidebar.setLayout(next) }
+        .appOnChange(of: layout, initial: true) { _, next in sidebar.setLayout(next) }
         .task(id: NewSessionLoadKey(target: appState.nativeChatServices?.newSession.refreshKey,
             presentationID: newSessionPresentationID)) {
             // Warm the next draft even when launch restores a session/device.
@@ -44,7 +45,7 @@ struct ChatShellView: View {
                 }
             }
         }
-        .onChange(of: visibleSessionID, initial: true) { _, id in
+        .appOnChange(of: visibleSessionID, initial: true) { _, id in
             appState.setVisibleSession(id)
         }
         .onDisappear { appState.setVisibleSession(nil) }

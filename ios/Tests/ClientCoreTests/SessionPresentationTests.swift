@@ -1,6 +1,5 @@
 import Foundation
-import Observation
-import Synchronization
+import Perception
 import Testing
 @testable import ClientCore
 
@@ -25,7 +24,7 @@ import Testing
     @Test @MainActor func tokenAndToolOutputUpdatesDoNotInvalidateListStructure() throws {
         let row = ChatTimelineRowModel(try item("message", status: "running", content: ["text": "a"]))
         let changed = ObservationFlag()
-        withObservationTracking { _ = row.structure } onChange: { changed.set() }
+        withPerceptionTracking { _ = row.structure } onChange: { changed.set() }
         row.flush(try item("message", status: "running", content: ["text": "another token"]), animate: true, now: 1)
         #expect(!changed.isSet && row.text != "a")
         row.flush(try item("message", status: "done", content: ["text": "another token"]), animate: true, now: 2)
@@ -33,7 +32,7 @@ import Testing
 
         let tool = ChatTimelineRowModel(try item(status: "running", content: ["kind": "command", "command": "build", "output": "start"]))
         let regrouped = ObservationFlag()
-        withObservationTracking { _ = TimelineGrouping.groups([tool], interactionTargets: []) } onChange: { regrouped.set() }
+        withPerceptionTracking { _ = TimelineGrouping.groups([tool], interactionTargets: []) } onChange: { regrouped.set() }
         tool.flush(try item(status: "running", content: ["kind": "command", "command": "build", "output": String(repeating: "log\n", count: 2000)]), animate: true, now: 3)
         #expect(!regrouped.isSet)
     }
@@ -55,7 +54,7 @@ import Testing
         let disclosures = TimelineDisclosureState()
         disclosures.toggle("first"); disclosures.toggle("second")
         let changed = ObservationFlag()
-        withObservationTracking { _ = disclosures.isExpanded("second") } onChange: { changed.set() }
+        withPerceptionTracking { _ = disclosures.isExpanded("second") } onChange: { changed.set() }
         disclosures.toggle("first")
         #expect(!disclosures.isExpanded("first") && disclosures.isExpanded("second"))
         #expect(!changed.isSet)
@@ -139,7 +138,7 @@ import Testing
 }
 
 nonisolated private final class ObservationFlag: Sendable {
-    private let value = Mutex(false)
+    private let value = ClientMutex(false)
     var isSet: Bool { value.withLock { $0 } }
     func set() { value.withLock { $0 = true } }
 }

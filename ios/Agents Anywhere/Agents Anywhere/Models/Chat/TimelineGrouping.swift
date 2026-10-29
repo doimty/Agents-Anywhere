@@ -1,5 +1,5 @@
 import Foundation
-import Observation
+import Perception
 
 struct ChatTimelineGroup: Identifiable, Equatable {
     enum Kind: Equatable { case single, tools, reconnect, agents(String) }
@@ -59,9 +59,9 @@ enum TimelineGrouping {
     }
 }
 
-@MainActor @Observable final class TimelineDisclosureState {
-    @Observable fileprivate final class Entry { var expanded = false }
-    @ObservationIgnored private var entries: [String: Entry] = [:]
+@MainActor @Perceptible final class TimelineDisclosureState {
+    @Perceptible fileprivate final class Entry { var expanded = false }
+    @PerceptionIgnored private var entries: [String: Entry] = [:]
     private func entry(_ id: String) -> Entry {
         if let existing = entries[id] { return existing }
         let value = Entry(); entries[id] = value; return value

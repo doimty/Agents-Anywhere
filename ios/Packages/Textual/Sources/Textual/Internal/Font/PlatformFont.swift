@@ -25,12 +25,7 @@ extension FontDescriptor {
     #elseif canImport(UIKit) && !os(watchOS)
       preferredFontDescriptor(
         withTextStyle: .init(style),
-        compatibleWith: UITraitCollection(
-          legibilityWeight: .init(environment.legibilityWeight)
-        )
-        .modifyingTraits {
-          $0.preferredContentSizeCategory = .init(environment.dynamicTypeSize)
-        }
+        compatibleWith: environment.portableFontTraits
       )
     #else
       preferredFontDescriptor(withTextStyle: .init(style))
@@ -93,11 +88,7 @@ extension PlatformFont.TextStyle {
         #else
           return .preferredFont(
             forTextStyle: .init(textStyle),
-            compatibleWith: UITraitCollection(
-              legibilityWeight: .init(environment.legibilityWeight)
-            ).modifyingTraits {
-              $0.preferredContentSizeCategory = .init(environment.dynamicTypeSize)
-            }
+            compatibleWith: environment.portableFontTraits
           )
         #endif
       }
@@ -108,11 +99,7 @@ extension PlatformFont.TextStyle {
       #else
         return fontMetrics.scaledFont(
           for: font,
-          compatibleWith: UITraitCollection(
-            legibilityWeight: .init(environment.legibilityWeight)
-          ).modifyingTraits {
-            $0.preferredContentSizeCategory = .init(environment.dynamicTypeSize)
-          }
+          compatibleWith: environment.portableFontTraits
         )
       #endif
     }

@@ -72,7 +72,7 @@ private struct SessionTurnReviewSheet: View {
     @State private var expanded: Set<String> = []
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 12) {
                     if isPartial {
@@ -110,8 +110,8 @@ private struct SessionTurnReviewSheet: View {
                                 }
                             }
                         }
-                        .background(Color(uiColor: .secondarySystemBackground), in: .rect(cornerRadius: 14))
-                        .clipShape(.rect(cornerRadius: 14))
+                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
                 }.padding(16)
             }

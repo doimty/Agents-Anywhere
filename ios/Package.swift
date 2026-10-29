@@ -3,10 +3,14 @@ import PackageDescription
 
 let package = Package(
     name: "AgentsAnywhereClient",
-    platforms: [.macOS(.v15), .iOS("26.5")],
+    platforms: [.macOS(.v13), .iOS(.v15)],
+    dependencies: [
+        .package(url: "https://github.com/pointfreeco/swift-perception", exact: "2.0.11"),
+    ],
     targets: [
         .target(
             name: "ClientCore",
+            dependencies: [.product(name: "Perception", package: "swift-perception")],
             path: "Agents Anywhere/Agents Anywhere",
             exclude: [
                 "App", "Assets.xcassets", "Resources", "Services", "Stores", "Views",
@@ -17,7 +21,7 @@ let package = Package(
         ),
         .testTarget(
             name: "ClientCoreTests",
-            dependencies: ["ClientCore"],
+            dependencies: ["ClientCore", .product(name: "Perception", package: "swift-perception")],
             path: "Tests/ClientCoreTests",
             resources: [.copy("Fixtures")],
             swiftSettings: [.defaultIsolation(MainActor.self)]

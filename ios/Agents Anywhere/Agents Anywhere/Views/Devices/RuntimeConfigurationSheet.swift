@@ -32,7 +32,7 @@ struct RuntimeConfigurationSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             ScrollViewReader { proxy in
                 Form {
                     Group {
@@ -52,10 +52,10 @@ struct RuntimeConfigurationSheet: View {
                     }
                 }
                 .frame(maxWidth: 720).frame(maxWidth: .infinity)
-                .scrollDismissesKeyboard(.interactively)
-                .onChange(of: model.errors) { _, errors in
+                .appScrollDismissesKeyboardInteractively()
+                .appOnChange(of: model.errors) { _, errors in
                     if let first = model.schema.fields.first(where: { errors[$0.id] != nil }) {
-                        withAnimation(.smooth) { proxy.scrollTo(first.id, anchor: .top) }
+                        withAnimation(.appSmooth) { proxy.scrollTo(first.id, anchor: .top) }
                     }
                 }
             }

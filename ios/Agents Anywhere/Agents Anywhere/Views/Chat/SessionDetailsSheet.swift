@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -10,7 +11,7 @@ struct SessionDetailsSheet: View {
     @State private var showsExporter = false
     @State private var error: String?
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             List {
                 if let meta = chat.session.metadata {
                     Section(String(localized: "会话")) {
@@ -69,7 +70,7 @@ struct SessionDetailsSheet: View {
         }
     }
     private func row(_ title: String, _ value: String) -> some View {
-        LabeledContent(title) { Text(value).textSelection(.enabled).font(.subheadline).multilineTextAlignment(.trailing) }
+        AppLabeledContent(title) { Text(value).textSelection(.enabled).font(.subheadline).multilineTextAlignment(.trailing) }
     }
 }
 

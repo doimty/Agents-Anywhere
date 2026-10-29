@@ -1,8 +1,9 @@
+import Perception
 import SwiftUI
 import UIKit
 
 struct NewSessionView: View, Equatable {
-    @Bindable var model: NewSessionModel
+    @Perception.Bindable var model: NewSessionModel
     let connectors: [V2Connector]
     let sessions: [V2SessionMeta]
     let repository: V2DashboardRepository
@@ -43,9 +44,9 @@ struct NewSessionView: View, Equatable {
                         .frame(maxWidth: .infinity)
                         .background { ChatPageScrollEdge() }
                 }
-                .scrollDismissesKeyboard(.interactively)
-                .scrollEdgeEffectStyle(.soft, for: .top)
-                .refreshable { await refresh() }
+                .appScrollDismissesKeyboardInteractively()
+                .appScrollEdgeEffect(.soft, for: .top)
+                .appPageRefreshable { await refresh() }
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack(alignment: .leading, spacing: 0) {

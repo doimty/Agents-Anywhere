@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 /// Non-inline errors float below the header. Paging only changes the visible

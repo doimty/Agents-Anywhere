@@ -7,6 +7,7 @@
 
     func isEqual(to other: any TextLayoutCollection) -> Bool
     func needsPositionReconciliation(with other: any TextLayoutCollection) -> Bool
+    @available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
     func index(of layout: Text.Layout) -> Int?
   }
 
@@ -35,6 +36,7 @@
       base.needsPositionReconciliation(with: other)
     }
 
+    @available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
     func index(of layout: Text.Layout) -> Int? {
       base.index(of: layout)
     }

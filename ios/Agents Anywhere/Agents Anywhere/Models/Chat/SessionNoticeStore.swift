@@ -1,7 +1,7 @@
 import Foundation
-import Observation
+import Perception
 
-@MainActor @Observable
+@MainActor @Perceptible
 final class SessionNoticeModel: Identifiable {
     enum Submission: Equatable { case idle, sending(String), accepted, uncertain, unavailable }
     let id: String
@@ -14,7 +14,7 @@ final class SessionNoticeModel: Identifiable {
     private(set) var customQuestions: Set<String> = []
     var fields: [String: [String: JSONValue]] = [:]
     var composingFields: Set<String> = []
-    @ObservationIgnored private var submittedRevision = 0
+    @PerceptionIgnored private var submittedRevision = 0
 
     init(_ notice: V2RuntimeNotice) {
         id = notice.id; self.notice = notice; form = NoticeInputForm(notice)
@@ -121,7 +121,7 @@ final class SessionNoticeModel: Identifiable {
     func acknowledgeUncertain() { if submission == .uncertain { submission = .idle; error = nil } }
 }
 
-@MainActor @Observable
+@MainActor @Perceptible
 final class SessionNoticeStore {
     private(set) var notices: [SessionNoticeModel] = []
     var hasDraft: Bool { notices.contains { $0.hasDraft } }

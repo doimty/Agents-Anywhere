@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 struct SessionTimelineGroupView: View, Equatable {
@@ -100,7 +101,7 @@ struct SessionTimelineEventView: View {
         case .marker:
             if let detail = value.detail {
                 TimelineFold(id: row.id, title: value.title, symbol: value.symbol, status: row.value.status, disclosures: disclosures) {
-                    TimelineCodePanel(label: String(localized: "Details"), code: detail.formattedJSON).clipShape(.rect(cornerRadius: 14))
+                    TimelineCodePanel(label: String(localized: "Details"), code: detail.formattedJSON).clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
             } else { TimelineMarkerRow(title: value.title, symbol: value.symbol, status: row.value.status) }
         }
@@ -146,7 +147,7 @@ private struct TimelineToolDetails: View {
             }
             ForEach(changes) { change in TimelineFileChangeView(change: change, onFile: onFile) }
             if let output = value.output { TimelineCodePanel(label: String(localized: "Output"), code: output) }
-        }.clipShape(.rect(cornerRadius: 14))
+        }.clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }
 
@@ -257,7 +258,7 @@ struct TimelineCodePanel: View {
                     UIPasteboard.general.string = code; copied = true
                 } label: { AppSymbol(copied ? "checkmark" : "document.on.document").frame(width: 44, height: 44) }
                 .buttonStyle(.plain).accessibilityLabel(copied ? String(localized: "已复制") : String(localized: "复制 \(label)"))
-                .task(id: copied) { if copied { try? await Task.sleep(for: .seconds(2)); copied = false } }
+                .task(id: copied) { if copied { try? await ClientTask.sleep(for: .seconds(2)); copied = false } }
             }.padding(.leading, 12).foregroundStyle(.secondary).background(.quaternary.opacity(0.3))
             ScrollView([.horizontal, .vertical]) {
                 if isDiff {

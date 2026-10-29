@@ -99,7 +99,7 @@ import Testing
     }
 
     @Test func glyphBirthsRemainIndependent() throws {
-        let start = ContinuousClock.now
+        let start = ClientClock.now
         var schedule = ReplyFlushSchedule(start: start, interval: .milliseconds(200))
         let first = schedule.deadline
         schedule.advance(after: first.advanced(by: .milliseconds(4)))

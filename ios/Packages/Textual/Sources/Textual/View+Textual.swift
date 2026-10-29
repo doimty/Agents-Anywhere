@@ -32,7 +32,7 @@ extension TextualNamespace where Base: View {
   /// Sets line spacing using a font-relative value.
   @MainActor public func lineSpacing(_ lineSpacing: FontScaled<CGFloat>) -> some View {
     WithFontScaledValue(lineSpacing) {
-      base.lineSpacing($0)
+      base.lineSpacing($0).environment(\.portableLineSpacing, $0)
     }
   }
 
@@ -65,7 +65,7 @@ extension TextualNamespace where Base: View {
   ) -> some View {
     WithFontScaledValue(
       FontScaled(
-        ProposedViewSize(
+        TextualSizeProposal(
           width: width?.value,
           height: height?.value
         )
@@ -166,7 +166,7 @@ extension TextualNamespace where Base: View {
   @MainActor public func textSelectionScope() -> some View {
     base.modifier(TextSelectionInteraction())
       .textual.textSelection(.enabled)
-      .coordinateSpace(.textContainer)
+      .coordinateSpace(name: "textContainer")
   }
 
   /// Lets an embedded control receive input through the text selection overlay.
@@ -174,7 +174,7 @@ extension TextualNamespace where Base: View {
     base.background {
       GeometryReader { geometry in
         Color.clear.preference(key: OverflowFrameKey.self,
-          value: [geometry.frame(in: .textContainer)])
+          value: [geometry.frame(in: .named("textContainer"))])
       }
     }
   }

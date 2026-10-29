@@ -9,6 +9,7 @@ import SwiftUI
 // concrete origin using `GeometryReader`, and installs an `AttachmentView` that draws attachments
 // at their run bounds.
 
+@available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
 struct AttachmentOverlay: ViewModifier {
   private let attachments: Set<AnyAttachment>
 

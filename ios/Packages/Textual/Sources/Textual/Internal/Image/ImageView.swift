@@ -37,7 +37,7 @@ private struct AnimatedImageView: View {
       SwiftUI.Image(decorative: frame, scale: 1.0)
         .resizable()
     }
-    .onChange(of: content) { _, newValue in
+    .textualOnChange(of: content) { _, newValue in
       clock = AnimationClock(image: newValue)
     }
   }

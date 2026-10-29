@@ -10,7 +10,7 @@
   // range within this layout, and paints them in a `Canvas` behind the text.
 
   struct AppKitTextSelectionView: View {
-    @Environment(TextSelectionModel.self) private var textSelectionModel: TextSelectionModel?
+    @Environment(\.textSelectionModel) private var textSelectionModel: TextSelectionModel?
     @State private var selectionRects: [TextSelectionRect] = []
 
     private let layout: Text.Layout

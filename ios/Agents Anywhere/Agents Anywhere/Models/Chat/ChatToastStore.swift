@@ -1,5 +1,5 @@
 import Foundation
-import Observation
+import Perception
 
 struct ChatToast: Identifiable, Equatable {
     let id: String
@@ -10,7 +10,7 @@ struct ChatToast: Identifiable, Equatable {
 
 /// One current issue per source. Dismissing an issue does not change connection
 /// facts or enable writes, and repeated identical observations do not reopen it.
-@MainActor @Observable final class ChatToastStore {
+@MainActor @Perceptible final class ChatToastStore {
     private(set) var items: [ChatToast] = []
     private var latest: [String: V2ClientFailure] = [:]
 

@@ -12,22 +12,22 @@ nonisolated enum ReplyPresentation {
     /// A published batch starts drawing after its Markdown parse and the next
     /// frame. Drawing clocks stay alive this much longer than the reveal.
     static let drawSlack: TimeInterval = 0.1
-    static let settleDelay: Duration = .seconds(revealSeconds + drawSlack)
+    static let settleDelay: ClientDuration = .seconds(revealSeconds + drawSlack)
 }
 
 /// Advance deadlines independently of the work done at each one, so processing
 /// time doesn't accumulate into a slower cadence. Late deadlines skip ahead.
 nonisolated struct ReplyFlushSchedule {
-    let interval: Duration
-    private(set) var deadline: ContinuousClock.Instant
+    let interval: ClientDuration
+    private(set) var deadline: ClientClock.Instant
 
-    init(start: ContinuousClock.Instant, interval: Duration) {
+    init(start: ClientClock.Instant, interval: ClientDuration) {
         precondition(interval > .zero)
         self.interval = interval
         deadline = start.advanced(by: interval)
     }
 
-    mutating func advance(after now: ContinuousClock.Instant) {
+    mutating func advance(after now: ClientClock.Instant) {
         deadline = deadline.advanced(by: interval)
         if deadline <= now { deadline = now.advanced(by: interval) }
     }

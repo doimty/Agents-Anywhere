@@ -13,7 +13,7 @@ nonisolated struct URLSessionHTTPTransport: HTTPTransport {
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
     private let retryPolicy: HTTPReadRetryPolicy
-    private let sleep: (Duration) async throws -> Void
+    private let sleep: (ClientDuration) async throws -> Void
 
     init(
         serverURL: URL,
@@ -22,7 +22,7 @@ nonisolated struct URLSessionHTTPTransport: HTTPTransport {
         encoder: JSONEncoder = JSONEncoder(),
         decoder: JSONDecoder = JSONDecoder(),
         retryPolicy: HTTPReadRetryPolicy = HTTPReadRetryPolicy(),
-        sleep: @escaping (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+        sleep: @escaping (ClientDuration) async throws -> Void = { try await ClientTask.sleep(for: $0) }
     ) {
         self.serverURL = serverURL.normalizedV2ServerURL()
         self.urlSession = urlSession

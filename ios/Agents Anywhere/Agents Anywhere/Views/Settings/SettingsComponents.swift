@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 private struct SettingsCloseKey: EnvironmentKey {
@@ -16,7 +17,7 @@ struct SettingsRow: View {
     var value: String?
     var body: some View {
         if let value, !value.isEmpty {
-            LabeledContent {
+            AppLabeledContent {
                 Text(value).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
             } label: {
                 Label(title, appSymbol: symbol)
@@ -46,7 +47,7 @@ struct SettingsLanguageView: View {
     var body: some View {
         List {
             Section {
-                LabeledContent(String(localized: "Current language"), value: Self.currentLanguage)
+                AppLabeledContent(String(localized: "Current language"), value: Self.currentLanguage)
                 Button(String(localized: "Open iOS Settings")) {
                     if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                 }
@@ -65,7 +66,7 @@ struct SettingsServerView: View {
     var body: some View {
         List {
             Section(String(localized: "Connection")) {
-                LabeledContent(String(localized: "Status"), value: appState.isServerConnected ? String(localized: "Connected") : String(localized: "Offline"))
+                AppLabeledContent(String(localized: "Status"), value: appState.isServerConnected ? String(localized: "Connected") : String(localized: "Offline"))
                 if let url = appState.serverURL {
                     Text(url.absoluteString).font(.callout.monospaced()).textSelection(.enabled)
                     Button(String(localized: "Copy server address"), appSymbol: "doc.on.doc") {
@@ -84,8 +85,8 @@ struct SettingsAboutView: View {
     var body: some View {
         List {
             Section {
-                LabeledContent(String(localized: "Version"), value: Self.version)
-                LabeledContent(String(localized: "Build"), value: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—")
+                AppLabeledContent(String(localized: "Version"), value: Self.version)
+                AppLabeledContent(String(localized: "Build"), value: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—")
             }
             Section {
                 NavigationLink {

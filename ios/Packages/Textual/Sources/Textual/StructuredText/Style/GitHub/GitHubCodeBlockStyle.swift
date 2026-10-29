@@ -3,6 +3,7 @@ import SwiftUI
 extension StructuredText {
   /// A code block style inspired by GitHub’s rendering.
   public struct GitHubCodeBlockStyle: CodeBlockStyle {
+    @Environment(\.colorEnvironment) private var colors
     /// Creates the GitHub code block style.
     public init() {}
 
@@ -12,10 +13,10 @@ extension StructuredText {
           .textual.lineSpacing(.fontScaled(0.225))
           .textual.fontScale(0.85)
           .fixedSize(horizontal: false, vertical: true)
-          .monospaced()
+          .modifier(PortableMonospacedModifier())
           .padding(16)
       }
-      .background(DynamicColor.gitHubSecondaryBackground)
+      .background(DynamicColor.gitHubSecondaryBackground.bestMatch(for: colors) ?? .clear)
       .clipShape(RoundedRectangle(cornerRadius: 6))
       .textual.blockSpacing(.init(top: 0, bottom: 16))
     }

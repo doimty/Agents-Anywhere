@@ -12,7 +12,7 @@ import SwiftUI
 struct HighlightedTextFragment: View {
   @Environment(\.textEnvironment) private var textEnvironment
 
-  @State private var model = Model()
+  @StateObject private var model = Model()
 
   private let content: AttributedSubstring
   private let languageHint: String?
@@ -30,20 +30,20 @@ struct HighlightedTextFragment: View {
 
   var body: some View {
     TextFragment(model.highlightedCode ?? AttributedString(content))
-      .foregroundStyle(theme.foregroundColor)
+      .foregroundStyle(theme.foregroundColor.bestMatch(for: textEnvironment.colorEnvironment) ?? .primary)
       .task(id: content) {
         // A streaming code block changes with every published batch. Tokenizing
         // the whole block through JavaScriptCore each time is wasted when the
         // next batch cancels it; wait for the text to rest before re-highlighting.
         if model.highlightedCode != nil {
-          do { try await Task.sleep(for: .milliseconds(350)) } catch { return }
+          do { try await Task.sleep(nanoseconds: 350_000_000) } catch { return }
         }
         await model.tokenize(
           content: content,
           languageHint: languageHint
         )
       }
-      .onChange(of: Tuple(model.tokens, textEnvironment)) { _, newValue in
+      .textualOnChange(of: Tuple(model.tokens, textEnvironment)) { _, newValue in
         model.highlight(
           tokens: newValue.values.0,
           presentationIntent: content.presentationIntent,
@@ -55,16 +55,18 @@ struct HighlightedTextFragment: View {
 }
 
 extension HighlightedTextFragment {
-  @MainActor @Observable final class Model {
-    var tokens: [CodeToken] = []
-    var highlightedCode: AttributedString?
+  @MainActor final class Model: ObservableObject {
+    @Published var tokens: [CodeToken] = []
+    @Published var highlightedCode: AttributedString?
 
     func tokenize(content: AttributedSubstring, languageHint: String?) async {
       let code = String(content.characters[...])
       tokens = [CodeToken(content: code, type: .plain)]
 
       if let tokenizer = CodeTokenizer.shared, let languageHint {
-        tokens = await tokenizer.tokenize(code: code, language: languageHint)
+        let result = await tokenizer.tokenize(code: code, language: languageHint)
+        guard !Task.isCancelled else { return }
+        tokens = result
       }
     }
 

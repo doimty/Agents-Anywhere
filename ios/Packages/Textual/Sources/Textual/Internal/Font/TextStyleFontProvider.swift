@@ -28,7 +28,7 @@ extension TextStyleFontProvider: FontProvider {
   }
 
   func resolve(in environment: TextEnvironmentValues) -> Font {
-    guard scale != 1 else {
+    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *), scale == 1 {
       return Font.system(style, design: design, weight: weight)
     }
 

@@ -1,8 +1,9 @@
+import Perception
 import SwiftUI
 
 struct ProjectSelectionSheet: View {
-    @Bindable var model: NewSessionModel
-    @Bindable var repository: V2DashboardRepository
+    @Perception.Bindable var model: NewSessionModel
+    @Perception.Bindable var repository: V2DashboardRepository
     @AppStorage(ProjectSidebarPreferences.sessionListKey) private var showsSessionList = false
     @State private var createsProject = false
     @State private var showsFiles = false
@@ -23,7 +24,7 @@ struct ProjectSelectionSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             List {
                 Section {
                     Label(model.connector?.name ?? String(localized: "选择设备"), appSymbol: "desktopcomputer")

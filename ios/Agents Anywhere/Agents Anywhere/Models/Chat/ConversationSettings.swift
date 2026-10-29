@@ -1,5 +1,5 @@
 import Foundation
-import Observation
+import Perception
 
 struct CatalogOption: Identifiable, Equatable {
     let id: String
@@ -90,7 +90,7 @@ struct ChatSettingsCatalog: Equatable {
 }
 
 /// Catalog IDs label UI choices; only opaque selection IDs cross the API boundary.
-@MainActor @Observable
+@MainActor @Perceptible
 final class ConversationSettings {
     private(set) var catalog = ChatSettingsCatalog()
     private(set) var modelID = ""

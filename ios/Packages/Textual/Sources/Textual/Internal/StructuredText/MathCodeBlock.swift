@@ -27,7 +27,7 @@ extension StructuredText {
       let resolvedStyle = paragraphStyle.resolve(configuration: configuration)
 
       AnyView(resolvedStyle)
-        .layoutValue(key: BlockAlignmentKey.self, value: mathProperties.textAlignment)
+        .textualBlockAlignment(mathProperties.textAlignment)
     }
 
     private var label: some View {

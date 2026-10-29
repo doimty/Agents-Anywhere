@@ -30,8 +30,8 @@ import Testing
             return try JSONSerialization.data(withJSONObject: object)
         }
 
-        let clock = ContinuousClock()
-        var decode = Duration.zero, apply = Duration.zero, model = Duration.zero, present = Duration.zero
+        let clock = ClientClock()
+        var decode = ClientDuration.zero, apply = ClientDuration.zero, model = ClientDuration.zero, present = ClientDuration.zero
         let decoder = JSONDecoder()
         for (index, data) in payloads.enumerated() {
             var start = clock.now
@@ -48,7 +48,7 @@ import Testing
             presentation.flush(now: Double(index) * 0.3)
             present += clock.now - start
         }
-        func ms(_ value: Duration) -> String {
+        func ms(_ value: ClientDuration) -> String {
             String(format: "%.1f", Double(value.components.seconds) * 1000 + Double(value.components.attoseconds) / 1e15)
         }
         print("BENCH items=\(itemCount) events=\(eventCount) decode=\(ms(decode))ms apply=\(ms(apply))ms model=\(ms(model))ms present=\(ms(present))ms total=\(ms(decode + apply + model + present))ms")

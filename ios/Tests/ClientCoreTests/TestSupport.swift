@@ -38,7 +38,7 @@ func event(_ type: String, seq: Int = 10, id: String? = nil, sessionID: String =
 @MainActor func eventually(_ predicate: () -> Bool, sourceLocation: SourceLocation = #_sourceLocation) async throws {
     for _ in 0..<1000 {
         if predicate() { return }
-        try await Task.sleep(for: .milliseconds(1))
+        try await ClientTask.sleep(for: .milliseconds(1))
     }
     #expect(predicate(), "Condition did not become true", sourceLocation: sourceLocation)
     throw URLError(.timedOut)
@@ -122,6 +122,6 @@ func event(_ type: String, seq: Int = 10, id: String? = nil, sessionID: String =
         scope: V2ClientScope(serverURL: URL(string: "https://example.test/api/v2")!, accountID: "account"),
         detail: V2SessionDetailService(sessionAPI: V2SessionAPI(transport: transport), runtimeAPI: runtime, realtimeAPI: realtime ?? TestRealtimeAPI()),
         interactions: V2RuntimeInteractionService(runtimeAPI: runtime), policy: policy, now: now,
-        sleep: { _ in try await Task.sleep(for: .milliseconds(1)) }
+        sleep: { _ in try await ClientTask.sleep(for: .milliseconds(1)) }
     )
 }

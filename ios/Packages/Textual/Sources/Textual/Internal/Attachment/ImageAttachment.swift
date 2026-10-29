@@ -22,7 +22,7 @@ struct ImageAttachment: Attachment {
   }
 
   @usableFromInline
-  func sizeThatFits(_ proposal: ProposedViewSize, in _: TextEnvironmentValues) -> CGSize {
+  func sizeThatFits(_ proposal: TextualSizeProposal, in _: TextEnvironmentValues) -> CGSize {
     guard let proposedWidth = proposal.width else {
       return image.size
     }

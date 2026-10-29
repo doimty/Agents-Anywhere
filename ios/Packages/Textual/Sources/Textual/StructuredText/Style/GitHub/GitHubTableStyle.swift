@@ -3,6 +3,7 @@ import SwiftUI
 extension StructuredText {
   /// A table style inspired by GitHub’s rendering.
   public struct GitHubTableStyle: TableStyle {
+    @Environment(\.colorEnvironment) private var colors
     private static let borderWidth: CGFloat = 1
 
     /// Creates the GitHub table style.
@@ -17,7 +18,7 @@ extension StructuredText {
             for bounds in layout.evenRowBounds {
               context.fill(
                 Path(bounds.integral),
-                with: .style(DynamicColor.gitHubSecondaryBackground)
+                with: .color(DynamicColor.gitHubSecondaryBackground.bestMatch(for: context.environment.colorEnvironment) ?? .clear)
               )
             }
           }
@@ -27,13 +28,13 @@ extension StructuredText {
             for divider in layout.dividers() {
               context.fill(
                 Path(divider),
-                with: .style(DynamicColor.gitHubBorder)
+                with: .color(DynamicColor.gitHubBorder.bestMatch(for: context.environment.colorEnvironment) ?? .clear)
               )
             }
           }
         }
         .padding(Self.borderWidth)
-        .border(DynamicColor.gitHubBorder, width: Self.borderWidth)
+        .border(DynamicColor.gitHubBorder.bestMatch(for: colors) ?? .clear, width: Self.borderWidth)
     }
   }
 }

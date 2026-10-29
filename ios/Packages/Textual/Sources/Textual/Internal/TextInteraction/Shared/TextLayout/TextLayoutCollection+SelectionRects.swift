@@ -12,6 +12,7 @@
   // vertical gaps between lines so selection highlights appear as a single block.
 
   extension TextLayoutCollection {
+    @available(iOS 18, macOS 15, tvOS 18, watchOS 11, visionOS 2, *)
     func selectionRects(for range: TextRange, layout: Text.Layout) -> [TextSelectionRect] {
       guard
         let layoutIndex = self.index(of: layout),

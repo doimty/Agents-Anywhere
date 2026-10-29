@@ -13,6 +13,7 @@ struct WorkspaceFilesSheet: View {
     var onSelectDirectory: ((String) -> Void)? = nil
     var initialPath = "."
     @State private var destination: FileDestination?
+    @State private var directoryPath: [WorkspaceDirectoryRoute] = []
     @State private var transfer: FileTransferRequest?
     @State private var previewErrorMessage: String?
 
@@ -33,7 +34,7 @@ struct WorkspaceFilesSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        AppRouteNavigationStack(path: $directoryPath) {
             WorkspaceDirectoryView(
                 connectorId: connectorId,
                 root: workspace.path,
@@ -41,21 +42,11 @@ struct WorkspaceFilesSheet: View {
                 title: deviceName,
                 service: service,
                 onOpenFile: openFile, onFileAction: startTransfer, canRead: canRead,
-                canTransfer: canRead && transfer == nil, onSelectDirectory: onSelectDirectory
+                canTransfer: canRead && transfer == nil, onSelectDirectory: onSelectDirectory,
+                navigationPath: $directoryPath
             )
             .toolbar {
                 SheetCloseToolbar { dismiss() }
-            }
-            .navigationDestination(for: WorkspaceDirectoryRoute.self) { route in
-                WorkspaceDirectoryView(
-                    connectorId: connectorId,
-                    root: workspace.path,
-                    path: route.path,
-                    title: deviceName,
-                    service: service,
-                    onOpenFile: openFile, onFileAction: startTransfer, canRead: canRead,
-                    canTransfer: canRead && transfer == nil, onSelectDirectory: onSelectDirectory
-                )
             }
             .safeAreaInset(edge: .bottom) {
                 if let transfer {
@@ -66,10 +57,21 @@ struct WorkspaceFilesSheet: View {
                         Button(String(localized: "取消")) { self.transfer = nil }.font(.footnote)
                     }
                     .padding(16)
-                    .glassEffect(.regular, in: .capsule)
+                    .appGlassEffect(.regular, in: Capsule())
                     .padding(.horizontal, 16).padding(.bottom, 8)
                 }
             }
+        } destination: { route in
+            WorkspaceDirectoryView(
+                connectorId: connectorId,
+                root: workspace.path,
+                path: route.path,
+                title: deviceName,
+                service: service,
+                onOpenFile: openFile, onFileAction: startTransfer, canRead: canRead,
+                canTransfer: canRead && transfer == nil, onSelectDirectory: onSelectDirectory,
+                navigationPath: $directoryPath
+            )
         }
         .appSheetPresentation(.compact)
         .sheet(item: $destination) { destination in
@@ -147,6 +149,7 @@ private struct WorkspaceDirectoryView: View {
     let canRead: Bool
     let canTransfer: Bool
     let onSelectDirectory: ((String) -> Void)?
+    @Binding var navigationPath: [WorkspaceDirectoryRoute]
 
     @State private var model = WorkspaceDirectoryModel()
     @State private var requestedPath: String?
@@ -172,7 +175,7 @@ private struct WorkspaceDirectoryView: View {
                         .foregroundStyle(.secondary)
                 }
             } else if let errorMessage = model.errorMessage, model.entries.isEmpty {
-                ContentUnavailableView {
+                AppContentUnavailableView {
                     Label(String(localized: "Unable to Load Files"), appSymbol: "exclamationmark.triangle")
                 } description: {
                     Text(errorMessage)
@@ -183,7 +186,7 @@ private struct WorkspaceDirectoryView: View {
                     .buttonStyle(.borderedProminent).disabled(!canRead)
                 }
             } else if model.entries.isEmpty {
-                ContentUnavailableView(
+                AppContentUnavailableView(
                     String(localized: "Empty Folder"),
                     appSymbol: "folder"
                 )
@@ -192,14 +195,15 @@ private struct WorkspaceDirectoryView: View {
                     WorkspaceEntryRow(
                         entry: entry,
                         onOpenFile: onOpenFile,
-                        canRead: canRead
+                        canRead: canRead,
+                        navigationPath: $navigationPath
                     )
                     .contextMenu {
-                        Button(String(localized: "复制路径"), systemImage: "doc.on.doc") { UIPasteboard.general.string = entry.path }
+                        AppPageSystemButton(String(localized: "复制路径"), systemImage: "doc.on.doc") { UIPasteboard.general.string = entry.path }
                         if entry.isFile {
-                            Button(String(localized: "下载"), systemImage: "arrow.down.to.line") { onFileAction(entry, .download) }
+                            AppPageSystemButton(String(localized: "下载"), systemImage: "arrow.down.to.line") { onFileAction(entry, .download) }
                                 .disabled(!canTransfer)
-                            Button(String(localized: "其他打开方式…"), systemImage: "square.and.arrow.up") { onFileAction(entry, .openIn) }
+                            AppPageSystemButton(String(localized: "其他打开方式…"), systemImage: "square.and.arrow.up") { onFileAction(entry, .openIn) }
                                 .disabled(!canTransfer)
                         }
                     }
@@ -212,9 +216,9 @@ private struct WorkspaceDirectoryView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .scrollContentBackground(.hidden)
-        .scrollEdgeEffectStyle(.soft, for: .all)
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .appHiddenScrollBackground()
+        .appScrollEdgeEffect(.soft, for: .all)
+        .appHiddenNavigationBarBackground()
         .safeAreaInset(edge: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 8) {
                 if onSelectDirectory != nil {
@@ -225,9 +229,9 @@ private struct WorkspaceDirectoryView: View {
                             .disabled(!canRead || model.isLoading || ProjectWorkspacePath.parent(model.resolvedPath) == nil)
                         TextField(String(localized: "设备上的完整路径"), text: Binding(get: { address ?? currentDirectoryPath }, set: { address = $0 }))
                             .textFieldStyle(.plain)
-                            .font(.system(.footnote, design: .monospaced)).textInputAutocapitalization(.never).autocorrectionDisabled()
+                            .font(.system(.footnote, design: .monospaced)).textInputAutocapitalization(.never).appPageAutocorrectionDisabled()
                             .padding(.horizontal, 14).frame(minHeight: 44)
-                            .glassEffect(.regular, in: .capsule)
+                            .appGlassEffect(.regular, in: Capsule())
                             .onSubmit { navigate(address ?? currentDirectoryPath) }
                         Button(String(localized: "打开目录"), appSymbol: "arrow.right") { navigate(address ?? currentDirectoryPath) }
                             .labelStyle(.iconOnly).frame(width: 44, height: 44).disabled(!canRead)
@@ -242,7 +246,7 @@ private struct WorkspaceDirectoryView: View {
                     .padding(.horizontal, 20).padding(.vertical, 12)
                     .accessibilityLabel(String(localized: "当前目录：\(currentDirectoryLabel)"))
                     .contextMenu {
-                        Button(String(localized: "复制路径"), systemImage: "doc.on.doc") {
+                        AppPageSystemButton(String(localized: "复制路径"), systemImage: "doc.on.doc") {
                             UIPasteboard.general.string = currentDirectoryPath
                         }
                     }
@@ -310,10 +314,11 @@ private struct WorkspaceEntryRow: View {
     let entry: V2WorkspaceEntry
     let onOpenFile: (V2WorkspaceEntry) -> Void
     let canRead: Bool
+    @Binding var navigationPath: [WorkspaceDirectoryRoute]
 
     var body: some View {
         if entry.isDirectory {
-            NavigationLink(value: WorkspaceDirectoryRoute(path: entry.path)) {
+            AppRouteNavigationLink(value: WorkspaceDirectoryRoute(path: entry.path), path: $navigationPath) {
                 label
             }
         } else {

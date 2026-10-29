@@ -29,7 +29,7 @@ extension StructuredText {
               for divider in layout.dividers() {
                 context.fill(
                   Path(divider),
-                  with: .style(DynamicColor.grayTertiary)
+                  with: .color(DynamicColor.grayTertiary.bestMatch(for: context.environment.colorEnvironment) ?? .clear)
                 )
               }
             }

@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 struct SessionNoticesSheet: View {
@@ -5,7 +6,7 @@ struct SessionNoticesSheet: View {
     var initialNoticeID: String? = nil
     @Environment(\.dismiss) private var dismiss
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(spacing: 16) {

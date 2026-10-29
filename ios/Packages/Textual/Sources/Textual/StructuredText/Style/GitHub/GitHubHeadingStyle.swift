@@ -3,6 +3,7 @@ import SwiftUI
 extension StructuredText {
   /// A heading style inspired by GitHub’s rendering.
   public struct GitHubHeadingStyle: HeadingStyle {
+    @Environment(\.colorEnvironment) private var colors
     private static let fontScales: [CGFloat] = [2, 1.5, 1.25, 1, 0.875, 0.85]
 
     public func makeBody(configuration: Configuration) -> some View {
@@ -18,7 +19,7 @@ extension StructuredText {
             .fontWeight(.semibold)
           if headingLevel <= 2 {
             Divider()
-              .overlay(DynamicColor.gitHubDivider)
+              .overlay(DynamicColor.gitHubDivider.bestMatch(for: colors) ?? .clear)
           }
         }
       }
@@ -28,7 +29,7 @@ extension StructuredText {
     private func makeLabel(configuration: Configuration) -> some View {
       if min(configuration.headingLevel, 6) == 6 {
         configuration.label
-          .foregroundStyle(DynamicColor.gitHubTertiary)
+          .foregroundStyle(DynamicColor.gitHubTertiary.bestMatch(for: colors) ?? .clear)
       } else {
         configuration.label
       }

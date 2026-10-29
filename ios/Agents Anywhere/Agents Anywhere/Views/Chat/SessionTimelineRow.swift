@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 import UIKit
 
@@ -76,7 +77,7 @@ struct UserMessageBubble: View {
                 if !text.isEmpty {
                     ChatSelectableText(text: text).font(.body)
                         .padding(.horizontal, 17).padding(.vertical, 12)
-                        .background(colorScheme == .dark ? Color(white: 0.13) : Color(white: 0.94), in: .rect(cornerRadius: 24))
+                        .background(colorScheme == .dark ? Color(white: 0.13) : Color(white: 0.94), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
                 }
             }
             .overlay(alignment: .bottomLeading) {

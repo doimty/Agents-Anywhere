@@ -121,8 +121,8 @@ public struct StructuredText: View {
         .modifier(TextSelectionInteraction())
         .modifier(TextSelectionCoordination())
     }
-    .coordinateSpace(.textContainer)
-    .onChange(of: markup, initial: true) {
+    .coordinateSpace(name: "textContainer")
+    .textualOnChange(of: markup, initial: true) {
       markupDidChange(markup)
     }
     // Disable line limit to avoid per-fragment truncation

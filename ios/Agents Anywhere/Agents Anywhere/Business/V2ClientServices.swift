@@ -29,7 +29,8 @@ final class V2ClientServices {
     init(api: V2APIClient, accountID: String) {
         self.api = api
         scope = V2ClientScope(serverURL: api.serverURL, accountID: accountID)
-        let cacheDirectory = URL.applicationSupportDirectory.appendingPathComponent("AgentsAnywhere/Offline/v1")
+        let cacheDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("AgentsAnywhere/Offline/v1")
             .appendingPathComponent(V2RestorationStore.scopeKey(scope))
         localStore = V2LocalStore(directory: cacheDirectory)
         sessionPreparation = V2SessionPreparationService(connectorAPI: api.connectors)

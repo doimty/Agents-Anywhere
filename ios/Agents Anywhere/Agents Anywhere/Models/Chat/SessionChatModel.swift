@@ -1,7 +1,7 @@
 import Foundation
-import Observation
+import Perception
 
-@MainActor @Observable
+@MainActor @Perceptible
 final class SessionChatModel {
     let session: V2SessionModel
     let timeline = SessionTimelinePresentation()
@@ -29,11 +29,11 @@ final class SessionChatModel {
     var commandFailure: CommandFeedback?
     /// Selector commands (model, permission, …) open the existing options sheet.
     private(set) var optionsRequest = 0
-    @ObservationIgnored var onEditCreation: ((V2PendingMessage) -> Void)?
-    @ObservationIgnored var onDiscardCreation: (() -> Void)?
-    @ObservationIgnored let repository: V2SessionRepository
-    @ObservationIgnored private let attachments: V2AttachmentService
-    @ObservationIgnored private let files: V2WorkspaceFilesService?
+    @PerceptionIgnored var onEditCreation: ((V2PendingMessage) -> Void)?
+    @PerceptionIgnored var onDiscardCreation: (() -> Void)?
+    @PerceptionIgnored let repository: V2SessionRepository
+    @PerceptionIgnored private let attachments: V2AttachmentService
+    @PerceptionIgnored private let files: V2WorkspaceFilesService?
 
     init(session: V2SessionModel, repository: V2SessionRepository, attachments: V2AttachmentService, files: V2WorkspaceFilesService? = nil) {
         self.session = session; self.repository = repository; self.attachments = attachments

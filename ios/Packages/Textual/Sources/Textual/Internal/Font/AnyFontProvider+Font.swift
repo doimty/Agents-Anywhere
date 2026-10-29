@@ -1,4 +1,3 @@
-import ConcurrencyExtras
 import SwiftUI
 
 // MARK: - Overview
@@ -195,6 +194,7 @@ extension AnyFontProvider {
       )
     case "ModifierProvider<WidthModifier>":
       guard
+        #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *),
         let modifierMirror = mirror.descendant("modifier").map(Mirror.init(reflecting:)),
         let value = modifierMirror.descendant("width") as? CGFloat,
         let base = mirror.descendant("base", "provider", "base"),

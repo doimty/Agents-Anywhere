@@ -9,25 +9,25 @@ enum AppAppearance: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var title: LocalizedStringResource {
+    var title: String {
         switch self {
         case .system:
-            "System"
+            String(localized: "System")
         case .light:
-            "Light"
+            String(localized: "Light")
         case .dark:
-            "Dark"
+            String(localized: "Dark")
         }
     }
 
-    var description: LocalizedStringResource {
+    var description: String {
         switch self {
         case .system:
-            "Match the device appearance."
+            String(localized: "Match the device appearance.")
         case .light:
-            "Always use the light appearance."
+            String(localized: "Always use the light appearance.")
         case .dark:
-            "Always use the dark appearance."
+            String(localized: "Always use the dark appearance.")
         }
     }
 

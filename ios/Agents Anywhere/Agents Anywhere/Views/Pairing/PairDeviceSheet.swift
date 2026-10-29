@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 import UIKit
 
@@ -16,14 +17,13 @@ struct PairDeviceSheet: View {
     private enum Step: Hashable { case connectionMethod, desktop, cliConfirm, name, cliMethod, pairCode, token }
 
     var body: some View {
-        NavigationStack(path: $path) {
+        AppRouteNavigationStack(path: $path) {
             page(.connectionMethod)
-                .navigationDestination(for: Step.self) { page($0) }
-        }
+        } destination: { page($0) }
         .appSheetPresentation(.compact)
         .disabled(isWorking)
         .interactiveDismissDisabled(isWorking)
-        .onChange(of: path) { _, _ in error = nil; copied = false }
+        .appOnChange(of: path) { _, _ in error = nil; copied = false }
     }
 
     private func page(_ step: Step) -> some View {
@@ -70,7 +70,7 @@ struct PairDeviceSheet: View {
         Form {
             Section {
                 TextField(String(localized: "dashboard.pairDevice.namePlaceholder"), text: $name)
-                    .textFieldStyle(.plain).autocorrectionDisabled()
+                    .textFieldStyle(.plain).appPageAutocorrectionDisabled()
                     .submitLabel(.continue).onSubmit(continuePairing)
             } header: {
                 Text(String(localized: "设备名称")).textCase(nil)
@@ -88,7 +88,7 @@ struct PairDeviceSheet: View {
             }
             pairingMessages
         }
-        .scrollContentBackground(.hidden).scrollDismissesKeyboard(.interactively)
+        .appHiddenScrollBackground().appScrollDismissesKeyboardInteractively()
         .frame(maxWidth: 560).frame(maxWidth: .infinity)
     }
 
@@ -116,7 +116,7 @@ struct PairDeviceSheet: View {
                 pairingStatus(credential)
                 pairingMessages
             }
-            .scrollContentBackground(.hidden).scrollDismissesKeyboard(.interactively)
+            .appHiddenScrollBackground().appScrollDismissesKeyboardInteractively()
             .frame(maxWidth: 560).frame(maxWidth: .infinity)
         }
     }
@@ -231,7 +231,7 @@ struct PairDeviceSheet: View {
             AppGlassButton(copied ? String(localized: "已复制") : String(localized: "复制命令"), systemImage: copied ? "checkmark" : "doc.on.doc") {
                 UIPasteboard.general.string = command; copied = true
             }
-        }.onChange(of: command) { _, _ in copied = false }
+        }.appOnChange(of: command) { _, _ in copied = false }
     }
     private var canConnect: Bool { appState.nativeChatServices?.dashboardRepository.canWrite == true }
     private func prepare() async {

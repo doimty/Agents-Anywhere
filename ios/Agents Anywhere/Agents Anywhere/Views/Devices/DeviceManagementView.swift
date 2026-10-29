@@ -23,6 +23,7 @@ struct DeviceManagementView: View {
     @State private var model = DeviceManagementModel()
     @AppStorage(ProjectSidebarPreferences.sessionListKey) private var showsSessionList = false
     @State private var showsToolbarTitle = false
+    @State private var scrollCoordinateSpace = UUID()
     @State private var toasts = ChatToastStore()
     @State private var isRenaming = false
     @State private var proposedName = ""
@@ -66,7 +67,7 @@ struct DeviceManagementView: View {
                             onCreate: { createsProject = true },
                             onOpen: { project in
                                 openProjectSessions(project)
-                                withAnimation(.snappy) { proxy.scrollTo(DeviceSessionAnchor.id, anchor: .top) }
+                                withAnimation(.appSnappy) { proxy.scrollTo(DeviceSessionAnchor.id, anchor: .top) }
                             },
                             onNewSession: { onNewProjectSession($0.id) }, onFiles: openProjectFiles,
                             onEdit: { editingProject = $0 },
@@ -84,25 +85,24 @@ struct DeviceManagementView: View {
                 .padding(.top, 8).padding(.bottom, 24)
                 .modifier(ChatPageContentColumn())
                 .background { ChatPageScrollEdge() }
+                .background { AppPageScrollTitleMarker(coordinateSpace: scrollCoordinateSpace) }
             }
-            .onScrollGeometryChange(for: Bool.self) { $0.contentOffset.y + $0.contentInsets.top > 56 } action: { _, scrolled in
-                withAnimation(.easeOut(duration: 0.15)) { showsToolbarTitle = scrolled }
-            }
+            .appPageScrollTitle($showsToolbarTitle, coordinateSpace: scrollCoordinateSpace)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .scrollIndicators(.hidden).scrollEdgeEffectStyle(.soft, for: .all)
-        .refreshable { await dashboard.refresh(); await agents.refresh() }
+        .appHiddenScrollIndicators().appScrollEdgeEffect(.soft, for: .all)
+        .appPageRefreshable { await dashboard.refresh(); await agents.refresh() }
         .modifier(ChatPageToolbar(title: showsToolbarTitle ? connector.name : "",
             subtitle: showsToolbarTitle ? connectionDescription : nil, onMenu: onMenu))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button(String(localized: "New session"), systemImage: "square.and.pencil") { onNewSession(nil) }
-                    Button(String(localized: "Copy device ID"), systemImage: "doc.on.doc") { UIPasteboard.general.string = connector.id }
+                    AppPageSystemButton(String(localized: "New session"), systemImage: "square.and.pencil") { onNewSession(nil) }
+                    AppPageSystemButton(String(localized: "Copy device ID"), systemImage: "doc.on.doc") { UIPasteboard.general.string = connector.id }
                     Divider()
-                    Button(String(localized: "Rename device"), systemImage: "pencil") { proposedName = connector.name; isRenaming = true }.disabled(!canManage)
-                    Button(String(localized: "Rotate credential"), systemImage: "key") { confirmsRotation = true }.disabled(!canManage)
-                    Button(String(localized: "Delete device"), systemImage: "trash", role: .destructive) { confirmsDeletion = true }.disabled(!canManage)
+                    AppPageSystemButton(String(localized: "Rename device"), systemImage: "pencil") { proposedName = connector.name; isRenaming = true }.disabled(!canManage)
+                    AppPageSystemButton(String(localized: "Rotate credential"), systemImage: "key") { confirmsRotation = true }.disabled(!canManage)
+                    AppPageSystemButton(String(localized: "Delete device"), systemImage: "trash", role: .destructive) { confirmsDeletion = true }.disabled(!canManage)
                 } label: {
                     AppSymbol("ellipsis")
                 }.accessibilityLabel(String(localized: "Device actions"))
@@ -120,9 +120,9 @@ struct DeviceManagementView: View {
             ChatErrorToasts(store: toasts, isRetrying: dashboard.isLoading, onRetry: { _ in await dashboard.refresh() })
                 .padding(.top, 8)
         }
-        .onChange(of: allSessions, initial: true) { _, values in model.updateSessions(connectorId: connector.id, allSessions: values) }
-        .onChange(of: model.errorMessage, initial: true) { _, error in report(error, source: "device") }
-        .onChange(of: dashboard.error, initial: true) { _, error in report(error, source: "sync") }
+        .appOnChange(of: allSessions, initial: true) { _, values in model.updateSessions(connectorId: connector.id, allSessions: values) }
+        .appOnChange(of: model.errorMessage, initial: true) { _, error in report(error, source: "device") }
+        .appOnChange(of: dashboard.error, initial: true) { _, error in report(error, source: "sync") }
         .sheet(isPresented: $createsProject) { ProjectEditorSheet(repository: dashboard, connectorID: connector.id) }
         .sheet(item: $editingProject) { ProjectEditorSheet(repository: dashboard, project: $0) }
         .sheet(item: $selectedWorkspace) {
@@ -139,12 +139,11 @@ struct DeviceManagementView: View {
                 })
         }
         .sheet(item: $credential) { ConnectorCredentialSheet(connector: $0.connector, connectorToken: $0.connectorToken, serverURL: serverURL) }
-        .alert(String(localized: "Rename device"), isPresented: $isRenaming) {
-            TextField(String(localized: "Device name"), text: $proposedName)
-            Button(String(localized: "Cancel"), role: .cancel) {}
-            Button(String(localized: "Save")) { Task { await renameDevice() } }
-                .disabled(proposedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !canManage)
-        }
+        .appPageTextInputAlert(String(localized: "Rename device"), isPresented: $isRenaming,
+            text: $proposedName, placeholder: String(localized: "Device name"),
+            saveDisabled: !canManage) {
+                Task { await renameDevice() }
+            }
         .alert(String(localized: "Rotate connector credential?"), isPresented: $confirmsRotation) {
             Button(String(localized: "Cancel"), role: .cancel) {}
             Button(String(localized: "Rotate credential"), role: .destructive) { Task { await rotateCredential() } }

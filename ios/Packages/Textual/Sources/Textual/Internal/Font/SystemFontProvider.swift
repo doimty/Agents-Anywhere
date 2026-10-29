@@ -13,6 +13,6 @@ extension SystemFontProvider: FontProvider {
   }
 
   func resolve(in _: TextEnvironmentValues) -> Font {
-    Font.system(size: size * scale, weight: weight, design: design)
+    Font.system(size: size * scale, weight: weight ?? .regular, design: design ?? .default)
   }
 }

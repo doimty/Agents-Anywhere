@@ -1,14 +1,14 @@
 import Foundation
-import Observation
+import Perception
 
 /// Editing a project is entirely local until the form's final submit action.
-@MainActor @Observable final class ProjectEditorDraft {
+@MainActor @Perceptible final class ProjectEditorDraft {
     let original: V2Project?
     private(set) var connectorID: String
     private(set) var path: String
     private(set) var name: String
     private(set) var nameEdited = false
-    @ObservationIgnored private let initialConnectorID: String
+    @PerceptionIgnored private let initialConnectorID: String
 
     init(project: V2Project? = nil, connectorID: String = "") {
         original = project

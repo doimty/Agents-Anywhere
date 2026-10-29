@@ -1,9 +1,9 @@
 import Foundation
-import Observation
+import Perception
 
 /// Pairing observation belongs to the account, not the lifetime of a sheet.
 /// Background/offline transitions pause reads and retain the pending devices.
-@MainActor @Observable
+@MainActor @Perceptible
 final class AgentSetupCoordinator {
     struct Request: Identifiable {
         var connector: V2Connector
@@ -14,16 +14,16 @@ final class AgentSetupCoordinator {
     private(set) var requests: [Request] = []
     private(set) var selectedSetupID: String?
     var pairingFormPresented = false
-    @ObservationIgnored var onOnline: ((V2Connector) -> Void)?
-    @ObservationIgnored private let service: V2DevicePairingService
-    @ObservationIgnored private let sleep: (Duration) async throws -> Void
-    @ObservationIgnored private var tasks: [String: Task<Void, Never>] = [:]
-    @ObservationIgnored private var isActive = true
-    @ObservationIgnored private var isOnline = true
-    @ObservationIgnored private var isValid = true
-    @ObservationIgnored private var generation = 0
+    @PerceptionIgnored var onOnline: ((V2Connector) -> Void)?
+    @PerceptionIgnored private let service: V2DevicePairingService
+    @PerceptionIgnored private let sleep: (ClientDuration) async throws -> Void
+    @PerceptionIgnored private var tasks: [String: Task<Void, Never>] = [:]
+    @PerceptionIgnored private var isActive = true
+    @PerceptionIgnored private var isOnline = true
+    @PerceptionIgnored private var isValid = true
+    @PerceptionIgnored private var generation = 0
 
-    init(service: V2DevicePairingService, sleep: @escaping (Duration) async throws -> Void = { try await Task.sleep(for: $0) }) {
+    init(service: V2DevicePairingService, sleep: @escaping (ClientDuration) async throws -> Void = { try await ClientTask.sleep(for: $0) }) {
         self.service = service; self.sleep = sleep
     }
     var presentedConnector: V2Connector? {

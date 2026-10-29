@@ -44,6 +44,16 @@ extension StructuredText {
 
     @ViewBuilder
     private var label: some View {
+      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+        modernLabel
+      } else {
+        PortableTableLabel(rows: TableContent(content: content, intent: intent, columnCount: columns.count).rows,
+          columns: columns, spacing: spacing)
+      }
+    }
+
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    private var modernLabel: some View {
       let rowRuns = content.blockRuns(parent: intent)
 
       Grid(horizontalSpacing: spacing.horizontal, verticalSpacing: spacing.vertical) {

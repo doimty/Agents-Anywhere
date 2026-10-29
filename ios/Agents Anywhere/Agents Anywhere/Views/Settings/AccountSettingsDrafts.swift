@@ -1,5 +1,5 @@
-import PhotosUI
 import SwiftUI
+import UIKit
 
 /// Drafts belong to the settings sheet so native Back and swipe-back preserve
 /// edits when a destination leaves the navigation stack.
@@ -31,7 +31,7 @@ struct AccountPasswordDraft {
 }
 
 struct AccountAvatarDraft {
-    var selectedItem: PhotosPickerItem?
+    var selectedItem: AppPickedPhoto?
     var selectedImage: UIImage?
     var zoom: CGFloat = 1
     var offset = CGSize.zero

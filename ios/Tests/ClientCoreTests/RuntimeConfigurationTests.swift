@@ -1,7 +1,6 @@
 import Foundation
-import Observation
+import Perception
 import SwiftUI
-import Synchronization
 import Testing
 @testable import ClientCore
 
@@ -123,9 +122,9 @@ import Testing
     @Test func emptyRowsCanBeDeletedWhileNativeFieldBindingsAreStillAlive() throws {
         let draft = RuntimeConfigurationModel(schema: try schema(), config: nil)
         for _ in 0..<20 {
-            @Bindable var variable = RuntimeEnvironmentRow()
-            @Bindable var model = RuntimeCustomModelRow()
-            @Bindable var effort = RuntimeEffortRow()
+            @Perception.Bindable var variable = RuntimeEnvironmentRow()
+            @Perception.Bindable var model = RuntimeCustomModelRow()
+            @Perception.Bindable var effort = RuntimeEffortRow()
             draft.environments["environment", default: []].append(variable)
             draft.customModels["customModels", default: []].append(model)
             model.efforts.append(effort)
@@ -154,14 +153,14 @@ import Testing
     @Test func deletingEarlierRowsDoesNotRetargetSurvivingFieldBindings() throws {
         let draft = RuntimeConfigurationModel(schema: try schema(), config: nil)
         let removedVariable = RuntimeEnvironmentRow()
-        @Bindable var variable = RuntimeEnvironmentRow(key: "KEEP", value: "before")
+        @Perception.Bindable var variable = RuntimeEnvironmentRow(key: "KEEP", value: "before")
         draft.environments["environment"] = [removedVariable, variable]
         let variableInput = $variable.value
 
         let removedModel = RuntimeCustomModelRow()
         let removedEffort = RuntimeEffortRow()
-        @Bindable var effort = RuntimeEffortRow(effortID: "high", displayName: "High")
-        @Bindable var model = RuntimeCustomModelRow(modelID: "keep", displayName: "Before", efforts: [removedEffort, effort])
+        @Perception.Bindable var effort = RuntimeEffortRow(effortID: "high", displayName: "High")
+        @Perception.Bindable var model = RuntimeCustomModelRow(modelID: "keep", displayName: "Before", efforts: [removedEffort, effort])
         draft.customModels["customModels"] = [removedModel, model]
         let modelInput = $model.displayName
         let effortInput = $effort.displayName
@@ -186,9 +185,9 @@ import Testing
 
     @Test func resettingConfigurationDetachesAllPreviouslyBoundRows() throws {
         let draft = RuntimeConfigurationModel(schema: try schema(), config: nil)
-        @Bindable var variable = RuntimeEnvironmentRow(key: "TOKEN", value: "before")
-        @Bindable var effort = RuntimeEffortRow(effortID: "high", displayName: "High")
-        @Bindable var model = RuntimeCustomModelRow(modelID: "before", displayName: "Before", efforts: [effort])
+        @Perception.Bindable var variable = RuntimeEnvironmentRow(key: "TOKEN", value: "before")
+        @Perception.Bindable var effort = RuntimeEffortRow(effortID: "high", displayName: "High")
+        @Perception.Bindable var model = RuntimeCustomModelRow(modelID: "before", displayName: "Before", efforts: [effort])
         draft.environments["environment"] = [variable]
         draft.customModels["customModels"] = [model]
         let variableInput = $variable.value
@@ -210,8 +209,8 @@ import Testing
                 "efforts": .array([.object(["effortId": .string("high"), "displayName": .string("High")])])
             ])])
         ]))
-        let changed = Mutex(false)
-        withObservationTracking { _ = draft.hasChanges } onChange: { changed.withLock { $0 = true } }
+        let changed = ClientMutex(false)
+        withPerceptionTracking { _ = draft.hasChanges } onChange: { changed.withLock { $0 = true } }
         let effort = try #require(draft.customModels["customModels"]?.first?.efforts.first)
         effort.displayName = "More reasoning"
         #expect(changed.withLock { $0 })

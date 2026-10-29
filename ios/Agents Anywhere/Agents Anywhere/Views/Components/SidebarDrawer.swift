@@ -1,4 +1,5 @@
 import SwiftUI
+import Perception
 
 #if canImport(UIKit)
 import UIKit
@@ -12,7 +13,7 @@ struct SidebarDrawerConfiguration: Sendable {
     let sidebarClosedScale: CGFloat
     let sidebarOverlayOpacity: CGFloat
     let contentOverlayOpacity: CGFloat
-    let sidebarHeaderEdgeEffectStyle: ScrollEdgeEffectStyle
+    let sidebarHeaderEdgeEffectStyle: AppScrollEdgeEffect
 
     init(
         revealFraction: CGFloat = 0.75,
@@ -20,7 +21,7 @@ struct SidebarDrawerConfiguration: Sendable {
         sidebarClosedScale: CGFloat = 0.95,
         sidebarOverlayOpacity: CGFloat = 0.5,
         contentOverlayOpacity: CGFloat = 0.14,
-        sidebarHeaderEdgeEffectStyle: ScrollEdgeEffectStyle = .soft
+        sidebarHeaderEdgeEffectStyle: AppScrollEdgeEffect = .soft
     ) {
         self.revealFraction = revealFraction
         self.edgeActivationWidth = edgeActivationWidth
@@ -122,13 +123,19 @@ struct SidebarDrawer<SidebarHeader: View, SidebarContent: View, MainContent: Vie
 
     var body: some View {
         if presentation == .nativeSidebar {
-            SidebarDrawerNativeSplitView(
-                isOpen: $isOpen,
-                sidebarHeaderEdgeEffectStyle: configuration.sidebarHeaderEdgeEffectStyle,
-                sidebarHeader: sidebarHeader,
-                sidebarContent: sidebarContent,
-                mainContent: mainContent
-            )
+            if #available(iOS 16.0, *), AppCompatibility.useNativeUI {
+                SidebarDrawerNativeSplitView(
+                    isOpen: $isOpen,
+                    sidebarHeaderEdgeEffectStyle: configuration.sidebarHeaderEdgeEffectStyle,
+                    sidebarHeader: sidebarHeader,
+                    sidebarContent: sidebarContent,
+                    mainContent: mainContent
+                )
+            } else {
+                AppLegacySidebarSplit(isOpen: $isOpen,
+                    edgeStyle: configuration.sidebarHeaderEdgeEffectStyle,
+                    header: sidebarHeader, sidebar: sidebarContent, detail: mainContent)
+            }
         } else {
             // Resolve page builders above the state that changes on every pan
             // sample. Equality on the resulting page cannot prevent expensive
@@ -301,7 +308,7 @@ private struct SidebarDrawerInteractive<
                 isEnabled: !usesOpeningEdgeGestureRegion
             )
 #endif
-            .onChange(of: isOpen) { _, newValue in
+            .appOnChange(of: isOpen) { _, newValue in
                 synchronizeProgress(with: newValue)
             }
         }
@@ -507,6 +514,7 @@ private struct SidebarDrawerInteractive<
     }
 }
 
+@available(iOS 16.0, *)
 private struct SidebarDrawerNativeSplitView<
     SidebarHeader: View,
     SidebarContent: View,
@@ -517,7 +525,7 @@ private struct SidebarDrawerNativeSplitView<
     private let sidebarHeader: (EdgeInsets) -> SidebarHeader
     private let sidebarContent: (EdgeInsets) -> SidebarContent
     private let mainContent: (EdgeInsets) -> MainContent
-    private let sidebarHeaderEdgeEffectStyle: ScrollEdgeEffectStyle
+    private let sidebarHeaderEdgeEffectStyle: AppScrollEdgeEffect
 
     @State private var columnVisibility: NavigationSplitViewVisibility
     @State private var isAnimating = false
@@ -526,7 +534,7 @@ private struct SidebarDrawerNativeSplitView<
 
     init(
         isOpen: Binding<Bool>,
-        sidebarHeaderEdgeEffectStyle: ScrollEdgeEffectStyle,
+        sidebarHeaderEdgeEffectStyle: AppScrollEdgeEffect,
         sidebarHeader: @escaping (EdgeInsets) -> SidebarHeader,
         sidebarContent: @escaping (EdgeInsets) -> SidebarContent,
         mainContent: @escaping (EdgeInsets) -> MainContent
@@ -562,10 +570,10 @@ private struct SidebarDrawerNativeSplitView<
         .navigationSplitViewStyle(.balanced)
         .environment(\.sidebarDrawerPresentation, .nativeSidebar)
         .environment(\.sidebarDrawerIsTransitioning, isAnimating || columnsNeedUpdate)
-        .onChange(of: isOpen) { _, newValue in
+        .appOnChange(of: isOpen) { _, newValue in
             updateColumns(open: newValue)
         }
-        .onChange(of: columnVisibility) { _, newValue in
+        .appOnChange(of: columnVisibility) { _, newValue in
             switch newValue {
             case .all, .doubleColumn:
                 if !isOpen {
@@ -604,7 +612,7 @@ private struct SidebarDrawerNativeSplitView<
 }
 
 private struct SidebarDrawerNativeSidebar<Header: View, Content: View>: View {
-    let edgeEffectStyle: ScrollEdgeEffectStyle
+    let edgeEffectStyle: AppScrollEdgeEffect
     let header: Header
     let content: Content
 
@@ -638,7 +646,7 @@ private struct SidebarDrawerHeaderBar<Header: View>: View {
 private struct SidebarDrawerSidebar<Header: View, Content: View>: View {
     let width: CGFloat
     let safeAreaInsets: EdgeInsets
-    let edgeEffectStyle: ScrollEdgeEffectStyle
+    let edgeEffectStyle: AppScrollEdgeEffect
     let header: Header
     let content: Content
 
@@ -692,7 +700,7 @@ private enum SidebarDrawerCardShape {
 /// container, the page modifier chains, or anything that reads the drawer's
 /// environment. Code that only needs to know where the drawer rests reads
 /// `restingProgress`, which changes once per gesture instead of every frame.
-@MainActor @Observable final class SidebarDrawerMotion {
+@MainActor @Perceptible final class SidebarDrawerMotion {
     private(set) var progress: CGFloat
     /// 0 when closed, 1 when fully open, 0.5 anywhere in between.
     private(set) var restingProgress: CGFloat

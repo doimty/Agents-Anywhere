@@ -1,4 +1,4 @@
-import PhotosUI
+import Perception
 import SwiftUI
 
 struct AvatarSettingsView: View {
@@ -23,7 +23,7 @@ struct AvatarSettingsView: View {
             }
 
             Section {
-                PhotosPicker(selection: $draft.selectedItem, matching: .images) {
+                AppPhotoPicker(selection: $draft.selectedItem) {
                     Label(String(localized: "Choose photo"), appSymbol: "photo.on.rectangle")
                 }
 
@@ -50,11 +50,11 @@ struct AvatarSettingsView: View {
             SheetSaveToolbar(isWorking: appState.isAccountWorking, saveDisabled: draft.selectedImage == nil, onSave: uploadAvatar)
         }
         .disabled(appState.isAccountWorking)
-        .onChange(of: draft.selectedItem) { _, nextItem in
+        .appOnChange(of: draft.selectedItem) { _, nextItem in
             guard let nextItem else { return }
             Task { await loadImage(nextItem) }
         }
-        .onChange(of: draft.zoom) { _, nextZoom in
+        .appOnChange(of: draft.zoom) { _, nextZoom in
             guard let selectedImage = draft.selectedImage else { return }
             draft.offset = AccountAvatarProcessor.clampedOffset(
                 image: selectedImage,
@@ -80,9 +80,9 @@ struct AvatarSettingsView: View {
         )
     }
 
-    private func loadImage(_ item: PhotosPickerItem) async {
+    private func loadImage(_ item: AppPickedPhoto) async {
         do {
-            guard let data = try await item.loadTransferable(type: Data.self) else {
+            guard let data = try await item.loadData() else {
                 throw AccountAvatarProcessingError.invalidImage
             }
             guard draft.selectedItem == item else { return }
