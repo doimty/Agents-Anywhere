@@ -132,7 +132,7 @@ OpenMinis 的经验同样指向这一点：只把 `IPHONEOS_DEPLOYMENT_TARGET` �
 
 首次通过记录：[Actions #40867009328](https://github.com/doimty/Agents-Anywhere/actions/runs/40867009328)，提交 `b3e642a5`，产物 `AgentsAnywhereLegacy-unsigned.ipa`（约 735 KB，bundle id `com.agentsanywhere.legacy`）。加入审批/输入请求后：[Actions #40867732985](https://github.com/doimty/Agents-Anywhere/actions/runs/40867732985)，提交 `04623faa`。加入 Markdown 渲染后：[Actions #40869655352](https://github.com/doimty/Agents-Anywhere/actions/runs/40869655352)，提交 `95e907e1`，IPA 约 780 KB。
 
-能力边界（已知）：不含实时推送；进入会话时拉取最近 80 条并支持向上翻页，发送后可手动刷新。审批卡片支持无输入动作，需要输入的动作以 `{"text": "..."}` 提交，未解释 action schema。消息正文用 `AttributedString(markdown:)` 渲染（强调、行内代码、链接、列表）并把围栏代码块单独等宽展示；工具调用显示真实标题、命令与状态，不再使用占位文案。附件通过 `PHPickerViewController` 选图（无需相册权限）和 `fileImporter` 选文件，先上传再以 `fileId` 随消息发送，单文件上限 25 MiB。首页底部显示 `v0.3.0 (3)`，便于确认安装的是哪一版 IPA。这些能力在后续里程碑补齐，现代 App 不受影响。
+能力边界（已知）：实时更新用 3 秒增量轮询（`timelineChanges(afterSeq:)`），不是 WebSocket 事件流；进入会话时拉取最近 80 条并支持向上翻页，也可手动刷新。审批卡片支持无输入动作，需要输入的动作以 `{"text": "..."}` 提交，未解释 action schema。消息正文用 `AttributedString(markdown:)` 渲染（强调、行内代码、链接、列表）并把围栏代码块单独等宽展示；工具调用显示真实标题、命令与状态，不再使用占位文案。附件通过 `PHPickerViewController` 选图（无需相册权限）和 `fileImporter` 选文件，先上传再以 `fileId` 随消息发送，单文件上限 25 MiB。首页底部显示 `v0.4.0 (4)`，便于确认安装的是哪一版 IPA。这些能力在后续里程碑补齐，现代 App 不受影响。
 
 ## 复现
 
