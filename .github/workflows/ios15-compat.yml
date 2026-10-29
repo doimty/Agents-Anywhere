@@ -1,4 +1,4 @@
-﻿name: iOS 15 compatibility
+name: iOS 15 compatibility
 
 # The iOS app currently targets iOS 26.5 and depends on iOS 18+ packages, so it
 # cannot run on iOS 15 yet. This workflow is the feedback loop for the port:
@@ -145,7 +145,16 @@ jobs:
             grep -E "error:|warning: .*availability" "$RUNNER_TEMP/ios15/xcodebuild.log" | head -n 300 || true
             printf '\n```\n'
           } > "$RUNNER_TEMP/ios15/summary.md"
+          if [ "$status" -ne 0 ]; then
+            # Keep the job non-gating so the branch stays usable, but make the
+            # failure impossible to mistake for a passing iOS 15 build.
+            echo "::error title=iOS 15 probe::xcodebuild exit $status — the app does not build at the iOS 15 floor yet (shipped target is iOS 26.5). See ios/docs/ios15-compatibility.md."
+          fi
           cat "$RUNNER_TEMP/ios15/summary.md"
+          {
+            cat "$RUNNER_TEMP/ios15/summary.md"
+            printf '\nProbe exit status: %s (diagnostic, non-gating)\n' "$status"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Inventory current sources
         if: always()
         run: |

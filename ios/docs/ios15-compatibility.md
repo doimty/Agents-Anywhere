@@ -102,9 +102,25 @@ OpenMinis 的经验同样指向这一点：只把 `IPHONEOS_DEPLOYMENT_TARGET` �
 | 项目 | 状态 |
 | --- | --- |
 | 清单脚本 + 单元测试 | 已在本机运行，`7 tests OK`；`--check` 与基线一致 |
-| Swift 编译（iOS 15 与 iOS 26） | **未运行**：本机为 Windows，无 Xcode/Swift 工具链；由 `ios15-compat.yml` 在 macOS runner 上执行 |
+| Swift 编译（iOS 26） | 已由云端 macOS runner 验证通过（见下节） |
+| Swift 编译（iOS 15） | 云端探针 `xcodebuild_exit=65`，首个阻断见下节；尚未修复 |
 | 模拟器/真机 | **未做** |
 | 外观与交互回归 | **未做**，适配器分支未经运行验证 |
+
+## 云端编译记录（2026-10-29）
+
+- 仓库：fork [`doimty/Agents-Anywhere`](https://github.com/doimty/Agents-Anywhere)，分支 `feat/ios/ios15-compat-foundation`，提交 `51983d5c`。
+- 运行：[Actions #40853042627](https://github.com/doimty/Agents-Anywhere/actions/runs/40853042627)。
+- `Availability inventory`：通过（7 个单元测试 + 基线 `--check`）。
+- `Modern target still builds`：通过。首轮曾在 `AppCompatibility.swift` 的 `strokeBorder` 上报错（`some Shape` 没有该方法，只有 `InsettableShape` 有），改为 `shape.stroke(Color.primary…)` 后通过；静态审查不能替代编译器。
+- `Probe iOS 15 deployment target`：`xcodebuild_exit=65`，首个阻断是 Textual 的传递依赖：
+
+  ```text
+  SourcePackages/checkouts/swiftui-math/Sources/SwiftUIMath/Math.swift:100:23:
+  error: 'ProposedViewSize' is only available in iOS 16.0 or newer
+  ```
+
+  这与 [M2–M4 方案](ios15-implementation-plan.md) 的判断一致：`Textual` 与 `swiftui-math` 必须移除，而不是绕过。探针保持非门禁，但失败时会输出红色注解与 step summary，不会伪装成通过。
 
 ## 复现
 
