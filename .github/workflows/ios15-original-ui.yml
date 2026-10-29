@@ -43,9 +43,7 @@ jobs:
       - name: Cache Swift package builds
         uses: actions/cache@v4
         with:
-          path: |
-            ios/.build
-            ${{ runner.temp }}/SourcePackages
+          path: ios/.build
           key: original-ios15-xcode266-${{ hashFiles('ios/Package.swift', 'ios/Packages/**/Package.swift') }}
       - name: Type-check portable SwiftUI adapters at iOS 15
         shell: bash
@@ -59,15 +57,7 @@ jobs:
             "$compat/AppNavigationCompatibility.swift" \
             "$compat/AppPhotoCompatibility.swift" \
             > "$RUNNER_TEMP/original-ui/adapters.log" 2>&1
-      - name: Resolve packages once, outside the build
-        shell: bash
-        run: |
-          set -euo pipefail
-          xcodebuild -resolvePackageDependencies \
-            -project "ios/Agents Anywhere/Agents Anywhere.xcodeproj" \
-            -scheme "Agents Anywhere" \
-            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
-            > "$RUNNER_TEMP/original-ui/resolve.log" 2>&1
+
       - name: Build the original app for iOS 15
         shell: bash
         run: |
@@ -80,9 +70,7 @@ jobs:
             -configuration Debug \
             -destination 'generic/platform=iOS' \
             -derivedDataPath "$RUNNER_TEMP/OriginalDerivedData" \
-            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
-            -disableAutomaticPackageResolution \
-            -resultBundlePath "$evidence/original-app.xcresult" \
+
             CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO \
             build > "$evidence/xcodebuild.log" 2>&1
           status=$?
@@ -136,6 +124,6 @@ jobs:
             ${{ runner.temp }}/original-ui/*.json
             ${{ runner.temp }}/original-ui/ipa/*.ipa
             ${{ runner.temp }}/original-ui/ipa/SHA256SUMS
-            ${{ runner.temp }}/SourcePackages/Package.resolved
+
           if-no-files-found: warn
           retention-days: 14
