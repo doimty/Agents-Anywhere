@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Generate the iOS 15 legacy app project.
 
 The shipped project uses file-system synchronized groups tied to the modern
@@ -138,8 +138,8 @@ def generate() -> str:
 \t\t\t\tINFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 \t\t\t\tINFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 \t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 15.0;
-\t\t\t\tMARKETING_VERSION = 0.8.0;
-\t\t\t\tCURRENT_PROJECT_VERSION = 8;
+\t\t\t\tMARKETING_VERSION = 0.9.0;
+\t\t\t\tCURRENT_PROJECT_VERSION = 9;
 \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = {BUNDLE_ID};
 \t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
 \t\t\t\tSDKROOT = iphoneos;
