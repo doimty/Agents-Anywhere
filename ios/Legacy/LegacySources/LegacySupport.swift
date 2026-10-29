@@ -2,7 +2,12 @@ import SwiftUI
 
 enum LegacyFormat {
     static func isRunning(_ status: V2RuntimeStatus) -> Bool {
-        status == .running || status == .waiting || status == .waitingApproval
+        switch status {
+        case .running, .waiting, .waitingApproval, .pending, .stopping:
+            return true
+        case .idle, .blocked, .error, .disconnected, .unknown:
+            return false
+        }
     }
 
     static func statusLabel(_ status: V2RuntimeStatus) -> String {
@@ -10,8 +15,13 @@ enum LegacyFormat {
         case .idle: return String(localized: "空闲")
         case .waiting: return String(localized: "等待输入")
         case .waitingApproval: return String(localized: "等待审批")
+        case .pending: return String(localized: "排队中")
         case .running: return String(localized: "运行中")
+        case .stopping: return String(localized: "正在停止")
+        case .blocked: return String(localized: "已阻塞")
         case .error: return String(localized: "出错")
+        case .disconnected: return String(localized: "已断开")
+        case .unknown: return String(localized: "未知")
         }
     }
 
@@ -19,9 +29,9 @@ enum LegacyFormat {
         switch status {
         case .running: return .green
         case .waitingApproval: return .orange
-        case .waiting: return .blue
+        case .waiting, .pending: return .blue
         case .error: return .red
-        case .idle: return .secondary
+        case .stopping, .blocked, .disconnected, .idle, .unknown: return .secondary
         }
     }
 
