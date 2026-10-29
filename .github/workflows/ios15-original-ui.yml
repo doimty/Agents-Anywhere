@@ -68,10 +68,10 @@ jobs:
             -project "ios/Agents Anywhere/Agents Anywhere.xcodeproj" \
             -scheme "Agents Anywhere" \
             -configuration Debug \
-            -destination 'generic/platform=iOS' \
+            -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath "$RUNNER_TEMP/OriginalDerivedData" \
 
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_STYLE=Manual \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
             build > "$evidence/xcodebuild.log" 2>&1
           status=$?
           set -e
@@ -102,7 +102,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          app="$RUNNER_TEMP/OriginalDerivedData/Build/Products/Debug-iphoneos/Agents Anywhere.app"
+          app="$RUNNER_TEMP/OriginalDerivedData/Build/Products/Debug-iphonesimulator/Agents Anywhere.app"
           test -f "$app/Info.plist"
           floor="$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$app/Info.plist")"
           test "$floor" = '15.0'
