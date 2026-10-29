@@ -13,7 +13,7 @@ nonisolated struct URLSessionHTTPTransport: HTTPTransport {
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
     private let retryPolicy: HTTPReadRetryPolicy
-    private let sleep: (Duration) async throws -> Void
+    private let sleep: (TimeInterval) async throws -> Void
 
     init(
         serverURL: URL,
@@ -22,7 +22,11 @@ nonisolated struct URLSessionHTTPTransport: HTTPTransport {
         encoder: JSONEncoder = JSONEncoder(),
         decoder: JSONDecoder = JSONDecoder(),
         retryPolicy: HTTPReadRetryPolicy = HTTPReadRetryPolicy(),
-        sleep: @escaping (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+        // Seconds, not `Duration`: `Duration` and `Task.sleep(for:)` are iOS 16+.
+        sleep: @escaping (TimeInterval) async throws -> Void = { seconds in
+            guard seconds > 0 else { return }
+            try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+        }
     ) {
         self.serverURL = serverURL.normalizedV2ServerURL()
         self.urlSession = urlSession
@@ -59,7 +63,7 @@ nonisolated struct URLSessionHTTPTransport: HTTPTransport {
                 if let retryAfter, retryAfter > 30 { throw error }
                 let delay = max(0.5 * pow(2, Double(attempt)), retryAfter ?? 0)
                 attempt += 1
-                try await sleep(.seconds(delay))
+                try await sleep(delay)
             }
         }
     }

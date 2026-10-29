@@ -1,0 +1,426 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		849DB50884A83D5835E4B0B9 /* LegacyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2ACCB02ED040BC57895833D /* LegacyApp.swift */; };
+		A9B33CBB68B1BB673D947EC8 /* LegacyDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */; };
+		053066CA14319F836D30A8D4 /* LegacyLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */; };
+		3DBB81CD9633598BC8B9CA6C /* LegacySessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5D2065C589304B6E4D8739 /* LegacySessionStore.swift */; };
+		630BD9DCB9B176EA78CD6642 /* LegacySessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EABD514384B4FC21BC6EFBFE /* LegacySessionView.swift */; };
+		F760C8F2AE6FE963AFA765EA /* LegacySupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C9E408DF4BEF63B64F0E15 /* LegacySupport.swift */; };
+		2DE2A206AB57558827B25D85 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE8419F37BF746E90EBF814 /* APIClient.swift */; };
+		72AEF56F21BA350EF1C36D43 /* V2APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ABD4D6CD822D030D6D7D27B /* V2APIClient.swift */; };
+		41FBDF18F750D6F504B65C44 /* V2AccountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06FAB80DC3D6EC268E74C57E /* V2AccountAPI.swift */; };
+		F595010257D81033F2D61059 /* V2AttachmentAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70B735659A4799D3A504DAD1 /* V2AttachmentAPI.swift */; };
+		F78062E97D6A60C6AA70EA5A /* V2ConnectorAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F2854B41084F6CB114A20E /* V2ConnectorAPI.swift */; };
+		E9895928D9297E0DC6F11347 /* V2ProjectAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C17A57C702EBCC88D91D4F7 /* V2ProjectAPI.swift */; };
+		C98E3794B3F27D0C3A8FE1E4 /* V2RuntimeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CBD0F9ACE99FA9FE95E735 /* V2RuntimeAPI.swift */; };
+		B5913E6F9642774B929722A6 /* V2SessionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9960B3D54B0EB08EB7BEEE /* V2SessionAPI.swift */; };
+		B7C98D4B8547934F8FC98BF5 /* AsyncResultGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B2851B0F51CA15920A08FA /* AsyncResultGate.swift */; };
+		AA0BE5FD9400C6D7300DA9F1 /* AuthTokenProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E685102C5BDF6170AC14BD1 /* AuthTokenProvider.swift */; };
+		4B624D8DC15745A4FF3821E5 /* DownloadRedirectPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A14DB0B517AFA9702FE673 /* DownloadRedirectPolicy.swift */; };
+		2050E1D4FD7DFA426FA17900 /* HTTPError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4453BDAEEA918DD0E2B126B0 /* HTTPError.swift */; };
+		FBB6437EEBBCC1828343F41A /* HTTPMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D66247D4FFFB8E30AE2DEE /* HTTPMethod.swift */; };
+		74D78F5A7174FE92D020B8FA /* HTTPReadRetryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB5BCCA9E106B69CE262E52 /* HTTPReadRetryPolicy.swift */; };
+		ACFE9A8FB3780AC0B2898C1C /* HTTPRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B5CB1EF83E6B4D30889A46D /* HTTPRequest.swift */; };
+		F601C2C49E3D85ED5A394323 /* HTTPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D48594BB5C26A0C8424A51A /* HTTPTransport.swift */; };
+		59B2784CC16DB619C8C00396 /* APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C76F7C9A435F4DCFB4087B27 /* APIModels.swift */; };
+		E1E53EFFA740E64483B9E1FD /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D18195E2DFBEE8445950904 /* KeychainStore.swift */; };
+		330D4A9A2918224E62A9DCD3 /* AccountAvatarImageSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */; };
+		8A30977FD26C8B40E2255A81 /* V2AccountModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A9A5CB5558AB7F9FDD9227 /* V2AccountModels.swift */; };
+		0D653584E3CB94C6D0CBD1CF /* V2AttachmentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA1477CE6C744AB8AD6EA16 /* V2AttachmentModels.swift */; };
+		A03B8A6D004AA2B6877CCC9F /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76880CC1B582AA967367FD1A /* JSONValue.swift */; };
+		8BD736DC831369A90F461F02 /* RuntimeLocalizedCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B8426EC7F9DFE38DF5B4377 /* RuntimeLocalizedCopy.swift */; };
+		C6C0F4EC1BE7ADFAD543820A /* V2ClientFailure.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0ECEC7ABF21E8BAEF7B147 /* V2ClientFailure.swift */; };
+		F1A698C8560D7E7EB5A104E1 /* V2Identifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65BAB4060D8994D3B552A0 /* V2Identifiers.swift */; };
+		5C474A984E89AB657FB4BB2E /* V2Timestamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B92C36FE5E8197EDC02DE3C /* V2Timestamp.swift */; };
+		8F0B955D8D2D3DDC3BC285CC /* V2Connector.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB125E11474A8A522D418B04 /* V2Connector.swift */; };
+		236B990BE0BC97ABFF8D0792 /* V2DeviceManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7412C1A0ADEA36B16B6D4A /* V2DeviceManagement.swift */; };
+		5A968DA883A83BF910223C44 /* V2DevicePairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D06C9FEA9A8DBCA5F635CFD /* V2DevicePairing.swift */; };
+		F8EC370CE54ADBF208B395DD /* V2RuntimeInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA2C1E35D7B49155C36619FB /* V2RuntimeInventory.swift */; };
+		2E5EED35491EAEA755C14051 /* V2WorkspaceFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB6A0F9CB9C0CACA65AF645B /* V2WorkspaceFiles.swift */; };
+		E9D6A43492CD0E95AADE4E2C /* V2RealtimeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 454AEC9FE10A916AD863258B /* V2RealtimeModels.swift */; };
+		07CB72574BFA490C38A0C84B /* V2RuntimeCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573FED10460AD5843077472B /* V2RuntimeCapability.swift */; };
+		B54EC9A2BFB79D503D9BAA6B /* V2RuntimeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA120F64E4C64A31F3ADEFDA /* V2RuntimeCatalog.swift */; };
+		8099483957FF4BA712C0B0FE /* V2RuntimeConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6655BD9D18C17DC63DEDB4BE /* V2RuntimeConfig.swift */; };
+		F9D1AB4C841CD9CF615B69E2 /* V2RuntimeMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0590F7756F4AA45ED0928DA /* V2RuntimeMessage.swift */; };
+		C5A4CD4AAAB2060061B41FCE /* V2RuntimeNotice.swift in Sources */ = {isa = PBXBuildFile; fileRef = D750B8239B1E4FBDEED5FAF8 /* V2RuntimeNotice.swift */; };
+		A54E45867086CB59944CF3CE /* V2RuntimeState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F168531BEA0B836B2576BF /* V2RuntimeState.swift */; };
+		C96279F09119D182C2198399 /* V2Project.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA1E9DFF02DE347DF4950E8D /* V2Project.swift */; };
+		BC82074D8BE40B0F1881F3C0 /* V2SessionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6875D84C30E67F1EBD47188A /* V2SessionData.swift */; };
+		93F75809FC715F0ABB723D9F /* V2SessionMeta.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D63EF4C20585B22721A487 /* V2SessionMeta.swift */; };
+		14ACE082BDDCB85E2AD531B6 /* V2SessionTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1163E417E834AEAC8397A22B /* V2SessionTimeline.swift */; };
+		AC51C1AD5B45FA613E920C95 /* V2TimelineItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09CF0B901C9C5366AE7F0E7 /* V2TimelineItem.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F5BF48AA40CAD7891EB709FC /* AgentsAnywhereLegacy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AgentsAnywhereLegacy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2ACCB02ED040BC57895833D /* LegacyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LegacyApp.swift; path = LegacySources/LegacyApp.swift; sourceTree = "<group>"; };
+		74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LegacyDashboardView.swift; path = LegacySources/LegacyDashboardView.swift; sourceTree = "<group>"; };
+		C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LegacyLoginView.swift; path = LegacySources/LegacyLoginView.swift; sourceTree = "<group>"; };
+		0F5D2065C589304B6E4D8739 /* LegacySessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LegacySessionStore.swift; path = LegacySources/LegacySessionStore.swift; sourceTree = "<group>"; };
+		EABD514384B4FC21BC6EFBFE /* LegacySessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LegacySessionView.swift; path = LegacySources/LegacySessionView.swift; sourceTree = "<group>"; };
+		E8C9E408DF4BEF63B64F0E15 /* LegacySupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LegacySupport.swift; path = LegacySources/LegacySupport.swift; sourceTree = "<group>"; };
+		BBE8419F37BF746E90EBF814 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = APIClient.swift; path = "../Agents Anywhere/Agents Anywhere/API/APIClient.swift"; sourceTree = "<group>"; };
+		6ABD4D6CD822D030D6D7D27B /* V2APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2APIClient.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2APIClient.swift"; sourceTree = "<group>"; };
+		06FAB80DC3D6EC268E74C57E /* V2AccountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2AccountAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2AccountAPI.swift"; sourceTree = "<group>"; };
+		70B735659A4799D3A504DAD1 /* V2AttachmentAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2AttachmentAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2AttachmentAPI.swift"; sourceTree = "<group>"; };
+		D6F2854B41084F6CB114A20E /* V2ConnectorAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2ConnectorAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2ConnectorAPI.swift"; sourceTree = "<group>"; };
+		1C17A57C702EBCC88D91D4F7 /* V2ProjectAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2ProjectAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2ProjectAPI.swift"; sourceTree = "<group>"; };
+		C8CBD0F9ACE99FA9FE95E735 /* V2RuntimeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2RuntimeAPI.swift"; sourceTree = "<group>"; };
+		DD9960B3D54B0EB08EB7BEEE /* V2SessionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2SessionAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2SessionAPI.swift"; sourceTree = "<group>"; };
+		71B2851B0F51CA15920A08FA /* AsyncResultGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AsyncResultGate.swift; path = "../Agents Anywhere/Agents Anywhere/Network/AsyncResultGate.swift"; sourceTree = "<group>"; };
+		8E685102C5BDF6170AC14BD1 /* AuthTokenProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AuthTokenProvider.swift; path = "../Agents Anywhere/Agents Anywhere/Network/AuthTokenProvider.swift"; sourceTree = "<group>"; };
+		28A14DB0B517AFA9702FE673 /* DownloadRedirectPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DownloadRedirectPolicy.swift; path = "../Agents Anywhere/Agents Anywhere/Network/DownloadRedirectPolicy.swift"; sourceTree = "<group>"; };
+		4453BDAEEA918DD0E2B126B0 /* HTTPError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HTTPError.swift; path = "../Agents Anywhere/Agents Anywhere/Network/HTTPError.swift"; sourceTree = "<group>"; };
+		E3D66247D4FFFB8E30AE2DEE /* HTTPMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HTTPMethod.swift; path = "../Agents Anywhere/Agents Anywhere/Network/HTTPMethod.swift"; sourceTree = "<group>"; };
+		0AB5BCCA9E106B69CE262E52 /* HTTPReadRetryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HTTPReadRetryPolicy.swift; path = "../Agents Anywhere/Agents Anywhere/Network/HTTPReadRetryPolicy.swift"; sourceTree = "<group>"; };
+		4B5CB1EF83E6B4D30889A46D /* HTTPRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HTTPRequest.swift; path = "../Agents Anywhere/Agents Anywhere/Network/HTTPRequest.swift"; sourceTree = "<group>"; };
+		1D48594BB5C26A0C8424A51A /* HTTPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HTTPTransport.swift; path = "../Agents Anywhere/Agents Anywhere/Network/HTTPTransport.swift"; sourceTree = "<group>"; };
+		C76F7C9A435F4DCFB4087B27 /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = APIModels.swift; path = "../Agents Anywhere/Agents Anywhere/Models/APIModels.swift"; sourceTree = "<group>"; };
+		4D18195E2DFBEE8445950904 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeychainStore.swift; path = "../Agents Anywhere/Agents Anywhere/Stores/KeychainStore.swift"; sourceTree = "<group>"; };
+		4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountAvatarImageSource.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Account/AccountAvatarImageSource.swift"; sourceTree = "<group>"; };
+		57A9A5CB5558AB7F9FDD9227 /* V2AccountModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2AccountModels.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Account/V2AccountModels.swift"; sourceTree = "<group>"; };
+		CAA1477CE6C744AB8AD6EA16 /* V2AttachmentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2AttachmentModels.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Attachment/V2AttachmentModels.swift"; sourceTree = "<group>"; };
+		76880CC1B582AA967367FD1A /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JSONValue.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Common/JSONValue.swift"; sourceTree = "<group>"; };
+		0B8426EC7F9DFE38DF5B4377 /* RuntimeLocalizedCopy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RuntimeLocalizedCopy.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Common/RuntimeLocalizedCopy.swift"; sourceTree = "<group>"; };
+		DB0ECEC7ABF21E8BAEF7B147 /* V2ClientFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2ClientFailure.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Common/V2ClientFailure.swift"; sourceTree = "<group>"; };
+		FE65BAB4060D8994D3B552A0 /* V2Identifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2Identifiers.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Common/V2Identifiers.swift"; sourceTree = "<group>"; };
+		8B92C36FE5E8197EDC02DE3C /* V2Timestamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2Timestamp.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Common/V2Timestamp.swift"; sourceTree = "<group>"; };
+		DB125E11474A8A522D418B04 /* V2Connector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2Connector.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2Connector.swift"; sourceTree = "<group>"; };
+		6F7412C1A0ADEA36B16B6D4A /* V2DeviceManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2DeviceManagement.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2DeviceManagement.swift"; sourceTree = "<group>"; };
+		8D06C9FEA9A8DBCA5F635CFD /* V2DevicePairing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2DevicePairing.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2DevicePairing.swift"; sourceTree = "<group>"; };
+		BA2C1E35D7B49155C36619FB /* V2RuntimeInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeInventory.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2RuntimeInventory.swift"; sourceTree = "<group>"; };
+		DB6A0F9CB9C0CACA65AF645B /* V2WorkspaceFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2WorkspaceFiles.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2WorkspaceFiles.swift"; sourceTree = "<group>"; };
+		454AEC9FE10A916AD863258B /* V2RealtimeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RealtimeModels.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Realtime/V2RealtimeModels.swift"; sourceTree = "<group>"; };
+		573FED10460AD5843077472B /* V2RuntimeCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeCapability.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Runtime/V2RuntimeCapability.swift"; sourceTree = "<group>"; };
+		EA120F64E4C64A31F3ADEFDA /* V2RuntimeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeCatalog.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Runtime/V2RuntimeCatalog.swift"; sourceTree = "<group>"; };
+		6655BD9D18C17DC63DEDB4BE /* V2RuntimeConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeConfig.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Runtime/V2RuntimeConfig.swift"; sourceTree = "<group>"; };
+		A0590F7756F4AA45ED0928DA /* V2RuntimeMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeMessage.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Runtime/V2RuntimeMessage.swift"; sourceTree = "<group>"; };
+		D750B8239B1E4FBDEED5FAF8 /* V2RuntimeNotice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeNotice.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Runtime/V2RuntimeNotice.swift"; sourceTree = "<group>"; };
+		40F168531BEA0B836B2576BF /* V2RuntimeState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeState.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Runtime/V2RuntimeState.swift"; sourceTree = "<group>"; };
+		EA1E9DFF02DE347DF4950E8D /* V2Project.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2Project.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Session/V2Project.swift"; sourceTree = "<group>"; };
+		6875D84C30E67F1EBD47188A /* V2SessionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2SessionData.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Session/V2SessionData.swift"; sourceTree = "<group>"; };
+		77D63EF4C20585B22721A487 /* V2SessionMeta.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2SessionMeta.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Session/V2SessionMeta.swift"; sourceTree = "<group>"; };
+		1163E417E834AEAC8397A22B /* V2SessionTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2SessionTimeline.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Session/V2SessionTimeline.swift"; sourceTree = "<group>"; };
+		E09CF0B901C9C5366AE7F0E7 /* V2TimelineItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2TimelineItem.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Session/V2TimelineItem.swift"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		424153ED3CD079DB4DB459AF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		518DA81DB9B99529C0C0AEBE = {
+			isa = PBXGroup;
+			children = (
+				1507F349832A04790D3C1273 /* Sources */,
+				547D009064F7C3F13BEF3460 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1507F349832A04790D3C1273 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				D2ACCB02ED040BC57895833D /* LegacyApp.swift */,
+				74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */,
+				C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */,
+				0F5D2065C589304B6E4D8739 /* LegacySessionStore.swift */,
+				EABD514384B4FC21BC6EFBFE /* LegacySessionView.swift */,
+				E8C9E408DF4BEF63B64F0E15 /* LegacySupport.swift */,
+				BBE8419F37BF746E90EBF814 /* APIClient.swift */,
+				6ABD4D6CD822D030D6D7D27B /* V2APIClient.swift */,
+				06FAB80DC3D6EC268E74C57E /* V2AccountAPI.swift */,
+				70B735659A4799D3A504DAD1 /* V2AttachmentAPI.swift */,
+				D6F2854B41084F6CB114A20E /* V2ConnectorAPI.swift */,
+				1C17A57C702EBCC88D91D4F7 /* V2ProjectAPI.swift */,
+				C8CBD0F9ACE99FA9FE95E735 /* V2RuntimeAPI.swift */,
+				DD9960B3D54B0EB08EB7BEEE /* V2SessionAPI.swift */,
+				71B2851B0F51CA15920A08FA /* AsyncResultGate.swift */,
+				8E685102C5BDF6170AC14BD1 /* AuthTokenProvider.swift */,
+				28A14DB0B517AFA9702FE673 /* DownloadRedirectPolicy.swift */,
+				4453BDAEEA918DD0E2B126B0 /* HTTPError.swift */,
+				E3D66247D4FFFB8E30AE2DEE /* HTTPMethod.swift */,
+				0AB5BCCA9E106B69CE262E52 /* HTTPReadRetryPolicy.swift */,
+				4B5CB1EF83E6B4D30889A46D /* HTTPRequest.swift */,
+				1D48594BB5C26A0C8424A51A /* HTTPTransport.swift */,
+				C76F7C9A435F4DCFB4087B27 /* APIModels.swift */,
+				4D18195E2DFBEE8445950904 /* KeychainStore.swift */,
+				4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */,
+				57A9A5CB5558AB7F9FDD9227 /* V2AccountModels.swift */,
+				CAA1477CE6C744AB8AD6EA16 /* V2AttachmentModels.swift */,
+				76880CC1B582AA967367FD1A /* JSONValue.swift */,
+				0B8426EC7F9DFE38DF5B4377 /* RuntimeLocalizedCopy.swift */,
+				DB0ECEC7ABF21E8BAEF7B147 /* V2ClientFailure.swift */,
+				FE65BAB4060D8994D3B552A0 /* V2Identifiers.swift */,
+				8B92C36FE5E8197EDC02DE3C /* V2Timestamp.swift */,
+				DB125E11474A8A522D418B04 /* V2Connector.swift */,
+				6F7412C1A0ADEA36B16B6D4A /* V2DeviceManagement.swift */,
+				8D06C9FEA9A8DBCA5F635CFD /* V2DevicePairing.swift */,
+				BA2C1E35D7B49155C36619FB /* V2RuntimeInventory.swift */,
+				DB6A0F9CB9C0CACA65AF645B /* V2WorkspaceFiles.swift */,
+				454AEC9FE10A916AD863258B /* V2RealtimeModels.swift */,
+				573FED10460AD5843077472B /* V2RuntimeCapability.swift */,
+				EA120F64E4C64A31F3ADEFDA /* V2RuntimeCatalog.swift */,
+				6655BD9D18C17DC63DEDB4BE /* V2RuntimeConfig.swift */,
+				A0590F7756F4AA45ED0928DA /* V2RuntimeMessage.swift */,
+				D750B8239B1E4FBDEED5FAF8 /* V2RuntimeNotice.swift */,
+				40F168531BEA0B836B2576BF /* V2RuntimeState.swift */,
+				EA1E9DFF02DE347DF4950E8D /* V2Project.swift */,
+				6875D84C30E67F1EBD47188A /* V2SessionData.swift */,
+				77D63EF4C20585B22721A487 /* V2SessionMeta.swift */,
+				1163E417E834AEAC8397A22B /* V2SessionTimeline.swift */,
+				E09CF0B901C9C5366AE7F0E7 /* V2TimelineItem.swift */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		547D009064F7C3F13BEF3460 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F5BF48AA40CAD7891EB709FC /* AgentsAnywhereLegacy.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		42AEFBAE01D2DFD981F7DA7D /* AgentsAnywhereLegacy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 354589B28580510B6EC24620 /* Build configuration list for PBXNativeTarget "AgentsAnywhereLegacy" */;
+			buildPhases = (
+				7A70D71C385290AF96BF1031 /* Sources */,
+				424153ED3CD079DB4DB459AF /* Frameworks */,
+				285BB1C1430063331E9F5DD0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AgentsAnywhereLegacy;
+			productName = AgentsAnywhereLegacy;
+			productReference = F5BF48AA40CAD7891EB709FC /* AgentsAnywhereLegacy.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		46F86FAA6BBF9AC94A7E4595 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					42AEFBAE01D2DFD981F7DA7D = {
+						CreatedOnToolsVersion = 27.0;
+					};
+				};
+			};
+			buildConfigurationList = 1F4E3D13C2320EDA50221924 /* Build configuration list for PBXProject "AgentsAnywhereLegacy" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 518DA81DB9B99529C0C0AEBE;
+			productRefGroup = 547D009064F7C3F13BEF3460 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				42AEFBAE01D2DFD981F7DA7D /* AgentsAnywhereLegacy */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		285BB1C1430063331E9F5DD0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7A70D71C385290AF96BF1031 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				849DB50884A83D5835E4B0B9 /* LegacyApp.swift in Sources */,
+				A9B33CBB68B1BB673D947EC8 /* LegacyDashboardView.swift in Sources */,
+				053066CA14319F836D30A8D4 /* LegacyLoginView.swift in Sources */,
+				3DBB81CD9633598BC8B9CA6C /* LegacySessionStore.swift in Sources */,
+				630BD9DCB9B176EA78CD6642 /* LegacySessionView.swift in Sources */,
+				F760C8F2AE6FE963AFA765EA /* LegacySupport.swift in Sources */,
+				2DE2A206AB57558827B25D85 /* APIClient.swift in Sources */,
+				72AEF56F21BA350EF1C36D43 /* V2APIClient.swift in Sources */,
+				41FBDF18F750D6F504B65C44 /* V2AccountAPI.swift in Sources */,
+				F595010257D81033F2D61059 /* V2AttachmentAPI.swift in Sources */,
+				F78062E97D6A60C6AA70EA5A /* V2ConnectorAPI.swift in Sources */,
+				E9895928D9297E0DC6F11347 /* V2ProjectAPI.swift in Sources */,
+				C98E3794B3F27D0C3A8FE1E4 /* V2RuntimeAPI.swift in Sources */,
+				B5913E6F9642774B929722A6 /* V2SessionAPI.swift in Sources */,
+				B7C98D4B8547934F8FC98BF5 /* AsyncResultGate.swift in Sources */,
+				AA0BE5FD9400C6D7300DA9F1 /* AuthTokenProvider.swift in Sources */,
+				4B624D8DC15745A4FF3821E5 /* DownloadRedirectPolicy.swift in Sources */,
+				2050E1D4FD7DFA426FA17900 /* HTTPError.swift in Sources */,
+				FBB6437EEBBCC1828343F41A /* HTTPMethod.swift in Sources */,
+				74D78F5A7174FE92D020B8FA /* HTTPReadRetryPolicy.swift in Sources */,
+				ACFE9A8FB3780AC0B2898C1C /* HTTPRequest.swift in Sources */,
+				F601C2C49E3D85ED5A394323 /* HTTPTransport.swift in Sources */,
+				59B2784CC16DB619C8C00396 /* APIModels.swift in Sources */,
+				E1E53EFFA740E64483B9E1FD /* KeychainStore.swift in Sources */,
+				330D4A9A2918224E62A9DCD3 /* AccountAvatarImageSource.swift in Sources */,
+				8A30977FD26C8B40E2255A81 /* V2AccountModels.swift in Sources */,
+				0D653584E3CB94C6D0CBD1CF /* V2AttachmentModels.swift in Sources */,
+				A03B8A6D004AA2B6877CCC9F /* JSONValue.swift in Sources */,
+				8BD736DC831369A90F461F02 /* RuntimeLocalizedCopy.swift in Sources */,
+				C6C0F4EC1BE7ADFAD543820A /* V2ClientFailure.swift in Sources */,
+				F1A698C8560D7E7EB5A104E1 /* V2Identifiers.swift in Sources */,
+				5C474A984E89AB657FB4BB2E /* V2Timestamp.swift in Sources */,
+				8F0B955D8D2D3DDC3BC285CC /* V2Connector.swift in Sources */,
+				236B990BE0BC97ABFF8D0792 /* V2DeviceManagement.swift in Sources */,
+				5A968DA883A83BF910223C44 /* V2DevicePairing.swift in Sources */,
+				F8EC370CE54ADBF208B395DD /* V2RuntimeInventory.swift in Sources */,
+				2E5EED35491EAEA755C14051 /* V2WorkspaceFiles.swift in Sources */,
+				E9D6A43492CD0E95AADE4E2C /* V2RealtimeModels.swift in Sources */,
+				07CB72574BFA490C38A0C84B /* V2RuntimeCapability.swift in Sources */,
+				B54EC9A2BFB79D503D9BAA6B /* V2RuntimeCatalog.swift in Sources */,
+				8099483957FF4BA712C0B0FE /* V2RuntimeConfig.swift in Sources */,
+				F9D1AB4C841CD9CF615B69E2 /* V2RuntimeMessage.swift in Sources */,
+				C5A4CD4AAAB2060061B41FCE /* V2RuntimeNotice.swift in Sources */,
+				A54E45867086CB59944CF3CE /* V2RuntimeState.swift in Sources */,
+				C96279F09119D182C2198399 /* V2Project.swift in Sources */,
+				BC82074D8BE40B0F1881F3C0 /* V2SessionData.swift in Sources */,
+				93F75809FC715F0ABB723D9F /* V2SessionMeta.swift in Sources */,
+				14ACE082BDDCB85E2AD531B6 /* V2SessionTimeline.swift in Sources */,
+				AC51C1AD5B45FA613E920C95 /* V2TimelineItem.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		92E165A9035A603BE73D2E62 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E1D3BBA94590957B0374D6E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		F22D2FFCC45240A8FF5EBE4A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Agents Anywhere";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 0.1.0;
+				CURRENT_PROJECT_VERSION = 1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.agentsanywhere.legacy;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+			};
+			name = Debug;
+		};
+		FE4F802C632EAD717BA35062 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Agents Anywhere";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 0.1.0;
+				CURRENT_PROJECT_VERSION = 1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.agentsanywhere.legacy;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1F4E3D13C2320EDA50221924 /* Build configuration list for PBXProject "AgentsAnywhereLegacy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92E165A9035A603BE73D2E62 /* Debug */,
+				E1D3BBA94590957B0374D6E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		354589B28580510B6EC24620 /* Build configuration list for PBXNativeTarget "AgentsAnywhereLegacy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F22D2FFCC45240A8FF5EBE4A /* Debug */,
+				FE4F802C632EAD717BA35062 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+}

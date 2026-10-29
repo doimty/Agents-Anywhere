@@ -147,13 +147,13 @@ nonisolated private final class InterceptingURLProtocol: URLProtocol, @unchecked
 
     @Test func onlyReadRequestsRetryTransientFailures() async throws {
         let session = session(); defer { session.invalidateAndCancel() }
-        var sleeps: [Duration] = []
+        var sleeps: [TimeInterval] = []
         let transport = URLSessionHTTPTransport(serverURL: URL(string: "https://example.test")!, urlSession: session,
                                                tokenProvider: StaticAuthTokenProvider(token: "token"), sleep: { sleeps.append($0) })
         InterceptingURLProtocol.state.reset([.failure(.networkConnectionLost), .response(503, Data(), ["Retry-After": "2"]), .response(200, try fixtureData("state"))])
         _ = try await V2RuntimeAPI(transport: transport).state(sessionId: "session")
         #expect(InterceptingURLProtocol.state.requests.count == 3)
-        #expect(sleeps == [.milliseconds(500), .seconds(2)])
+        #expect(sleeps == [0.5, 2])
         InterceptingURLProtocol.state.reset([.failure(.timedOut), .response(200, try fixtureData("rpc"))])
         do {
             _ = try await V2RuntimeAPI(transport: transport).sendMessage(sessionId: "session", request: V2RuntimeMessageSendRequest(content: "Hello", attachments: [], clientMessageId: "client"))

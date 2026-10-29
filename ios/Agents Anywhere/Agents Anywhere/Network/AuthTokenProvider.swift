@@ -15,6 +15,8 @@ nonisolated struct StaticAuthTokenProvider: AuthTokenProvider {
 
 /// A token refresh changes authentication for the next request without replacing
 /// the account's repositories, drafts, pagination or active navigation state.
+/// `Mutex` is iOS 18+; the iOS 15 client uses `StaticAuthTokenProvider`.
+@available(iOS 18.0, *)
 nonisolated final class MutableAuthTokenProvider: AuthTokenProvider {
     private let token: Mutex<String?>
     init(token: String) { self.token = Mutex(token) }
