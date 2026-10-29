@@ -50,6 +50,8 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Test the inventory script
         run: python3 ios/Tests/test_ios15_availability.py -v
+      - name: Test the generated legacy project
+        run: python3 ios/Tests/test_generate_legacy_project.py -v
       - name: Reject new iOS 15-incompatible usage
         run: python3 ios/scripts/check_ios15_availability.py --check --json ios15-availability.json
       - name: Upload inventory
