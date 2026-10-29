@@ -77,6 +77,7 @@ struct LegacySessionView: View {
             }
         }
         .task { await store.open(session) }
+        .task { await store.pollTimeline() }
     }
 
     private var composer: some View {

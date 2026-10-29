@@ -39,6 +39,9 @@ final class LegacySessionStore: ObservableObject {
     private let keychain = KeychainStore()
     private var client: V2APIClient?
     private var token: String?
+    /// Highest timeline sequence already applied from the server. Polling asks
+    /// for changes after it, so a refresh never reloads the whole transcript.
+    private var cursor = 0
 
     init() {
         serverInput = UserDefaults.standard.string(forKey: Keys.server) ?? ""
@@ -136,6 +139,7 @@ final class LegacySessionStore: ObservableObject {
             let (page, snapshot) = try await (timeline, notices)
             items = page.items.sorted { LegacySort.timelinePrecedes($0, $1) }
             hasMoreHistory = page.hasMore
+            cursor = page.nextSeq
             self.notices = snapshot.notices
             errorMessage = nil
         } catch {
@@ -246,6 +250,43 @@ final class LegacySessionStore: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Near-live updates without the WebSocket event reducer: ask for timeline
+    /// changes after the last applied sequence every few seconds. Transient
+    /// failures stay silent so a flaky network never paints an error banner over
+    /// a readable conversation; the manual refresh button still reports them.
+    func pollTimeline() async {
+        var tick = 0
+        while !Task.isCancelled {
+            do { try await Task.sleep(nanoseconds: 3_000_000_000) } catch { return }
+            guard !Task.isCancelled else { return }
+            tick += 1
+            await refreshChanges()
+            if tick % 3 == 0 { await refreshNotices() }
+        }
+    }
+
+    private func refreshChanges() async {
+        guard let client, let session = selectedSession else { return }
+        do {
+            let page = try await client.sessions.timelineChanges(
+                sessionId: session.id,
+                afterSeq: cursor,
+                limit: 100
+            )
+            cursor = page.nextSeq
+            merge(page.items)
+        } catch {
+            // Polling is best-effort; the next tick retries.
+        }
+    }
+
+    private func merge(_ incoming: [V2TimelineItem]) {
+        guard !incoming.isEmpty else { return }
+        var byID = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
+        for item in incoming { byID[item.id] = item }
+        items = byID.values.sorted { LegacySort.timelinePrecedes($0, $1) }
     }
 
     func interrupt() async {
