@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Generate the iOS 15 legacy app project.
 
 The shipped project uses file-system synchronized groups tied to the modern
@@ -36,7 +36,10 @@ SHARED_FILES = [
     "API/V2/V2AttachmentAPI.swift",
     "API/V2/V2ConnectorAPI.swift",
     "API/V2/V2ProjectAPI.swift",
+    "API/V2/V2RealtimeAPI.swift",
     "API/V2/V2RuntimeAPI.swift",
+    "Business/V2BusinessError.swift",
+    "Models/WorkspaceDownloadedFile.swift",
     "API/V2/V2SessionAPI.swift",
     "Network/AsyncResultGate.swift",
     "Network/AuthTokenProvider.swift",
@@ -46,15 +49,14 @@ SHARED_FILES = [
     "Network/HTTPReadRetryPolicy.swift",
     "Network/HTTPRequest.swift",
     "Network/HTTPTransport.swift",
+    "Network/WebSocketTransport.swift",
     "Models/APIModels.swift",
     "Stores/KeychainStore.swift",
 ]
 # Excluded from the legacy compile: they depend on iOS 16+/18+ types or on the
 # modern presentation stack.
 SHARED_EXCLUDED = {
-    "API/V2/V2RealtimeAPI.swift",       # Duration/ContinuousClock
     "Network/V2ConnectivityMonitor.swift",  # Observation
-    "Network/WebSocketTransport.swift",     # realtime only
     "Domain/Connector/V2DeviceManagement.swift",  # LocalizedStringResource
 }
 
@@ -62,7 +64,7 @@ SHARED_EXCLUDED = {
 def shared_sources() -> list[Path]:
     files = [APP_ROOT / relative for relative in SHARED_FILES]
     files.extend(sorted((APP_ROOT / "Domain").rglob("*.swift")))
-    return [path for path in files if (APP_ROOT / path.relative_to(APP_ROOT)).as_posix() not in SHARED_EXCLUDED]
+    return [path for path in files if path.relative_to(APP_ROOT).as_posix() not in SHARED_EXCLUDED]
 
 
 def legacy_sources() -> list[Path]:

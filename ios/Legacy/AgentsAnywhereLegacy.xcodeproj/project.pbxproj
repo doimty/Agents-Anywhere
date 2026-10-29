@@ -19,7 +19,10 @@
 		F595010257D81033F2D61059 /* V2AttachmentAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70B735659A4799D3A504DAD1 /* V2AttachmentAPI.swift */; };
 		F78062E97D6A60C6AA70EA5A /* V2ConnectorAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F2854B41084F6CB114A20E /* V2ConnectorAPI.swift */; };
 		E9895928D9297E0DC6F11347 /* V2ProjectAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C17A57C702EBCC88D91D4F7 /* V2ProjectAPI.swift */; };
+		95B2D32FDB1645BEB08947CE /* V2RealtimeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C9314392ADF432751C8ED9 /* V2RealtimeAPI.swift */; };
 		C98E3794B3F27D0C3A8FE1E4 /* V2RuntimeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CBD0F9ACE99FA9FE95E735 /* V2RuntimeAPI.swift */; };
+		DCE2B6D136749DF0AA2EC472 /* V2BusinessError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F1832DB5635CC000365D810 /* V2BusinessError.swift */; };
+		91FEA52D743638E0D244EE86 /* WorkspaceDownloadedFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99BF4B6A748AEADE8E16BF50 /* WorkspaceDownloadedFile.swift */; };
 		B5913E6F9642774B929722A6 /* V2SessionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9960B3D54B0EB08EB7BEEE /* V2SessionAPI.swift */; };
 		B7C98D4B8547934F8FC98BF5 /* AsyncResultGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B2851B0F51CA15920A08FA /* AsyncResultGate.swift */; };
 		AA0BE5FD9400C6D7300DA9F1 /* AuthTokenProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E685102C5BDF6170AC14BD1 /* AuthTokenProvider.swift */; };
@@ -29,6 +32,7 @@
 		74D78F5A7174FE92D020B8FA /* HTTPReadRetryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AB5BCCA9E106B69CE262E52 /* HTTPReadRetryPolicy.swift */; };
 		ACFE9A8FB3780AC0B2898C1C /* HTTPRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B5CB1EF83E6B4D30889A46D /* HTTPRequest.swift */; };
 		F601C2C49E3D85ED5A394323 /* HTTPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D48594BB5C26A0C8424A51A /* HTTPTransport.swift */; };
+		D4D2AE465DA8A03116BAF175 /* WebSocketTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1398B4038C7FD5AA5F9C7C /* WebSocketTransport.swift */; };
 		59B2784CC16DB619C8C00396 /* APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C76F7C9A435F4DCFB4087B27 /* APIModels.swift */; };
 		E1E53EFFA740E64483B9E1FD /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D18195E2DFBEE8445950904 /* KeychainStore.swift */; };
 		330D4A9A2918224E62A9DCD3 /* AccountAvatarImageSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */; };
@@ -40,7 +44,6 @@
 		F1A698C8560D7E7EB5A104E1 /* V2Identifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65BAB4060D8994D3B552A0 /* V2Identifiers.swift */; };
 		5C474A984E89AB657FB4BB2E /* V2Timestamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B92C36FE5E8197EDC02DE3C /* V2Timestamp.swift */; };
 		8F0B955D8D2D3DDC3BC285CC /* V2Connector.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB125E11474A8A522D418B04 /* V2Connector.swift */; };
-		236B990BE0BC97ABFF8D0792 /* V2DeviceManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7412C1A0ADEA36B16B6D4A /* V2DeviceManagement.swift */; };
 		5A968DA883A83BF910223C44 /* V2DevicePairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D06C9FEA9A8DBCA5F635CFD /* V2DevicePairing.swift */; };
 		F8EC370CE54ADBF208B395DD /* V2RuntimeInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA2C1E35D7B49155C36619FB /* V2RuntimeInventory.swift */; };
 		2E5EED35491EAEA755C14051 /* V2WorkspaceFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB6A0F9CB9C0CACA65AF645B /* V2WorkspaceFiles.swift */; };
@@ -72,7 +75,10 @@
 		70B735659A4799D3A504DAD1 /* V2AttachmentAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2AttachmentAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2AttachmentAPI.swift"; sourceTree = "<group>"; };
 		D6F2854B41084F6CB114A20E /* V2ConnectorAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2ConnectorAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2ConnectorAPI.swift"; sourceTree = "<group>"; };
 		1C17A57C702EBCC88D91D4F7 /* V2ProjectAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2ProjectAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2ProjectAPI.swift"; sourceTree = "<group>"; };
+		50C9314392ADF432751C8ED9 /* V2RealtimeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RealtimeAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2RealtimeAPI.swift"; sourceTree = "<group>"; };
 		C8CBD0F9ACE99FA9FE95E735 /* V2RuntimeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2RuntimeAPI.swift"; sourceTree = "<group>"; };
+		1F1832DB5635CC000365D810 /* V2BusinessError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2BusinessError.swift; path = "../Agents Anywhere/Agents Anywhere/Business/V2BusinessError.swift"; sourceTree = "<group>"; };
+		99BF4B6A748AEADE8E16BF50 /* WorkspaceDownloadedFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WorkspaceDownloadedFile.swift; path = "../Agents Anywhere/Agents Anywhere/Models/WorkspaceDownloadedFile.swift"; sourceTree = "<group>"; };
 		DD9960B3D54B0EB08EB7BEEE /* V2SessionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2SessionAPI.swift; path = "../Agents Anywhere/Agents Anywhere/API/V2/V2SessionAPI.swift"; sourceTree = "<group>"; };
 		71B2851B0F51CA15920A08FA /* AsyncResultGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AsyncResultGate.swift; path = "../Agents Anywhere/Agents Anywhere/Network/AsyncResultGate.swift"; sourceTree = "<group>"; };
 		8E685102C5BDF6170AC14BD1 /* AuthTokenProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AuthTokenProvider.swift; path = "../Agents Anywhere/Agents Anywhere/Network/AuthTokenProvider.swift"; sourceTree = "<group>"; };
@@ -82,6 +88,7 @@
 		0AB5BCCA9E106B69CE262E52 /* HTTPReadRetryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HTTPReadRetryPolicy.swift; path = "../Agents Anywhere/Agents Anywhere/Network/HTTPReadRetryPolicy.swift"; sourceTree = "<group>"; };
 		4B5CB1EF83E6B4D30889A46D /* HTTPRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HTTPRequest.swift; path = "../Agents Anywhere/Agents Anywhere/Network/HTTPRequest.swift"; sourceTree = "<group>"; };
 		1D48594BB5C26A0C8424A51A /* HTTPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HTTPTransport.swift; path = "../Agents Anywhere/Agents Anywhere/Network/HTTPTransport.swift"; sourceTree = "<group>"; };
+		AD1398B4038C7FD5AA5F9C7C /* WebSocketTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WebSocketTransport.swift; path = "../Agents Anywhere/Agents Anywhere/Network/WebSocketTransport.swift"; sourceTree = "<group>"; };
 		C76F7C9A435F4DCFB4087B27 /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = APIModels.swift; path = "../Agents Anywhere/Agents Anywhere/Models/APIModels.swift"; sourceTree = "<group>"; };
 		4D18195E2DFBEE8445950904 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeychainStore.swift; path = "../Agents Anywhere/Agents Anywhere/Stores/KeychainStore.swift"; sourceTree = "<group>"; };
 		4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountAvatarImageSource.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Account/AccountAvatarImageSource.swift"; sourceTree = "<group>"; };
@@ -93,7 +100,6 @@
 		FE65BAB4060D8994D3B552A0 /* V2Identifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2Identifiers.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Common/V2Identifiers.swift"; sourceTree = "<group>"; };
 		8B92C36FE5E8197EDC02DE3C /* V2Timestamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2Timestamp.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Common/V2Timestamp.swift"; sourceTree = "<group>"; };
 		DB125E11474A8A522D418B04 /* V2Connector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2Connector.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2Connector.swift"; sourceTree = "<group>"; };
-		6F7412C1A0ADEA36B16B6D4A /* V2DeviceManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2DeviceManagement.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2DeviceManagement.swift"; sourceTree = "<group>"; };
 		8D06C9FEA9A8DBCA5F635CFD /* V2DevicePairing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2DevicePairing.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2DevicePairing.swift"; sourceTree = "<group>"; };
 		BA2C1E35D7B49155C36619FB /* V2RuntimeInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeInventory.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2RuntimeInventory.swift"; sourceTree = "<group>"; };
 		DB6A0F9CB9C0CACA65AF645B /* V2WorkspaceFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2WorkspaceFiles.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2WorkspaceFiles.swift"; sourceTree = "<group>"; };
@@ -145,7 +151,10 @@
 				70B735659A4799D3A504DAD1 /* V2AttachmentAPI.swift */,
 				D6F2854B41084F6CB114A20E /* V2ConnectorAPI.swift */,
 				1C17A57C702EBCC88D91D4F7 /* V2ProjectAPI.swift */,
+				50C9314392ADF432751C8ED9 /* V2RealtimeAPI.swift */,
 				C8CBD0F9ACE99FA9FE95E735 /* V2RuntimeAPI.swift */,
+				1F1832DB5635CC000365D810 /* V2BusinessError.swift */,
+				99BF4B6A748AEADE8E16BF50 /* WorkspaceDownloadedFile.swift */,
 				DD9960B3D54B0EB08EB7BEEE /* V2SessionAPI.swift */,
 				71B2851B0F51CA15920A08FA /* AsyncResultGate.swift */,
 				8E685102C5BDF6170AC14BD1 /* AuthTokenProvider.swift */,
@@ -155,6 +164,7 @@
 				0AB5BCCA9E106B69CE262E52 /* HTTPReadRetryPolicy.swift */,
 				4B5CB1EF83E6B4D30889A46D /* HTTPRequest.swift */,
 				1D48594BB5C26A0C8424A51A /* HTTPTransport.swift */,
+				AD1398B4038C7FD5AA5F9C7C /* WebSocketTransport.swift */,
 				C76F7C9A435F4DCFB4087B27 /* APIModels.swift */,
 				4D18195E2DFBEE8445950904 /* KeychainStore.swift */,
 				4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */,
@@ -166,7 +176,6 @@
 				FE65BAB4060D8994D3B552A0 /* V2Identifiers.swift */,
 				8B92C36FE5E8197EDC02DE3C /* V2Timestamp.swift */,
 				DB125E11474A8A522D418B04 /* V2Connector.swift */,
-				6F7412C1A0ADEA36B16B6D4A /* V2DeviceManagement.swift */,
 				8D06C9FEA9A8DBCA5F635CFD /* V2DevicePairing.swift */,
 				BA2C1E35D7B49155C36619FB /* V2RuntimeInventory.swift */,
 				DB6A0F9CB9C0CACA65AF645B /* V2WorkspaceFiles.swift */,
@@ -274,7 +283,10 @@
 				F595010257D81033F2D61059 /* V2AttachmentAPI.swift in Sources */,
 				F78062E97D6A60C6AA70EA5A /* V2ConnectorAPI.swift in Sources */,
 				E9895928D9297E0DC6F11347 /* V2ProjectAPI.swift in Sources */,
+				95B2D32FDB1645BEB08947CE /* V2RealtimeAPI.swift in Sources */,
 				C98E3794B3F27D0C3A8FE1E4 /* V2RuntimeAPI.swift in Sources */,
+				DCE2B6D136749DF0AA2EC472 /* V2BusinessError.swift in Sources */,
+				91FEA52D743638E0D244EE86 /* WorkspaceDownloadedFile.swift in Sources */,
 				B5913E6F9642774B929722A6 /* V2SessionAPI.swift in Sources */,
 				B7C98D4B8547934F8FC98BF5 /* AsyncResultGate.swift in Sources */,
 				AA0BE5FD9400C6D7300DA9F1 /* AuthTokenProvider.swift in Sources */,
@@ -284,6 +296,7 @@
 				74D78F5A7174FE92D020B8FA /* HTTPReadRetryPolicy.swift in Sources */,
 				ACFE9A8FB3780AC0B2898C1C /* HTTPRequest.swift in Sources */,
 				F601C2C49E3D85ED5A394323 /* HTTPTransport.swift in Sources */,
+				D4D2AE465DA8A03116BAF175 /* WebSocketTransport.swift in Sources */,
 				59B2784CC16DB619C8C00396 /* APIModels.swift in Sources */,
 				E1E53EFFA740E64483B9E1FD /* KeychainStore.swift in Sources */,
 				330D4A9A2918224E62A9DCD3 /* AccountAvatarImageSource.swift in Sources */,
@@ -295,7 +308,6 @@
 				F1A698C8560D7E7EB5A104E1 /* V2Identifiers.swift in Sources */,
 				5C474A984E89AB657FB4BB2E /* V2Timestamp.swift in Sources */,
 				8F0B955D8D2D3DDC3BC285CC /* V2Connector.swift in Sources */,
-				236B990BE0BC97ABFF8D0792 /* V2DeviceManagement.swift in Sources */,
 				5A968DA883A83BF910223C44 /* V2DevicePairing.swift in Sources */,
 				F8EC370CE54ADBF208B395DD /* V2RuntimeInventory.swift in Sources */,
 				2E5EED35491EAEA755C14051 /* V2WorkspaceFiles.swift in Sources */,
