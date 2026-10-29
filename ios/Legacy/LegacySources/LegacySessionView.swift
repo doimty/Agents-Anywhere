@@ -37,8 +37,8 @@ struct LegacySessionView: View {
                             .disabled(store.isLoadingOlder)
                         }
 
-                        ForEach(store.items) { item in
-                            LegacyTimelineRow(item: item).id(item.id)
+                        ForEach(store.items.filter(\.isVisibleInChat)) { item in
+                            LegacyTimelineRow(item: item, cwd: session.cwd).id(item.id)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -99,36 +99,75 @@ struct LegacySessionView: View {
 
 private struct LegacyTimelineRow: View {
     let item: V2TimelineItem
+    let cwd: String?
+
+    private var entry: TimelineEntryPresentation {
+        TimelineEntryPresentation(item: item, cwd: cwd)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
-                Text(LegacyFormat.speaker(for: item))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                if item.status == .failed {
-                    Text("失败").font(.caption2).foregroundColor(.red)
-                } else if item.status == .running || item.status == .pending {
-                    Text("进行中").font(.caption2).foregroundColor(.secondary)
-                }
-                Spacer(minLength: 0)
-            }
-            if item.displayText.isEmpty {
-                Text(LegacyFormat.placeholder(for: item))
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-            } else if item.role == .user || item.role == .assistant {
-                LegacyMarkdownView(text: item.displayText)
+            if item.type == .tool || item.type == .artifact {
+                toolRow
             } else {
-                Text(item.displayText)
-                    .font(.body)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 6) {
+                    Text(LegacyFormat.speaker(for: item))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    if item.status == .failed {
+                        Text("失败").font(.caption2).foregroundColor(.red)
+                    } else if item.status == .running || item.status == .pending {
+                        Text("进行中").font(.caption2).foregroundColor(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                }
+                if item.displayText.isEmpty {
+                    Text(LegacyFormat.placeholder(for: item))
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                } else if item.role == .user || item.role == .assistant {
+                    LegacyMarkdownView(text: item.displayText)
+                } else {
+                    Text(item.displayText)
+                        .font(.body)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         }
         .padding(10)
         .background(background)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private var toolRow: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: entry.symbol)
+                .font(.caption)
+                .frame(width: 18)
+                .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(entry.title)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(2)
+                if let command = entry.command, !command.isEmpty {
+                    Text(command)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .lineLimit(3)
+                }
+                if let output = entry.output, !output.isEmpty, item.status == .failed {
+                    Text(output)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .lineLimit(3)
+                }
+            }
+            Spacer(minLength: 0)
+            Text(item.status.label)
+                .font(.caption2)
+                .foregroundColor(item.status.isFailure ? .red : .secondary)
+        }
     }
 
     private var background: Color {

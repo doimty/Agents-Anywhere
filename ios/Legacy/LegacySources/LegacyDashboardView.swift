@@ -46,7 +46,7 @@ struct LegacyDashboardView: View {
                 Section {
                     Button("退出登录", role: .destructive) { store.signOut() }
                 } footer: {
-                    Text(store.accountDescription).font(.caption)
+                    Text("\(store.accountDescription) · \(versionLabel)").font(.caption)
                 }
             }
             .listStyle(.insetGrouped)
@@ -59,6 +59,14 @@ struct LegacyDashboardView: View {
             }
         }
         .navigationViewStyle(.stack)
+    }
+
+    /// The build number makes it possible to tell which IPA is installed.
+    private var versionLabel: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "v\(version) (\(build))"
     }
 }
 
