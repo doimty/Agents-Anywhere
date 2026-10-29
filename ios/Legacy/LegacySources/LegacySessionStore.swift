@@ -21,7 +21,9 @@ final class LegacySessionStore: ObservableObject {
     @Published var serverInput: String
     @Published var email = ""
     @Published var password = ""
-    @Published var draft = ""
+    @Published var draft = "" {
+        didSet { persistDraft() }
+    }
     @Published private(set) var accountLabel = ""
     @Published private(set) var connectors: [V2Connector] = []
     @Published private(set) var sessions: [V2SessionMeta] = []
@@ -132,6 +134,7 @@ final class LegacySessionStore: ObservableObject {
         selectedSession = session
         items = []
         hasMoreHistory = false
+        draft = UserDefaults.standard.string(forKey: Self.draftKey(session.id)) ?? ""
         guard let client else { return }
         isWorking = true
         defer { isWorking = false }
@@ -291,6 +294,29 @@ final class LegacySessionStore: ObservableObject {
             guard !Task.isCancelled else { return }
             do { try await Task.sleep(nanoseconds: backoff) } catch { return }
             backoff = min(backoff * 2, 30_000_000_000)
+        }
+    }
+
+    /// Called when the app returns to the foreground so the transcript does not
+    /// wait for the next poll tick.
+    func refreshNow() async {
+        await refreshChanges()
+        await refreshNotices()
+    }
+
+    private static func draftKey(_ sessionID: V2SessionID) -> String {
+        "legacy.draft." + sessionID
+    }
+
+    /// Drafts are per session and survive relaunch. Attachments are not
+    /// persisted: an uploaded file id is only valid for the current session.
+    private func persistDraft() {
+        guard let id = selectedSession?.id else { return }
+        let key = Self.draftKey(id)
+        if draft.isEmpty {
+            UserDefaults.standard.removeObject(forKey: key)
+        } else {
+            UserDefaults.standard.set(draft, forKey: key)
         }
     }
 

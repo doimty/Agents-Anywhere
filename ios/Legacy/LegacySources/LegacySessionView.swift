@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct LegacySessionView: View {
     let session: V2SessionMeta
     @EnvironmentObject private var store: LegacySessionStore
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showsPhotos = false
     @State private var showsFiles = false
 
@@ -85,6 +86,10 @@ struct LegacySessionView: View {
         .task { await store.open(session) }
         .task { await store.pollTimeline() }
         .task { await store.realtimeSignals() }
+        .onChange(of: scenePhase) { phase in
+            // Returning from the background should not wait for the next tick.
+            if phase == .active { Task { await store.refreshNow() } }
+        }
     }
 
     private var composer: some View {
