@@ -30,6 +30,8 @@ final class LegacySessionStore: ObservableObject {
     @Published private(set) var respondingNoticeID: V2NoticeID?
     @Published private(set) var attachments: [V2AttachmentReference] = []
     @Published private(set) var isUploading = false
+    /// True while a session WebSocket is delivering “something changed” signals.
+    @Published private(set) var isRealtimeConnected = false
     @Published private(set) var selectedSession: V2SessionMeta?
     @Published private(set) var hasMoreHistory = false
     @Published private(set) var isLoadingOlder = false
@@ -249,6 +251,46 @@ final class LegacySessionStore: ObservableObject {
             await reload()
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    /// WebSocket as a change *signal*, not a second state machine: any event
+    /// triggers the same incremental `timelineChanges` pull the poller uses, so
+    /// event payloads never need their own merge rules. The 3-second poller keeps
+    /// running as a safety net for disconnects.
+    func realtimeSignals() async {
+        let clientID = "legacy-\(UUID().uuidString)"
+        var backoff: UInt64 = 1_000_000_000
+        while !Task.isCancelled {
+            guard let client, let session = selectedSession else {
+                isRealtimeConnected = false
+                do { try await Task.sleep(nanoseconds: 1_000_000_000) } catch { return }
+                continue
+            }
+            do {
+                let ticket = try await client.realtime.ticket(clientId: clientID, scope: .session(session.id))
+                let stream = try client.realtime.sessionEvents(sessionId: session.id, ticket: ticket.ticket)
+                isRealtimeConnected = true
+                backoff = 1_000_000_000
+                var lastRefresh = Date.distantPast
+                for try await event in stream {
+                    _ = event
+                    guard !Task.isCancelled else { break }
+                    if selectedSession?.id != session.id { break }
+                    // A burst (streaming reply) must not trigger a request per token.
+                    if Date().timeIntervalSince(lastRefresh) > 0.4 {
+                        lastRefresh = Date()
+                        await refreshChanges()
+                        await refreshNotices()
+                    }
+                }
+                isRealtimeConnected = false
+            } catch {
+                isRealtimeConnected = false
+            }
+            guard !Task.isCancelled else { return }
+            do { try await Task.sleep(nanoseconds: backoff) } catch { return }
+            backoff = min(backoff * 2, 30_000_000_000)
         }
     }
 

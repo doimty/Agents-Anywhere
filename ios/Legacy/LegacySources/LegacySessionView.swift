@@ -64,6 +64,12 @@ struct LegacySessionView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
+                if store.isRealtimeConnected {
+                    Circle().fill(Color.green).frame(width: 8, height: 8)
+                        .accessibilityLabel("实时更新已连接")
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     Task { await store.reload() }
                 } label: {
@@ -78,6 +84,7 @@ struct LegacySessionView: View {
         }
         .task { await store.open(session) }
         .task { await store.pollTimeline() }
+        .task { await store.realtimeSignals() }
     }
 
     private var composer: some View {
