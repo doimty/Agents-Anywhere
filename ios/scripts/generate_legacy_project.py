@@ -57,7 +57,6 @@ SHARED_FILES = [
 # modern presentation stack.
 SHARED_EXCLUDED = {
     "Network/V2ConnectivityMonitor.swift",  # Observation
-    "Domain/Connector/V2DeviceManagement.swift",  # LocalizedStringResource
 }
 
 

@@ -44,6 +44,7 @@
 		F1A698C8560D7E7EB5A104E1 /* V2Identifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE65BAB4060D8994D3B552A0 /* V2Identifiers.swift */; };
 		5C474A984E89AB657FB4BB2E /* V2Timestamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B92C36FE5E8197EDC02DE3C /* V2Timestamp.swift */; };
 		8F0B955D8D2D3DDC3BC285CC /* V2Connector.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB125E11474A8A522D418B04 /* V2Connector.swift */; };
+		236B990BE0BC97ABFF8D0792 /* V2DeviceManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7412C1A0ADEA36B16B6D4A /* V2DeviceManagement.swift */; };
 		5A968DA883A83BF910223C44 /* V2DevicePairing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D06C9FEA9A8DBCA5F635CFD /* V2DevicePairing.swift */; };
 		F8EC370CE54ADBF208B395DD /* V2RuntimeInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA2C1E35D7B49155C36619FB /* V2RuntimeInventory.swift */; };
 		2E5EED35491EAEA755C14051 /* V2WorkspaceFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB6A0F9CB9C0CACA65AF645B /* V2WorkspaceFiles.swift */; };
@@ -100,6 +101,7 @@
 		FE65BAB4060D8994D3B552A0 /* V2Identifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2Identifiers.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Common/V2Identifiers.swift"; sourceTree = "<group>"; };
 		8B92C36FE5E8197EDC02DE3C /* V2Timestamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2Timestamp.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Common/V2Timestamp.swift"; sourceTree = "<group>"; };
 		DB125E11474A8A522D418B04 /* V2Connector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2Connector.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2Connector.swift"; sourceTree = "<group>"; };
+		6F7412C1A0ADEA36B16B6D4A /* V2DeviceManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2DeviceManagement.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2DeviceManagement.swift"; sourceTree = "<group>"; };
 		8D06C9FEA9A8DBCA5F635CFD /* V2DevicePairing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2DevicePairing.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2DevicePairing.swift"; sourceTree = "<group>"; };
 		BA2C1E35D7B49155C36619FB /* V2RuntimeInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2RuntimeInventory.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2RuntimeInventory.swift"; sourceTree = "<group>"; };
 		DB6A0F9CB9C0CACA65AF645B /* V2WorkspaceFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V2WorkspaceFiles.swift; path = "../Agents Anywhere/Agents Anywhere/Domain/Connector/V2WorkspaceFiles.swift"; sourceTree = "<group>"; };
@@ -176,6 +178,7 @@
 				FE65BAB4060D8994D3B552A0 /* V2Identifiers.swift */,
 				8B92C36FE5E8197EDC02DE3C /* V2Timestamp.swift */,
 				DB125E11474A8A522D418B04 /* V2Connector.swift */,
+				6F7412C1A0ADEA36B16B6D4A /* V2DeviceManagement.swift */,
 				8D06C9FEA9A8DBCA5F635CFD /* V2DevicePairing.swift */,
 				BA2C1E35D7B49155C36619FB /* V2RuntimeInventory.swift */,
 				DB6A0F9CB9C0CACA65AF645B /* V2WorkspaceFiles.swift */,
@@ -308,6 +311,7 @@
 				F1A698C8560D7E7EB5A104E1 /* V2Identifiers.swift in Sources */,
 				5C474A984E89AB657FB4BB2E /* V2Timestamp.swift in Sources */,
 				8F0B955D8D2D3DDC3BC285CC /* V2Connector.swift in Sources */,
+				236B990BE0BC97ABFF8D0792 /* V2DeviceManagement.swift in Sources */,
 				5A968DA883A83BF910223C44 /* V2DevicePairing.swift in Sources */,
 				F8EC370CE54ADBF208B395DD /* V2RuntimeInventory.swift in Sources */,
 				2E5EED35491EAEA755C14051 /* V2WorkspaceFiles.swift in Sources */,
