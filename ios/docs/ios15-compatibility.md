@@ -122,6 +122,18 @@ OpenMinis 的经验同样指向这一点：只把 `IPHONEOS_DEPLOYMENT_TARGET` �
 
   这与 [M2–M4 方案](ios15-implementation-plan.md) 的判断一致：`Textual` 与 `swiftui-math` 必须移除，而不是绕过。探针保持非门禁，但失败时会输出红色注解与 step summary，不会伪装成通过。
 
+### iOS 15 core 客户端（可安装 IPA）
+
+现代界面依赖 Observation/Textual/Liquid Glass，逐项迁移周期长；为了让 iOS 15 上先有可用客户端，新增了独立 target `ios/Legacy/AgentsAnywhereLegacy.xcodeproj`：
+
+- 复用 `API`、`Domain`、`Network`、`Models/APIModels.swift`、`KeychainStore` 等 50 个共享文件，只替换 SwiftUI 视图层（登录、设备/会话列表、时间线、发送、中断）。
+- 部署目标 `IPHONEOS_DEPLOYMENT_TARGET = 15.0`，`MinimumOSVersion` 实测为 `15.0`，arm64。
+- 输出为未签名 IPA（`Payload/AgentsAnywhereLegacy.app`），可用 TrollStore、AltStore/Sideloadly 或自行重签安装；App Store 分发仍需证书与描述文件。
+
+首次通过记录：[Actions #40867009328](https://github.com/doimty/Agents-Anywhere/actions/runs/40867009328)，提交 `b3e642a5`，产物 `AgentsAnywhereLegacy-unsigned.ipa`（约 735 KB，bundle id `com.agentsanywhere.legacy`）。
+
+能力边界（已知）：不含附件上传、审批表单、Markdown 富文本与实时推送；进入会话时拉取最近 80 条并支持向上翻页，发送后刷新。这些能力在后续里程碑补齐，现代 App 不受影响。
+
 ## 复现
 
 ```bash
