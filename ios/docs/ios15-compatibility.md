@@ -103,11 +103,13 @@ OpenMinis 的经验同样指向这一点：只把 `IPHONEOS_DEPLOYMENT_TARGET` �
 | --- | --- |
 | 清单脚本 + 单元测试 | 已在本机运行，`7 tests OK`；`--check` 与基线一致 |
 | Swift 编译（iOS 26） | 已由云端 macOS runner 验证通过（见下节） |
-| Swift 编译（iOS 15） | 云端探针 `xcodebuild_exit=65`，首个阻断见下节；尚未修复 |
-| 模拟器/真机 | **未做** |
-| 外观与交互回归 | **未做**，适配器分支未经运行验证 |
+| Swift 编译（iOS 15） | 现代 target 的 15.0 探针仍失败（Textual，见下节）；独立 target `AgentsAnywhereLegacy` 已在 15.0 编译通过并产出 IPA |
+| 模拟器/真机 | 用户真机（iOS 15）已确认登录态列表与时间线可用；完整回归按[真机验收清单](ios15-device-acceptance.md)执行，多数用例仍未验证 |
+| 外观与交互回归 | 旧系统分支未经逐项走查 |
 
 ## 云端编译记录（2026-10-29）
+
+真机验收的执行步骤、用例与证据要求见 [ios15-device-acceptance.md](ios15-device-acceptance.md)。
 
 - 仓库：fork [`doimty/Agents-Anywhere`](https://github.com/doimty/Agents-Anywhere)，分支 `feat/ios/ios15-compat-foundation`，提交 `51983d5c`。
 - 运行：[Actions #40853042627](https://github.com/doimty/Agents-Anywhere/actions/runs/40853042627)。
