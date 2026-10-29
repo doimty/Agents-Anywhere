@@ -35,6 +35,7 @@
 		F601C2C49E3D85ED5A394323 /* HTTPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D48594BB5C26A0C8424A51A /* HTTPTransport.swift */; };
 		D4D2AE465DA8A03116BAF175 /* WebSocketTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD1398B4038C7FD5AA5F9C7C /* WebSocketTransport.swift */; };
 		59B2784CC16DB619C8C00396 /* APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C76F7C9A435F4DCFB4087B27 /* APIModels.swift */; };
+		535594270815E834B5B00EBD /* TimelineEntryPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C20DBFC96C69D35C03FF8B /* TimelineEntryPresentation.swift */; };
 		E1E53EFFA740E64483B9E1FD /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D18195E2DFBEE8445950904 /* KeychainStore.swift */; };
 		330D4A9A2918224E62A9DCD3 /* AccountAvatarImageSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */; };
 		8A30977FD26C8B40E2255A81 /* V2AccountModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A9A5CB5558AB7F9FDD9227 /* V2AccountModels.swift */; };
@@ -93,6 +94,7 @@
 		1D48594BB5C26A0C8424A51A /* HTTPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "HTTPTransport.swift"; path = "../Agents Anywhere/Agents Anywhere/Network/HTTPTransport.swift"; sourceTree = "<group>"; };
 		AD1398B4038C7FD5AA5F9C7C /* WebSocketTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "WebSocketTransport.swift"; path = "../Agents Anywhere/Agents Anywhere/Network/WebSocketTransport.swift"; sourceTree = "<group>"; };
 		C76F7C9A435F4DCFB4087B27 /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "APIModels.swift"; path = "../Agents Anywhere/Agents Anywhere/Models/APIModels.swift"; sourceTree = "<group>"; };
+		34C20DBFC96C69D35C03FF8B /* TimelineEntryPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "TimelineEntryPresentation.swift"; path = "../Agents Anywhere/Agents Anywhere/Models/Chat/TimelineEntryPresentation.swift"; sourceTree = "<group>"; };
 		4D18195E2DFBEE8445950904 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "KeychainStore.swift"; path = "../Agents Anywhere/Agents Anywhere/Stores/KeychainStore.swift"; sourceTree = "<group>"; };
 		4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "AccountAvatarImageSource.swift"; path = "../Agents Anywhere/Agents Anywhere/Domain/Account/AccountAvatarImageSource.swift"; sourceTree = "<group>"; };
 		57A9A5CB5558AB7F9FDD9227 /* V2AccountModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "V2AccountModels.swift"; path = "../Agents Anywhere/Agents Anywhere/Domain/Account/V2AccountModels.swift"; sourceTree = "<group>"; };
@@ -171,6 +173,7 @@
 				1D48594BB5C26A0C8424A51A /* HTTPTransport.swift */,
 				AD1398B4038C7FD5AA5F9C7C /* WebSocketTransport.swift */,
 				C76F7C9A435F4DCFB4087B27 /* APIModels.swift */,
+				34C20DBFC96C69D35C03FF8B /* TimelineEntryPresentation.swift */,
 				4D18195E2DFBEE8445950904 /* KeychainStore.swift */,
 				4649C13EC09757C2D1252D64 /* AccountAvatarImageSource.swift */,
 				57A9A5CB5558AB7F9FDD9227 /* V2AccountModels.swift */,
@@ -305,6 +308,7 @@
 				F601C2C49E3D85ED5A394323 /* HTTPTransport.swift in Sources */,
 				D4D2AE465DA8A03116BAF175 /* WebSocketTransport.swift in Sources */,
 				59B2784CC16DB619C8C00396 /* APIModels.swift in Sources */,
+				535594270815E834B5B00EBD /* TimelineEntryPresentation.swift in Sources */,
 				E1E53EFFA740E64483B9E1FD /* KeychainStore.swift in Sources */,
 				330D4A9A2918224E62A9DCD3 /* AccountAvatarImageSource.swift in Sources */,
 				8A30977FD26C8B40E2255A81 /* V2AccountModels.swift in Sources */,
