@@ -76,9 +76,9 @@ def identifier(key: str) -> str:
 
 
 def quote(value: str) -> str:
-    if all(character.isalnum() or character in "._/$-+" for character in value):
-        return value
-    return '"' + value.replace('"', '\\"') + '"'
+    # Always quote: PBX/OpenStep strings must not carry a bare "+" (Xcode
+    # refuses to open the project when a file name like Foo+Bar.swift is bare).
+    return '"' + value.replace('\\', '\\\\').replace('"', '\\"') + '"'
 
 
 def generate() -> str:
