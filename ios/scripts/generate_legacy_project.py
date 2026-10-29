@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Generate the iOS 15 legacy app project.
 
 The shipped project uses file-system synchronized groups tied to the modern
@@ -65,12 +65,18 @@ SHARED_EXCLUDED = {
 
 def shared_sources() -> list[Path]:
     files = [APP_ROOT / relative for relative in SHARED_FILES]
-    files.extend(sorted((APP_ROOT / "Domain").rglob("*.swift")))
+    files.extend(sorted((APP_ROOT / "Domain").rglob("*.swift"), key=lambda path: path.as_posix()))
     return [path for path in files if path.relative_to(APP_ROOT).as_posix() not in SHARED_EXCLUDED]
 
 
 def legacy_sources() -> list[Path]:
-    return sorted((LEGACY_ROOT / "LegacySources").rglob("*.swift"))
+    # Sort by POSIX path: `Path` ordering case-normalises on Windows but is
+    # case-sensitive on POSIX, which reordered mixed-case file names and made
+    # the generated project differ between a local run and CI.
+    return sorted(
+        (LEGACY_ROOT / "LegacySources").rglob("*.swift"),
+        key=lambda path: path.as_posix(),
+    )
 
 
 def identifier(key: str) -> str:
