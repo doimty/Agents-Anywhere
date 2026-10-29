@@ -117,6 +117,8 @@ private struct LegacyTimelineRow: View {
                 Text(LegacyFormat.placeholder(for: item))
                     .font(.footnote)
                     .foregroundColor(.secondary)
+            } else if item.role == .user || item.role == .assistant {
+                LegacyMarkdownView(text: item.displayText)
             } else {
                 Text(item.displayText)
                     .font(.body)
