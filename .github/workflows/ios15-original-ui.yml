@@ -1,4 +1,4 @@
-﻿name: iOS 15 original interface
+name: iOS 15 original interface
 
 # Builds the original application target, not the previous Legacy application.
 # A source inventory is never a replacement for a successful Xcode build.
@@ -59,6 +59,15 @@ jobs:
             "$compat/AppNavigationCompatibility.swift" \
             "$compat/AppPhotoCompatibility.swift" \
             > "$RUNNER_TEMP/original-ui/adapters.log" 2>&1
+      - name: Resolve packages once, outside the build
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -resolvePackageDependencies \
+            -project "ios/Agents Anywhere/Agents Anywhere.xcodeproj" \
+            -scheme "Agents Anywhere" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
+            > "$RUNNER_TEMP/original-ui/resolve.log" 2>&1
       - name: Build the original app for iOS 15
         shell: bash
         run: |
@@ -72,6 +81,7 @@ jobs:
             -destination 'generic/platform=iOS' \
             -derivedDataPath "$RUNNER_TEMP/OriginalDerivedData" \
             -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
+            -disableAutomaticPackageResolution \
             -resultBundlePath "$evidence/original-app.xcresult" \
             CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO \
             build > "$evidence/xcodebuild.log" 2>&1
