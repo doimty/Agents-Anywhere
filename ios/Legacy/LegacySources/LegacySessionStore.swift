@@ -43,6 +43,9 @@ final class LegacySessionStore: ObservableObject {
     private let keychain = KeychainStore()
     private var client: V2APIClient?
     private var token: String?
+    /// Decoded attachment bytes, keyed by file id. Images are small and the
+    /// timeline re-renders on every poll, so refetching would be wasteful.
+    private var imageCache: [V2AttachmentID: Data] = [:]
     /// Highest timeline sequence already applied from the server. Polling asks
     /// for changes after it, so a refresh never reloads the whole transcript.
     private var cursor = 0
@@ -196,6 +199,21 @@ final class LegacySessionStore: ObservableObject {
 
     func removeAttachment(_ fileId: V2AttachmentID) {
         attachments.removeAll { $0.fileId == fileId }
+    }
+
+    /// Downloads one attachment image. The endpoint returns base64 in JSON, so
+    /// no extra caching layer is needed beyond this in-memory map.
+    func loadImage(fileId: V2AttachmentID) async -> Data? {
+        if let cached = imageCache[fileId] { return cached }
+        guard let client, let session = selectedSession else { return nil }
+        do {
+            let download = try await client.attachments.download(sessionId: session.id, fileId: fileId)
+            guard let data = Data(base64Encoded: download.contentBase64) else { return nil }
+            imageCache[fileId] = data
+            return data
+        } catch {
+            return nil
+        }
     }
 
     func sendDraft() async {

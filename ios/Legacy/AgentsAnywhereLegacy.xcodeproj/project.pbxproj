@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		849DB50884A83D5835E4B0B9 /* LegacyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2ACCB02ED040BC57895833D /* LegacyApp.swift */; };
 		760C83D971232C6C600484B4 /* LegacyAttachments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D2AD39CE8589004FD7154AF /* LegacyAttachments.swift */; };
+		C0C6C5460654BF865EF39E56 /* LegacyAttachmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF499F338C229BF36FFD280 /* LegacyAttachmentView.swift */; };
 		A9B33CBB68B1BB673D947EC8 /* LegacyDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */; };
 		053066CA14319F836D30A8D4 /* LegacyLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */; };
 		F53B4B777BA516027512C4B3 /* LegacyMarkdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EFB9B8E302953F0BF6D630F /* LegacyMarkdownView.swift */; };
@@ -72,6 +73,7 @@
 		F5BF48AA40CAD7891EB709FC /* AgentsAnywhereLegacy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AgentsAnywhereLegacy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2ACCB02ED040BC57895833D /* LegacyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyApp.swift"; path = "LegacySources/LegacyApp.swift"; sourceTree = "<group>"; };
 		2D2AD39CE8589004FD7154AF /* LegacyAttachments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyAttachments.swift"; path = "LegacySources/LegacyAttachments.swift"; sourceTree = "<group>"; };
+		9CF499F338C229BF36FFD280 /* LegacyAttachmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyAttachmentView.swift"; path = "LegacySources/LegacyAttachmentView.swift"; sourceTree = "<group>"; };
 		74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyDashboardView.swift"; path = "LegacySources/LegacyDashboardView.swift"; sourceTree = "<group>"; };
 		C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyLoginView.swift"; path = "LegacySources/LegacyLoginView.swift"; sourceTree = "<group>"; };
 		7EFB9B8E302953F0BF6D630F /* LegacyMarkdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LegacyMarkdownView.swift"; path = "LegacySources/LegacyMarkdownView.swift"; sourceTree = "<group>"; };
@@ -155,6 +157,7 @@
 			children = (
 				D2ACCB02ED040BC57895833D /* LegacyApp.swift */,
 				2D2AD39CE8589004FD7154AF /* LegacyAttachments.swift */,
+				9CF499F338C229BF36FFD280 /* LegacyAttachmentView.swift */,
 				74DE2FA4EC1A18DD5A031C9C /* LegacyDashboardView.swift */,
 				C2214F37CBC9513316CCA303 /* LegacyLoginView.swift */,
 				7EFB9B8E302953F0BF6D630F /* LegacyMarkdownView.swift */,
@@ -294,6 +297,7 @@
 			files = (
 				849DB50884A83D5835E4B0B9 /* LegacyApp.swift in Sources */,
 				760C83D971232C6C600484B4 /* LegacyAttachments.swift in Sources */,
+				C0C6C5460654BF865EF39E56 /* LegacyAttachmentView.swift in Sources */,
 				A9B33CBB68B1BB673D947EC8 /* LegacyDashboardView.swift in Sources */,
 				053066CA14319F836D30A8D4 /* LegacyLoginView.swift in Sources */,
 				F53B4B777BA516027512C4B3 /* LegacyMarkdownView.swift in Sources */,
@@ -402,8 +406,8 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.7.0;
-				CURRENT_PROJECT_VERSION = 7;
+				MARKETING_VERSION = 0.8.0;
+				CURRENT_PROJECT_VERSION = 8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.agentsanywhere.legacy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -426,8 +430,8 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.7.0;
-				CURRENT_PROJECT_VERSION = 7;
+				MARKETING_VERSION = 0.8.0;
+				CURRENT_PROJECT_VERSION = 8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.agentsanywhere.legacy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

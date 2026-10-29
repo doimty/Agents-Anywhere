@@ -203,7 +203,9 @@ private struct LegacyTimelineRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            if item.type == .tool || item.type == .artifact {
+            if case let .attachment(content) = item.content {
+                LegacyAttachmentRow(content: content)
+            } else if item.type == .tool || item.type == .artifact {
                 toolRow
             } else {
                 HStack(spacing: 6) {
