@@ -186,8 +186,14 @@ private struct LegacyTimelineRow: View {
     let item: V2TimelineItem
     let cwd: String?
 
+    @State private var isExpanded = false
+
     private var entry: TimelineEntryPresentation {
         TimelineEntryPresentation(item: item, cwd: cwd)
+    }
+
+    private var hasDetails: Bool {
+        item.type == .tool || item.type == .artifact
     }
 
     var body: some View {
@@ -226,32 +232,86 @@ private struct LegacyTimelineRow: View {
     }
 
     private var toolRow: some View {
-        HStack(alignment: .top, spacing: 8) {
-            Image(systemName: entry.symbol)
-                .font(.caption)
-                .frame(width: 18)
-                .foregroundColor(.secondary)
-            VStack(alignment: .leading, spacing: 3) {
-                Text(entry.title)
-                    .font(.subheadline.weight(.medium))
-                    .lineLimit(2)
-                if let command = entry.command, !command.isEmpty {
-                    Text(command)
-                        .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(.secondary)
-                        .lineLimit(3)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: entry.symbol)
+                    .font(.caption)
+                    .frame(width: 18)
+                    .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(entry.title)
+                        .font(.subheadline.weight(.medium))
+                        .lineLimit(isExpanded ? nil : 2)
+                    if let command = entry.command, !command.isEmpty {
+                        Text(command)
+                            .font(.system(.caption, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .lineLimit(isExpanded ? nil : 3)
+                    }
+                    if !isExpanded, let output = entry.output, !output.isEmpty, item.status == .failed {
+                        Text(output)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .lineLimit(3)
+                    }
                 }
-                if let output = entry.output, !output.isEmpty, item.status == .failed {
-                    Text(output)
-                        .font(.caption)
-                        .foregroundColor(.red)
-                        .lineLimit(3)
+                Spacer(minLength: 0)
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(item.status.label)
+                        .font(.caption2)
+                        .foregroundColor(item.status.isFailure ? .red : .secondary)
+                    if hasDetails {
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
-            Spacer(minLength: 0)
-            Text(item.status.label)
-                .font(.caption2)
-                .foregroundColor(item.status.isFailure ? .red : .secondary)
+            if isExpanded {
+                expandedDetails
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            guard hasDetails else { return }
+            withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() }
+        }
+    }
+
+    @ViewBuilder
+    private var expandedDetails: some View {
+        let changes = entry.changes
+        if !changes.isEmpty {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(changes) { change in
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("\(change.action.label) \(change.displayPath)")
+                            .font(.caption.weight(.medium))
+                        if let diff = change.diff {
+                            ScrollView([.horizontal, .vertical], showsIndicators: true) {
+                                Text(diff)
+                                    .font(.system(size: 11, design: .monospaced))
+                                    .textSelection(.enabled)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .frame(maxHeight: 180)
+                        }
+                    }
+                }
+            }
+            .padding(.top, 2)
+        }
+        if let output = entry.output, !output.isEmpty {
+            ScrollView([.vertical], showsIndicators: true) {
+                Text(output)
+                    .font(.system(size: 11, design: .monospaced))
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(maxHeight: 240)
+            .padding(8)
+            .background(Color(uiColor: .tertiarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
     }
 
