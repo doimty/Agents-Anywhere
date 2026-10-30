@@ -1,8 +1,7 @@
 name: iOS 15 original interface
 
-# Builds the original application target, not the previous Legacy application.
-# A source inventory is never a replacement for a successful Xcode build.
-# ci-repo-registration
+# Builds the original application target (no Legacy replacement app). A source
+# inventory never substitutes for a successful Xcode build.
 on:
   push:
     branches: [fix/ios/ios15-original-ui]
@@ -20,7 +19,6 @@ concurrency:
 
 env:
   DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
-  ORIGINAL_UI_READY: "false"
 
 jobs:
   original-ui:
@@ -29,6 +27,9 @@ jobs:
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Record the selected compiler and SDK
         shell: bash
         run: |
@@ -58,8 +59,7 @@ jobs:
             "$compat/AppNavigationCompatibility.swift" \
             "$compat/AppPhotoCompatibility.swift" \
             > "$RUNNER_TEMP/original-ui/adapters.log" 2>&1
-
-      - name: Build the original app for iOS 15
+      - name: Build the original app for an iOS 15 device
         shell: bash
         run: |
           set -euo pipefail
@@ -68,20 +68,62 @@ jobs:
           xcodebuild \
             -project "ios/Agents Anywhere/Agents Anywhere.xcodeproj" \
             -scheme "Agents Anywhere" \
-            -configuration Debug \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath "$RUNNER_TEMP/OriginalDerivedData" \
-
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
-            build > "$evidence/xcodebuild.log" 2>&1
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DeviceDerivedData" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build > "$evidence/device-build.log" 2>&1
           status=$?
           set -e
-          printf '%s\n' "$status" > "$evidence/xcodebuild-exit.txt"
-          python3 ios/scripts/summarize_ios15_build.py "$evidence/xcodebuild.log" \
+          printf '%s\n' "$status" > "$evidence/device-build-exit.txt"
+          python3 ios/scripts/summarize_ios15_build.py "$evidence/device-build.log" \
             --exit-code "$status" --output "$evidence/diagnostics.json" \
             | tee -a "$GITHUB_STEP_SUMMARY"
-          test -s "$evidence/xcodebuild.log"
           exit "$status"
+      - name: Upload all compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-ui-ios15-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/original-ui/*.txt
+            ${{ runner.temp }}/original-ui/*.log
+            ${{ runner.temp }}/original-ui/*.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Package the unsigned iOS 15 IPA
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          products="$RUNNER_TEMP/DeviceDerivedData/Build/Products/Release-iphoneos"
+          app="$products/Agents Anywhere.app"
+          test -f "$app/Info.plist" || { ls -la "$products"; exit 1; }
+          floor="$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$app/Info.plist")"
+          test "$floor" = '15.0'
+          exe="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Info.plist")"
+          xcrun vtool -show-build "$app/$exe" | tee "$RUNNER_TEMP/original-ui/macho.txt"
+          otool -L "$app/$exe" | tee "$RUNNER_TEMP/original-ui/dependencies.txt"
+          mkdir -p "$RUNNER_TEMP/original-ui/ipa/Payload"
+          cp -R "$app" "$RUNNER_TEMP/original-ui/ipa/Payload/"
+          (
+            cd "$RUNNER_TEMP/original-ui/ipa"
+            zip -qry AgentsAnywhere-ios15-unsigned.ipa Payload
+            shasum -a 256 AgentsAnywhere-ios15-unsigned.ipa > SHA256SUMS
+            ls -lh AgentsAnywhere-ios15-unsigned.ipa
+          )
+      - name: Upload the IPA
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AgentsAnywhere-ios15-unsigned-ipa
+          path: |
+            ${{ runner.temp }}/original-ui/ipa/AgentsAnywhere-ios15-unsigned.ipa
+            ${{ runner.temp }}/original-ui/ipa/SHA256SUMS
+            ${{ runner.temp }}/original-ui/macho.txt
+            ${{ runner.temp }}/original-ui/dependencies.txt
+          if-no-files-found: error
+          retention-days: 30
       - name: Test original state and scheduling semantics (diagnostic)
         # The runner currently aborts this bundle with `error: fatalError` and no
         # test output, so it is reported but cannot gate the app build yet.
@@ -98,36 +140,3 @@ jobs:
           printf '%s\n' "$status" > "$RUNNER_TEMP/original-ui/core-tests-exit.txt"
           tail -n 40 "$RUNNER_TEMP/original-ui/core-tests.log" | tee -a "$GITHUB_STEP_SUMMARY"
           exit "$status"
-      - name: Package original-interface IPA
-        if: env.ORIGINAL_UI_READY == 'true' && success()
-        shell: bash
-        run: |
-          set -euo pipefail
-          app="$RUNNER_TEMP/OriginalDerivedData/Build/Products/Debug-iphonesimulator/Agents Anywhere.app"
-          test -f "$app/Info.plist"
-          floor="$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$app/Info.plist")"
-          test "$floor" = '15.0'
-          exe="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Info.plist")"
-          xcrun vtool -show-build "$app/$exe" | tee "$RUNNER_TEMP/original-ui/macho.txt"
-          otool -L "$app/$exe" | tee "$RUNNER_TEMP/original-ui/dependencies.txt"
-          mkdir -p "$RUNNER_TEMP/original-ui/ipa/Payload"
-          cp -R "$app" "$RUNNER_TEMP/original-ui/ipa/Payload/"
-          (
-            cd "$RUNNER_TEMP/original-ui/ipa"
-            zip -qry AgentsAnywhere-original-ui-ios15.ipa Payload
-            shasum -a 256 AgentsAnywhere-original-ui-ios15.ipa > SHA256SUMS
-          )
-      - name: Upload all compiler evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: original-ui-ios15-${{ github.sha }}
-          path: |
-            ${{ runner.temp }}/original-ui/*.txt
-            ${{ runner.temp }}/original-ui/*.log
-            ${{ runner.temp }}/original-ui/*.json
-            ${{ runner.temp }}/original-ui/ipa/*.ipa
-            ${{ runner.temp }}/original-ui/ipa/SHA256SUMS
-
-          if-no-files-found: warn
-          retention-days: 14
