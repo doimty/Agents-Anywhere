@@ -9,7 +9,9 @@ extension EnvironmentValues {
 }
 
 /// Known copy can reserve its final centered layout while phrases become
-/// visible. Ordinary streamed Markdown has no phrase attributes or limit.
+/// visible. `TextAttribute` is iOS 18, so the phrase-tagged form is native-only;
+/// older systems render the same centered copy without the per-glyph fade.
+@available(iOS 18.0, *)
 nonisolated struct StreamingTextPhrase: TextAttribute {
     let index: Int
 
@@ -35,6 +37,22 @@ nonisolated struct StreamingTextPhrase: TextAttribute {
     }
 }
 
+/// Compose the same copy on every OS. iOS 18 keeps phrase attributes so the
+/// shared renderer can reveal them; iOS 15–17 gets the identical text and
+/// underline without a per-glyph animation.
+enum AppStreamingText {
+    @MainActor static func text(_ value: String, underlined: Range<String.Index>? = nil) -> Text {
+        if #available(iOS 18.0, *), AppCompatibility.useNativeUI {
+            return StreamingTextPhrase.text(value, underlined: underlined)
+        }
+        guard let underlined else { return Text(verbatim: value) }
+        let lower = underlined.lowerBound, upper = underlined.upperBound
+        return Text(verbatim: String(value[value.startIndex..<lower]))
+            + Text(verbatim: String(value[lower..<upper])).underline()
+            + Text(verbatim: String(value[upper..<value.endIndex]))
+    }
+}
+
 /// The clock updates drawing only. It never appends text, reparses Markdown or
 /// animates a layout constraint. Each paragraph/code fragment owns its ledger.
 struct StreamingGlyphReveal: ViewModifier {
@@ -55,6 +73,17 @@ struct StreamingGlyphReveal: ViewModifier {
     }
 
     func body(content: Content) -> some View {
+        if #available(iOS 18.0, *), AppCompatibility.useNativeUI {
+            renderer(content)
+        } else {
+            // Settled text on older systems: same typography, no drawing clock.
+            content
+        }
+    }
+
+    @available(iOS 18.0, *)
+    @ViewBuilder
+    private func renderer(_ content: Content) -> some View {
         let enabled = isStreaming && !reduceMotion
         // Text arrives in batches, one after the previous reveal ends. Drawing
         // interpolates each batch without reparsing or appending text.
@@ -74,7 +103,7 @@ struct StreamingGlyphReveal: ViewModifier {
             .task(id: deadline) {
                 let delay = deadline.timeIntervalSinceNow
                 guard delay > 0, delay < 60 else { return }
-                do { try await Task.sleep(for: .seconds(delay)) } catch { return }
+                do { try await ClientTask.sleep(for: .seconds(delay)) } catch { return }
                 stoppedDeadline = deadline
             }
         }
@@ -82,6 +111,7 @@ struct StreamingGlyphReveal: ViewModifier {
 
 }
 
+@available(iOS 18.0, *)
 nonisolated struct GlyphRevealRenderer: TextRenderer {
     let ledger: GlyphRevealLedger
     let now: TimeInterval

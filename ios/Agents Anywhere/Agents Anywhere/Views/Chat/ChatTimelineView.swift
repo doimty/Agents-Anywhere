@@ -164,7 +164,7 @@ struct ChatTimelineView: View {
                 guard let request = scrolling.pendingBottomRequest, !navigationIsSuspended else { return }
                 // Coalesce actual layout changes. Scrolling through the same
                 // layout cannot restart this animation on every offset callback.
-                do { try await Task.sleep(for: .milliseconds(24)) } catch { return }
+                do { try await ClientTask.sleep(for: .milliseconds(24)) } catch { return }
                 guard !Task.isCancelled, !navigationIsSuspended, let command = scrolling.begin(request) else { return }
                 scrollToBottom(command)
             }
@@ -173,7 +173,7 @@ struct ChatTimelineView: View {
                 guard scrolling.needsUserScrollSettlement else { return }
                 // Reconcile visibility after the native phase callback. This
                 // never holds opening behind a spinner or repeats a scroll.
-                do { try await Task.sleep(for: .milliseconds(64)) } catch { return }
+                do { try await ClientTask.sleep(for: .milliseconds(64)) } catch { return }
                 guard !Task.isCancelled else { return }
                 scrolling.settleUserScroll()
             }
@@ -189,7 +189,7 @@ struct ChatTimelineView: View {
                 guard let request = historyPosition?.id, historyPosition?.isReadyToFinish == true else { return }
                 // Let the point correction reach native layout before releasing
                 // its target or ending the spinner. A new measurement restarts this.
-                do { try await Task.sleep(for: .milliseconds(64)) } catch { return }
+                do { try await ClientTask.sleep(for: .milliseconds(64)) } catch { return }
                 guard !Task.isCancelled, historyPosition?.id == request else { return }
                 if scrolling.navigationGeneration == request, historyPosition?.restoredOffset != nil {
                     position.isPositionedByUser = true

@@ -8,7 +8,7 @@ struct NewSessionWelcomeView: View {
     let onChooseTarget: () -> Void
     private static var revealDuration: Double { 0.4 }
     /// Known copy cascades: each phrase starts before the previous one ends.
-    private static var phraseInterval: Duration { .milliseconds(200) }
+    private static var phraseInterval: ClientDuration { .milliseconds(200) }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .largeTitle) private var titleSize: CGFloat = 40
@@ -28,7 +28,7 @@ struct NewSessionWelcomeView: View {
 
     var body: some View {
         welcomeText
-        .onGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) { frame in
+        .appOnGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) { frame in
             // Observe real layout without locking its width or height. Once
             // drawing begins, geometry updates must not cancel the reveal task.
             if !hasStarted { initialFrame = frame }
@@ -73,7 +73,7 @@ struct NewSessionWelcomeView: View {
                                ledger: GlyphRevealLedger) -> some View {
         // Future phrases take part in line breaking from the first
         // frame. The shared renderer alone controls their visibility and reveal.
-        StreamingTextPhrase.text(text, underlined: underlined)
+        AppStreamingText.text(text, underlined: underlined)
             .modifier(StreamingGlyphReveal(ledger: ledger, revealedPhraseCount: revealedPhrases))
             .environment(\.streamingGlyphAnimation, isRevealing)
             .multilineTextAlignment(.leading)
@@ -87,7 +87,7 @@ struct NewSessionWelcomeView: View {
             // Navigation chrome and composer sizing get
             // their first layout before glyphs appear. A changing frame restarts
             // this quiet interval; no network request gates the welcome.
-            do { try await Task.sleep(for: .milliseconds(120)) }
+            do { try await ClientTask.sleep(for: .milliseconds(120)) }
             catch { return }
         }
         guard !Task.isCancelled else { return }
@@ -111,16 +111,16 @@ struct NewSessionWelcomeView: View {
             for count in TextPhraseSequence.chunks(in: title).indices {
                 try Task.checkCancellation()
                 titlePhraseCount = count + 1
-                try await Task.sleep(until: schedule.deadline, clock: .continuous)
+                try await ClientTask.sleep(until: schedule.deadline)
                 schedule.advance(after: .now)
             }
             for count in TextPhraseSequence.chunks(in: detail).indices {
                 try Task.checkCancellation()
                 detailPhraseCount = count + 1
-                try await Task.sleep(until: schedule.deadline, clock: .continuous)
+                try await ClientTask.sleep(until: schedule.deadline)
                 schedule.advance(after: .now)
             }
-            try await Task.sleep(for: .seconds(Self.revealDuration + ReplyPresentation.drawSlack))
+            try await ClientTask.sleep(for: .seconds(Self.revealDuration + ReplyPresentation.drawSlack))
             try Task.checkCancellation()
             if canReveal { revealCompletion += 1 }
         } catch {

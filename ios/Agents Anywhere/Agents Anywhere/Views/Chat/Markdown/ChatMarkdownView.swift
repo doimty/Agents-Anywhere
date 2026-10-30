@@ -145,7 +145,7 @@ private struct MarkdownBlockView: View, Equatable {
             guard isStreaming else { return }
             hasSettled = false
             guard !isTail else { return }
-            do { try await Task.sleep(for: ReplyPresentation.settleDelay) } catch { return }
+            do { try await ClientTask.sleep(for: ReplyPresentation.settleDelay) } catch { return }
             // Finish any new glyphs, then stop the drawing clock for this
             // completed block even while the rest of the response streams.
             hasSettled = true

@@ -32,7 +32,7 @@ struct ChatMarkdownCodeBlock<Code: View>: View {
                 .accessibilityIdentifier("markdown.copyCode")
                 .task(id: copyCount) {
                     guard copyCount > 0 else { return }
-                    do { try await Task.sleep(for: .seconds(2)); copied = false } catch {}
+                    do { try await ClientTask.sleep(for: .seconds(2)); copied = false } catch {}
                 }
             }
             .foregroundStyle(.secondary).padding(.horizontal, 14)
