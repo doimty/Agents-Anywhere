@@ -81,21 +81,15 @@ public struct Math: View {
 }
 
 extension Math {
-  @_spi(Textual)
   public struct TypographicBounds: Sendable {
-    @_spi(Textual)
     public var origin: CGPoint
 
-    @_spi(Textual)
     public var width: CGFloat
 
-    @_spi(Textual)
     public var ascent: CGFloat
 
-    @_spi(Textual)
     public var descent: CGFloat
 
-    @_spi(Textual)
     public var size: CGSize {
       .init(width: self.width, height: self.ascent + self.descent)
     }
@@ -103,7 +97,6 @@ extension Math {
     static let zero = TypographicBounds(origin: .zero, width: 0, ascent: 0, descent: 0)
   }
 
-  @_spi(Textual)
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public static nonisolated func typographicBounds(
     for latex: String,
