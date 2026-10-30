@@ -1,6 +1,12 @@
 import XCTest
 
 final class CompatibilityUITests: XCTestCase {
+    /// XCUITest waits for the app on every element query. The native eager
+    /// transcript lays out 100 Markdown messages up front, so each query walks
+    /// hundreds of nodes. Raise the harness budget instead of shrinking the
+    /// conversation, dropping assertions or adding sleeps.
+    override var executionTimeAllowance: TimeInterval { 300 }
+
     @MainActor func testBackportRepeatedMenu() throws { try exerciseMenu(backport: true) }
     @MainActor func testNativeRepeatedMenu() throws { try exerciseMenu(backport: false) }
     @MainActor func testBackportLongConversation() throws { try exerciseConversation(backport: true) }

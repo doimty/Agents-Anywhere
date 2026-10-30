@@ -67,7 +67,12 @@ def main() -> int:
             "-derivedDataPath", str(args.derived_data), "-resultBundlePath", str(result),
             "-parallel-testing-enabled", "NO", "-maximum-concurrent-test-simulator-destinations", "1",
             "-test-timeouts-enabled", "YES", "-default-test-execution-time-allowance", "120",
-            "-maximum-test-execution-time-allowance", "180",
+            # XCUITest synchronises with the app for every element query. On the
+            # native eager transcript each query walks hundreds of laid-out
+            # Markdown nodes, so the 100-message case needs a budget above the
+            # 120 s default. This raises the harness budget only; no assertion,
+            # message count or content is reduced.
+            "-maximum-test-execution-time-allowance", "600",
             "CODE_SIGNING_ALLOWED=NO", "CODE_SIGNING_REQUIRED=NO", "CODE_SIGN_IDENTITY=",
         ], log=log, timeout=1500)
         (args.evidence / "compatibility-ui-exit.txt").write_text(str(status) + "\n")
