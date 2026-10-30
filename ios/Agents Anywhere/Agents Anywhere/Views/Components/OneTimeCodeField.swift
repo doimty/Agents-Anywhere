@@ -17,7 +17,7 @@ struct OneTimeCodeField: View {
         TextField(String(repeating: "0", count: length), text: digits)
             .textFieldStyle(.plain)
             .font(.system(.largeTitle, design: .monospaced).weight(.medium))
-            .tracking(8)
+            .kerning(8)
             .multilineTextAlignment(.center)
             .keyboardType(.numberPad).textContentType(.oneTimeCode)
             .textInputAutocapitalization(.never).autocorrectionDisabled()

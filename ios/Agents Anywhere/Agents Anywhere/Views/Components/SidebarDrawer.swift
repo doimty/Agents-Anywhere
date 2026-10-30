@@ -281,27 +281,17 @@ private struct SidebarDrawerInteractive<
             .frame(width: screenSize.width, height: screenSize.height)
             .contentShape(Rectangle())
 #if canImport(UIKit)
-            .gesture(
-                SidebarDrawerPanGesture(
-                    progress: motion.restingProgress,
-                    edgeActivationWidth: configuration.edgeActivationWidth,
-                    onBegan: beginDirectionalPan,
-                    onChanged: { translationX in
-                        updateDirectionalPan(
-                            translationX: translationX,
-                            revealWidth: revealWidth
-                        )
-                    },
-                    onEnded: { translationX, velocityX, cancelled in
-                        endDirectionalPan(
-                            translationX: translationX,
-                            velocityX: velocityX,
-                            revealWidth: revealWidth,
-                            cancelled: cancelled
-                        )
-                    }
-                )
-            )
+            .appSidebarPanGesture(
+                progress: motion.restingProgress,
+                edgeActivationWidth: configuration.edgeActivationWidth,
+                onBegan: beginDirectionalPan,
+                onChanged: { translationX in
+                    updateDirectionalPan(translationX: translationX, revealWidth: revealWidth)
+                },
+                onEnded: { translationX, velocityX, cancelled in
+                    endDirectionalPan(translationX: translationX, velocityX: velocityX,
+                                      revealWidth: revealWidth, cancelled: cancelled)
+                })
 #else
             .simultaneousGesture(
                 drawerGesture(revealWidth: revealWidth),
@@ -496,12 +486,12 @@ private struct SidebarDrawerInteractive<
             }
             completion()
         } else {
-            withAnimation(
-                .interpolatingSpring(
-                    Spring(response: 0.34, dampingRatio: 0.9),
-                    initialVelocity: initialVelocity
-                ),
-                completionCriteria: .removed
+            // Same response 0.34 / dampingRatio 0.9 expressed with the legacy
+            // spring parameters so the completion still runs on iOS 15.
+            appWithAnimation(
+                .interpolatingSpring(mass: 1, stiffness: 341, damping: 33,
+                                     initialVelocity: initialVelocity),
+                completionDelay: 0.34
             ) {
                 motion.move(to: target)
             } completion: {
@@ -554,7 +544,7 @@ private struct SidebarDrawerNativeSplitView<
                     header: sidebarHeader(safeAreaInsets),
                     content: sidebarContent(safeAreaInsets)
                 )
-                .toolbar(removing: .sidebarToggle)
+                .appRemoveSidebarToggle()
             }
             .toolbar(.hidden, for: .navigationBar)
             .navigationSplitViewColumnWidth(min: 240, ideal: 300, max: 360)
@@ -592,7 +582,7 @@ private struct SidebarDrawerNativeSplitView<
         animationGeneration &+= 1
         let generation = animationGeneration
         isAnimating = true
-        withAnimation(reduceMotion ? nil : .smooth(duration: 0.3), completionCriteria: .removed) {
+        appWithAnimation(reduceMotion ? nil : .appSmooth(duration: 0.3), completionDelay: 0.3) {
             columnVisibility = open ? .all : .detailOnly
         } completion: {
             if animationGeneration == generation { isAnimating = false }
@@ -687,8 +677,10 @@ private struct SidebarDrawerMainCard<Content: View>: View {
 }
 
 private enum SidebarDrawerCardShape {
-    static func shape(isFullyClosed: Bool) -> ConcentricRectangle {
-        ConcentricRectangle(corners: isFullyClosed ? .fixed(0) : .concentric)
+    /// Native concentric corners on iOS 26; the same rounded, full-bleed card on
+    /// older systems (see AppConcentricCardShape).
+    static func shape(isFullyClosed: Bool) -> AppConcentricCardShape {
+        AppConcentricCardShape(isFullyClosed: isFullyClosed)
     }
 }
 
