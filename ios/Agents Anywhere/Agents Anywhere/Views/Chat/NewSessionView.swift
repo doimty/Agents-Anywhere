@@ -29,15 +29,29 @@ struct NewSessionView: View, Equatable {
             && lhs.dashboardError == rhs.dashboardError
     }
 
+    private var welcomeBlock: some View {
+        NewSessionWelcomeView(deviceName: model.connector?.name,
+            agentName: model.runtime?.sessionDisplayName,
+            onChooseTarget: chooseTarget)
+    }
+
     var body: some View {
         GeometryReader { geometry in
             GeometryReader { viewport in
                 ScrollView {
-                    NewSessionContentLayout(viewportHeight: max(0, viewport.size.height - 48)) {
-                        NewSessionWelcomeView(deviceName: model.connector?.name,
-                            agentName: model.runtime?.sessionDisplayName,
-                            onChooseTarget: chooseTarget)
-                        statusContent
+                    Group {
+                        if #available(iOS 16.0, *), AppCompatibility.useNativeUI {
+                            NewSessionContentLayout(viewportHeight: max(0, viewport.size.height - 48)) {
+                                welcomeBlock
+                                statusContent
+                            }
+                        } else {
+                            LegacyNewSessionContent(viewportHeight: max(0, viewport.size.height - 48)) {
+                                welcomeBlock
+                            } status: {
+                                statusContent
+                            }
+                        }
                     }
                         .padding(24)
                         .frame(maxWidth: 760)
@@ -215,6 +229,7 @@ struct NewSessionView: View, Equatable {
 
 /// Center the welcome and workspace alone. Notices flow below that anchor and
 /// extend the scrollable page when needed, rather than recentering the welcome.
+@available(iOS 16.0, *)
 private struct NewSessionContentLayout: Layout {
     let viewportHeight: CGFloat
     private let spacing: CGFloat = 28
@@ -236,5 +251,49 @@ private struct NewSessionContentLayout: Layout {
         subviews[0].place(at: CGPoint(x: bounds.minX, y: bounds.minY + top), anchor: .topLeading, proposal: childProposal)
         subviews[1].place(at: CGPoint(x: bounds.minX, y: bounds.minY + top + welcome.height + spacing),
             anchor: .topLeading, proposal: childProposal)
+    }
+}
+
+/// iOS 15 equivalent of NewSessionContentLayout: the welcome is centered in the
+/// viewport and the status text flows below it, measured one pass earlier.
+private struct LegacyNewSessionContent<Welcome: View, Status: View>: View {
+    let viewportHeight: CGFloat
+    private let spacing: CGFloat = 28
+    private let welcome: () -> Welcome
+    private let status: () -> Status
+    @State private var welcomeHeight: CGFloat = 0
+
+    init(viewportHeight: CGFloat,
+         @ViewBuilder welcome: @escaping () -> Welcome,
+         @ViewBuilder status: @escaping () -> Status) {
+        self.viewportHeight = viewportHeight
+        self.welcome = welcome
+        self.status = status
+    }
+
+    var body: some View {
+        let top = max(0, (viewportHeight - welcomeHeight) / 2)
+        VStack(alignment: .leading, spacing: spacing) {
+            welcome()
+                .background {
+                    GeometryReader { geometry in
+                        Color.clear.preference(key: LegacyWelcomeHeightKey.self, value: geometry.size.height)
+                    }
+                }
+            status()
+        }
+        .padding(.top, top)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(minHeight: viewportHeight, alignment: .top)
+        .onPreferenceChange(LegacyWelcomeHeightKey.self) { height in
+            if abs(height - welcomeHeight) > 0.5 { welcomeHeight = height }
+        }
+    }
+}
+
+private struct LegacyWelcomeHeightKey: PreferenceKey {
+    nonisolated static var defaultValue: CGFloat { 0 }
+    nonisolated static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
