@@ -189,6 +189,34 @@ extension View {
         }
     }
 
+    /// `onScrollVisibilityChange` is iOS 18. Older systems approximate it with
+    /// the row's lifetime: it is visible while mounted, which keeps thumbnail
+    /// loading and prompt state working instead of a silent no-op.
+    @ViewBuilder
+    func appScrollVisibilityChange(threshold: Double = 0.5,
+                                   _ action: @escaping (Bool) -> Void) -> some View {
+        if #available(iOS 18.0, *), AppCompatibility.useNativeUI {
+            onScrollVisibilityChange(threshold: threshold, action: action)
+        } else {
+            modifier(AppLifetimeVisibility(action: action))
+        }
+    }
+
+    /// Same contract for timeline prompt edges.
+    func timelineVisibility(threshold: Double = 0.5, _ action: @escaping (Bool) -> Void) -> some View {
+        appScrollVisibilityChange(threshold: threshold, action)
+    }
+
+    /// iOS 26 only: hide the shared toolbar background behind a principal item.
+    @ViewBuilder
+    func appSharedBackgroundHidden() -> some View {
+        if #available(iOS 26.0, *), AppCompatibility.useNativeUI {
+            sharedBackgroundVisibility(.hidden)
+        } else {
+            self
+        }
+    }
+
     /// View `tracking` is iOS 16; older systems keep the same text without the
     /// extra letter spacing instead of dropping the label.
     /// `.menuStyle(.button)` is iOS 16; the default menu style stays on iOS 15.
@@ -451,5 +479,14 @@ private struct AppScrollConfiguration: UIViewRepresentable {
             if let scroll = findScroll(in: child, depth: depth - 1) { return scroll }
         }
         return nil
+    }
+}
+
+private struct AppLifetimeVisibility: ViewModifier {
+    let action: (Bool) -> Void
+    func body(content: Content) -> some View {
+        content
+            .onAppear { action(true) }
+            .onDisappear { action(false) }
     }
 }

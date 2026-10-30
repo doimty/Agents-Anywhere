@@ -55,7 +55,7 @@ struct ChatComposerDock: View {
                 onCommands: { showsCommandMenu.toggle() },
                 onDraftChange: onDraftChange)
         }
-        .onChange(of: sessionChat?.optionsRequest) { _, _ in showsOptions = true }
+        .appOnChange(of: sessionChat?.optionsRequest) { _, _ in showsOptions = true }
         .frame(maxWidth: ChatControlMetrics.maximumContentWidth)
         .frame(maxWidth: .infinity)
         .background {
@@ -75,7 +75,7 @@ struct ChatComposerDock: View {
                 onReload: onLoadSettings, onApply: onApplySettings, applyError: applyError, sessionChat: sessionChat)
                 .task(id: "\(canSelectModel):\(canSelectPermission)") { await onLoadSettings() }
         }
-        .onChange(of: photos) { _, items in importPhotos(items) }
+        .appOnChange(of: photos) { _, items in importPhotos(items) }
         .onDisappear {
             editor.finishEditing()
             draft.isFocused = false

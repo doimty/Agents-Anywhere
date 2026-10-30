@@ -58,9 +58,8 @@ struct ChatPageToolbar: ViewModifier {
                             }
                         }
                         .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .appSharedBackgroundHidden()
                 } else if subtitle != nil || status != nil {
                     if #available(iOS 26.0, *), AppCompatibility.useNativeUI {
                         ToolbarItem(placement: .subtitle) {
@@ -129,12 +128,4 @@ extension View {
         }
     }
 
-    @ViewBuilder
-    func appSharedBackgroundHidden() -> some View {
-        if #available(iOS 26.0, *), AppCompatibility.useNativeUI {
-            sharedBackgroundVisibility(.hidden)
-        } else {
-            self
-        }
-    }
 }
