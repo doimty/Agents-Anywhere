@@ -56,7 +56,7 @@ extension StructuredText {
     private var modernLabel: some View {
       let rowRuns = content.blockRuns(parent: intent)
 
-      Grid(horizontalSpacing: spacing.horizontal, verticalSpacing: spacing.vertical) {
+      return Grid(horizontalSpacing: spacing.horizontal, verticalSpacing: spacing.vertical) {
         ForEach(rowRuns.indices, id: \.self) { rowIndex in
           let rowRun = rowRuns[rowIndex]
           let rowContent = content[rowRun.range]

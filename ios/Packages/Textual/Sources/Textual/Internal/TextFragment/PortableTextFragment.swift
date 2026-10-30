@@ -19,7 +19,8 @@ struct PortableTextFragment<Content: AttributedStringProtocol>: View {
 
   var body: some View {
     let presentation = cache.presentation(
-      AttributedString(content), environment: environment, properties: properties,
+      AttributedString(content[content.startIndex..<content.endIndex]),
+      environment: environment, properties: properties,
       width: width, lineSpacing: lineSpacing, alignment: alignment, direction: direction
     )
     presentation.text

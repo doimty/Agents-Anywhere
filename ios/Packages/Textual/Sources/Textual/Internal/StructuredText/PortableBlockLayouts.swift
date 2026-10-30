@@ -78,25 +78,42 @@ extension StructuredText {
         ForEach(rows.indices, id: \.self) { row in
           HStack(alignment: .top, spacing: spacing.horizontal ?? 8) {
             ForEach(rows[row].indices, id: \.self) { column in
-              TableCell(rows[row][column][...], row: row, column: column)
-                .frame(width: widths[column], alignment: cellAlignment(column))
-                .frame(minHeight: heights[row], alignment: .top)
-                .background {
-                  TableCell(rows[row][column][...], row: row, column: column)
-                    .fixedSize(horizontal: true, vertical: true)
-                    .hidden()
-                    .allowsHitTesting(false)
-                    .textualIsolateLayouts()
-                    .transformPreference(TableCell.BoundsKey.self) { $0 = [:] }
-                    .textualReadSize { size in
-                      if size.width > (widths[column] ?? 0) { widths[column] = size.width }
-                      if size.height > (heights[row] ?? 0) { heights[row] = size.height }
-                    }
-                }
+              cell(row: row, column: column)
             }
           }
         }
       }
+    }
+
+    private func cell(row: Int, column: Int) -> some View {
+      let content: AttributedSubstring = rows[row][column][...]
+      let label = TableCell(content, row: row, column: column)
+      let columnWidth: CGFloat? = widths[column]
+      let rowHeight: CGFloat? = heights[row]
+      return label
+        .frame(width: columnWidth, alignment: cellAlignment(column))
+        .frame(minHeight: rowHeight, alignment: .top)
+        .background { sizeProbe(content: content, row: row, column: column) }
+    }
+
+    private func sizeProbe(content: AttributedSubstring, row: Int, column: Int) -> some View {
+      let label = TableCell(content, row: row, column: column)
+        .fixedSize(horizontal: true, vertical: true)
+        .hidden()
+        .allowsHitTesting(false)
+      return label
+        .textualIsolateLayouts()
+        .transformPreference(TableCell.BoundsKey.self) { $0 = [:] }
+        .textualReadSize { size in
+          recordSize(size, row: row, column: column)
+        }
+    }
+
+    private func recordSize(_ size: CGSize, row: Int, column: Int) {
+      let previousWidth: CGFloat = widths[column] ?? 0
+      let previousHeight: CGFloat = heights[row] ?? 0
+      if size.width > previousWidth { widths[column] = size.width }
+      if size.height > previousHeight { heights[row] = size.height }
     }
 
     private func cellAlignment(_ column: Int) -> Alignment {
