@@ -189,32 +189,17 @@ extension View {
         }
     }
 
-    /// `onScrollVisibilityChange` is iOS 18. Older systems approximate it with
-    /// the row's lifetime: it is visible while mounted, which keeps thumbnail
-    /// loading and prompt state working instead of a silent no-op.
-    @ViewBuilder
+    /// Row visibility without `onScrollVisibilityChange` (iOS 18): the row is
+    /// reported visible while it is mounted. Thumbnail loading and prompt state
+    /// therefore keep working on older systems instead of silently staying false.
     func appScrollVisibilityChange(threshold: Double = 0.5,
                                    _ action: @escaping (Bool) -> Void) -> some View {
-        if #available(iOS 18.0, *), AppCompatibility.useNativeUI {
-            onScrollVisibilityChange(threshold: threshold, action: action)
-        } else {
-            modifier(AppLifetimeVisibility(action: action))
-        }
+        modifier(AppLifetimeVisibility(action: action))
     }
 
     /// Same contract for timeline prompt edges.
     func timelineVisibility(threshold: Double = 0.5, _ action: @escaping (Bool) -> Void) -> some View {
         appScrollVisibilityChange(threshold: threshold, action)
-    }
-
-    /// iOS 26 only: hide the shared toolbar background behind a principal item.
-    @ViewBuilder
-    func appSharedBackgroundHidden() -> some View {
-        if #available(iOS 26.0, *), AppCompatibility.useNativeUI {
-            sharedBackgroundVisibility(.hidden)
-        } else {
-            self
-        }
     }
 
     /// View `tracking` is iOS 16; older systems keep the same text without the
