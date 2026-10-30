@@ -85,14 +85,13 @@ struct ComposerOptionsSheet: View {
             .buttonStyle(.plain)
             .navigationTitle(String(localized: "对话选项"))
             .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(for: Page.self) { page in
-                switch page {
-                case .models: models
-                case .permissions: permissions
-                }
-            }
             .toolbar {
                 SheetCloseToolbar(disabled: isApplying) { dismiss() }
+            }
+        } destination: { page in
+            switch page {
+            case .models: models
+            case .permissions: permissions
             }
         }
         .appSheetPresentation(.compact)

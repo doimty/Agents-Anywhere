@@ -48,31 +48,18 @@ struct ChatPageToolbar: ViewModifier {
                     Button(action: onMenu) { SidebarMenuIcon() }
                         .accessibilityLabel(String(localized: "打开侧栏"))
                 }
-                if alignsTitleLeading {
-                    ToolbarItem(placement: .principal) {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(title).font(.headline).lineLimit(1)
-                                .accessibilityAddTraits(.isHeader)
-                            if subtitle != nil || status != nil {
-                                ChatToolbarSubtitle(subtitle: subtitle, status: status)
-                            }
-                        }
-                        .multilineTextAlignment(.leading)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                } else if subtitle != nil || status != nil {
-                    if #available(iOS 26.0, *), AppCompatibility.useNativeUI {
-                        ToolbarItem(placement: .subtitle) {
+                ToolbarItem(placement: .principal) {
+                    // No subtitle placement below iOS 26: the same title and
+                    // status compose the principal item instead of a new row.
+                    VStack(alignment: alignsTitleLeading ? .leading : .center, spacing: 1) {
+                        Text(title).font(.headline).lineLimit(1)
+                            .accessibilityAddTraits(.isHeader)
+                        if subtitle != nil || status != nil {
                             ChatToolbarSubtitle(subtitle: subtitle, status: status)
                         }
-                    } else {
-                        ToolbarItem(placement: .principal) {
-                            VStack(spacing: 1) {
-                                Text(title).font(.headline).lineLimit(1)
-                                ChatToolbarSubtitle(subtitle: subtitle, status: status)
-                            }
-                        }
                     }
+                    .multilineTextAlignment(alignsTitleLeading ? .leading : .center)
+                    .frame(maxWidth: .infinity, alignment: alignsTitleLeading ? .leading : .center)
                 }
             }
     }
