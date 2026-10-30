@@ -34,8 +34,8 @@ public struct InlineStyle: Sendable, Hashable {
   ///
   /// - Parameter properties: Text properties to apply to inline code elements.
   /// - Returns: A new style with the modified code formatting.
-  public func code() -> Self {
-    modifyingStyle { $0.code = AnyTextProperty() }
+  public func code(_ property: AnyTextProperty = AnyTextProperty()) -> Self {
+    modifyingStyle { $0.code = property }
   }
 
   public func code<P0: TextProperty>(_ property0: P0) -> Self {
@@ -74,8 +74,8 @@ public struct InlineStyle: Sendable, Hashable {
   ///
   /// - Parameter properties: Text properties to apply to emphasized text.
   /// - Returns: A new style with the modified emphasis formatting.
-  public func emphasis() -> Self {
-    modifyingStyle { $0.emphasis = AnyTextProperty() }
+  public func emphasis(_ property: AnyTextProperty = AnyTextProperty()) -> Self {
+    modifyingStyle { $0.emphasis = property }
   }
 
   public func emphasis<P0: TextProperty>(_ property0: P0) -> Self {
@@ -114,8 +114,8 @@ public struct InlineStyle: Sendable, Hashable {
   ///
   /// - Parameter properties: Text properties to apply to links.
   /// - Returns: A new style with the modified link formatting.
-  public func link() -> Self {
-    modifyingStyle { $0.link = AnyTextProperty() }
+  public func link(_ property: AnyTextProperty = AnyTextProperty()) -> Self {
+    modifyingStyle { $0.link = property }
   }
 
   public func link<P0: TextProperty>(_ property0: P0) -> Self {
@@ -154,8 +154,8 @@ public struct InlineStyle: Sendable, Hashable {
   ///
   /// - Parameter properties: Text properties to apply to strong (bold) text.
   /// - Returns: A new style with the modified strong formatting.
-  public func strong() -> Self {
-    modifyingStyle { $0.strong = AnyTextProperty() }
+  public func strong(_ property: AnyTextProperty = AnyTextProperty()) -> Self {
+    modifyingStyle { $0.strong = property }
   }
 
   public func strong<P0: TextProperty>(_ property0: P0) -> Self {
@@ -194,8 +194,8 @@ public struct InlineStyle: Sendable, Hashable {
   ///
   /// - Parameter properties: Text properties to apply to strikethrough text.
   /// - Returns: A new style with the modified strikethrough formatting.
-  public func strikethrough() -> Self {
-    modifyingStyle { $0.strikethrough = AnyTextProperty() }
+  public func strikethrough(_ property: AnyTextProperty = AnyTextProperty()) -> Self {
+    modifyingStyle { $0.strikethrough = property }
   }
 
   public func strikethrough<P0: TextProperty>(_ property0: P0) -> Self {
