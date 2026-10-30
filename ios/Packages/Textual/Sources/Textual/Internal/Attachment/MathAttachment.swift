@@ -37,7 +37,7 @@ struct MathAttachment: Attachment {
   }
 
   func sizeThatFits(_ proposal: TextualSizeProposal, in environment: TextEnvironmentValues) -> CGSize {
-    typographicBounds(fittingWidth: proposal.width, in: environment).size
+    typographicBounds(fitting: proposal, in: environment).size
   }
 
   private func typographicBounds(
