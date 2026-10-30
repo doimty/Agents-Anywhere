@@ -31,7 +31,7 @@ struct ChatComposerDock: View {
     @State private var showsOptions = false
     @State private var pendingPicker: AttachmentPicker?
     @State private var picker: AttachmentPicker?
-    @State private var photos: [PhotosPickerItem] = []
+    @State private var photos: [AppPickedPhoto] = []
     @State private var attachmentError: String?
     @State private var isSending = false
     @State private var importCount = 0
@@ -59,8 +59,8 @@ struct ChatComposerDock: View {
         .frame(maxWidth: .infinity)
         .background {
             ZStack {
-                Color.clear.photosPicker(isPresented: pickerBinding(.photos), selection: $photos,
-                    maxSelectionCount: max(1, 5 - draft.attachments.count), matching: .images)
+                Color.clear.appPhotosPicker(isPresented: pickerBinding(.photos), selection: $photos,
+                    maxSelectionCount: max(1, 5 - draft.attachments.count))
                 Color.clear.fileImporter(isPresented: pickerBinding(.files), allowedContentTypes: [.item],
                     allowsMultipleSelection: true, onCompletion: importFiles)
             }
@@ -114,14 +114,14 @@ struct ChatComposerDock: View {
         draft.attachments.append(ChatAttachment(name: name, data: data, mediaType: mediaType, previewData: preview))
     }
 
-    private func importPhotos(_ items: [PhotosPickerItem]) {
+    private func importPhotos(_ items: [AppPickedPhoto]) {
         guard !items.isEmpty else { return }
         importCount += 1
         Task { @MainActor in
             defer { importCount -= 1; photos = [] }
             for item in items {
                 do {
-                    guard let data = try await item.loadTransferable(type: Data.self) else { continue }
+                    guard let data = try await item.loadData() else { continue }
                     let type = item.supportedContentTypes.first ?? .jpeg
                     await append(name: "Photo-\(UUID().uuidString.prefix(8)).\(type.preferredFilenameExtension ?? "jpg")",
                            data: data, mediaType: type.preferredMIMEType ?? "image/jpeg")
