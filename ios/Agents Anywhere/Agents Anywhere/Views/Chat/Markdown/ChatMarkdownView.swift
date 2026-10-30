@@ -124,19 +124,16 @@ private struct MarkdownBlockView: View, Equatable {
     var body: some View {
         // Only changed blocks reach Textual's parser. The complete document was
         // parsed above, so cross-block references and nested structures survive.
-        MarkdownBlockLayout(dynamicType: dynamicType, displayScale: displayScale, direction: direction) {
-            StructuredText(String(block.digest), parser: ParsedMarkdownText(content: block.content))
-                .textual.structuredTextStyle(ChatMarkdownStyle(headingLedger: headingLedger))
-                .textual.imageAttachmentLoader(ChatImageLoader())
-                // Controls own their gestures. Only paragraph/heading labels and
-                // the native code/table text areas install selection overlays.
-                .textual.textSelection(.disabled)
-                .environment(\.streamingGlyphAnimation, isStreaming && !hasSettled)
-                .environment(\.streamingRevealDeadline, revealDeadline)
-                .font(font)
-                .foregroundStyle(.primary)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        Group {
+            if #available(iOS 16.0, *), AppCompatibility.useNativeUI {
+                MarkdownBlockLayout(dynamicType: dynamicType, displayScale: displayScale, direction: direction) {
+                    structuredContent
+                }
+            } else {
+                MarkdownBlockLayoutLegacy(dynamicType: dynamicType, displayScale: displayScale, direction: direction) {
+                    structuredContent
+                }
+            }
         }
         .traceChatLayout("markdown:\(traceOwner):\(block.id):layout")
         .task(id: RevealPhase(isStreaming: isStreaming, isTail: isTail)) {
@@ -150,6 +147,20 @@ private struct MarkdownBlockView: View, Equatable {
             // completed block even while the rest of the response streams.
             hasSettled = true
         }
+    }
+
+    private var structuredContent: some View {
+        StructuredText(String(block.digest), parser: ParsedMarkdownText(content: block.content))
+            .textual.structuredTextStyle(ChatMarkdownStyle(headingLedger: headingLedger))
+            .textual.imageAttachmentLoader(ChatImageLoader())
+            // Keep the original modifier order in both layout backends.
+            .textual.textSelection(.disabled)
+            .environment(\.streamingGlyphAnimation, isStreaming && !hasSettled)
+            .environment(\.streamingRevealDeadline, revealDeadline)
+            .font(font)
+            .foregroundStyle(.primary)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private struct RevealPhase: Equatable {
@@ -212,7 +223,7 @@ private struct ChatHeadingStyle: StructuredText.HeadingStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .textual.fontScale(configuration.headingLevel == 1 ? 1.5 : configuration.headingLevel == 2 ? 1.25 : 1.08)
-            .fontWeight(.semibold)
+            .appFontWeight(.semibold)
             .textual.blockSpacing(.fontScaled(top: 1.25, bottom: 0.55))
             // Textual identifies headings by their changing slug. Keep births
             // in the stable outer block so an append doesn't replay the heading.
@@ -225,7 +236,7 @@ private struct ChatCodeBlockStyle: StructuredText.CodeBlockStyle {
     func makeBody(configuration: Configuration) -> some View {
         ChatMarkdownCodeBlock(code: configuration.codeBlock.text, language: configuration.languageHint) {
             configuration.label
-                .monospaced()
+                .appMonospaced()
                 .textual.fontScale(0.86)
                 .textual.lineSpacing(.fontScaled(0.35))
                 .modifier(StreamingGlyphReveal())
