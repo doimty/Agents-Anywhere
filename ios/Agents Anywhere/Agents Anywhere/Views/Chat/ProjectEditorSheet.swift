@@ -28,6 +28,16 @@ struct ProjectEditorSheet: View {
         let path = draft.path.trimmingCharacters(in: .whitespacesAndNewlines)
         return path == "~" || path.hasPrefix("~/") || path.hasPrefix("~\\") || ProjectWorkspacePath.key(path, deviceOS: device?.deviceOs) != nil
     }
+    private var workspaceFooterText: String {
+        draft.original == nil
+            ? String(localized: "项目关联这个目录，不会在设备上新建文件夹。")
+            : String(localized: "编辑项目时，设备和工作目录保持不变。")
+    }
+
+    private var nameFooterText: String {
+        String(localized: "按目录自动填写名称，重名时添加数字后缀。也可以自行修改。")
+    }
+
     private var selectableDevices: [V2Connector] {
         repository.connectors.filter { $0.status == .online || $0.id == draft.connectorID }
     }
@@ -73,13 +83,13 @@ struct ProjectEditorSheet: View {
                         }
                     }
                 } header: { Text(String(localized: "dashboard.projects.workspace")) } footer: {
-                    Text(draft.original == nil ? String(localized: "项目关联这个目录，不会在设备上新建文件夹。") : String(localized: "编辑项目时，设备和工作目录保持不变。"))
+                    Text(workspaceFooterText)
                 }
                 Section {
                     TextField(String(localized: "例如 Agents Anywhere"), text: Binding(get: { draft.name }, set: draft.editName))
                         .textInputAutocapitalization(.never).autocorrectionDisabled()
                 } header: { Text(String(localized: "项目名称")) } footer: {
-                    if draft.original == nil { Text(String(localized: "按目录自动填写名称，重名时添加数字后缀。也可以自行修改。")) }
+                    if draft.original == nil { Text(nameFooterText) }
                 }
                 if let error { Section { Text(error).foregroundStyle(.secondary) } }
             }
@@ -96,7 +106,7 @@ struct ProjectEditorSheet: View {
                         Task { await Task.yield(); await save() }
                     })
             }
-            .onChange(of: repository.projects) { _, projects in draft.suggestName(projects: projects, deviceOS: device?.deviceOs) }
+            .appOnChange(of: repository.projects) { _, projects in draft.suggestName(projects: projects, deviceOS: device?.deviceOs) }
         }
         .appSheetPresentation(.compact).interactiveDismissDisabled(saving || draft.hasChanges)
         .confirmDiscardChanges($confirmsDiscard) { dismiss() }
