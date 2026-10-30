@@ -125,6 +125,16 @@ previews to the server ID. The local destination never makes session API request
 Normal sends stage before upload; accepted, confirmed and uncertain are distinct.
 No persisted record is an automatic write outbox.
 
+## iOS 15 floor
+
+The application target deploys to iOS 15. Every view and model stays the same as the
+newer system build; only APIs that do not exist there are replaced behind adapters in
+`Views/Compatibility`. Models use Perception's `@Perceptible` below iOS 17, and any body
+that reads one must run inside `AppObservationTracking` — without that scope a state
+change updates nothing and controls appear dead. Launch with `--force-ios15-paths` to run
+the older branches on a newer simulator. Full inventory, known differences and the device
+acceptance checklist are in [docs/ios15-compatibility.md](docs/ios15-compatibility.md).
+
 ## Migration boundary
 
 Retired session/runtime API methods, models and the chat placeholder live in

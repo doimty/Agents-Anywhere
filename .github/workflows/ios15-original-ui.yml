@@ -80,6 +80,36 @@ jobs:
             --exit-code "$status" --output "$evidence/diagnostics.json" \
             | tee -a "$GITHUB_STEP_SUMMARY"
           exit "$status"
+      - name: Render the forced iOS 15 path in a simulator
+        # Evidence for the older branches on a newer system: `--force-ios15-paths`
+        # makes every availability adapter take its iOS 15 implementation.
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/original-ui"
+          xcodebuild \
+            -project "ios/Agents Anywhere/Agents Anywhere.xcodeproj" \
+            -scheme "Agents Anywhere" \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/SimDerivedData" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            build > "$evidence/simulator-build.log" 2>&1
+          udid="$(xcrun simctl list devices available -j | python3 -c "import json,sys
+devices = json.load(sys.stdin)['devices']
+phones = [d for runtime, items in devices.items() if 'iOS' in runtime for d in items if d.get('isAvailable') and 'iPhone' in d['name']]
+print(phones[0]['udid'] if phones else '')")"
+          test -n "$udid"
+          xcrun simctl boot "$udid" || true
+          xcrun simctl bootstatus "$udid" -b || true
+          app="$RUNNER_TEMP/SimDerivedData/Build/Products/Debug-iphonesimulator/Agents Anywhere.app"
+          xcrun simctl install "$udid" "$app"
+          xcrun simctl launch "$udid" com.agentsanywhere.app --force-ios15-paths | tee "$evidence/simulator-launch.txt"
+          sleep 10
+          xcrun simctl io "$udid" screenshot "$evidence/forced-ios15-path.png"
+          xcrun simctl terminate "$udid" com.agentsanywhere.app || true
+          xcrun simctl shutdown "$udid" || true
       - name: Upload all compiler evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -89,6 +119,7 @@ jobs:
             ${{ runner.temp }}/original-ui/*.txt
             ${{ runner.temp }}/original-ui/*.log
             ${{ runner.temp }}/original-ui/*.json
+            ${{ runner.temp }}/original-ui/*.png
           if-no-files-found: warn
           retention-days: 14
       - name: Package the unsigned iOS 15 IPA
