@@ -2,6 +2,7 @@ name: iOS 15 original interface
 
 # Builds the original application target, not the previous Legacy application.
 # A source inventory is never a replacement for a successful Xcode build.
+# ci-repo-registration
 on:
   push:
     branches: [fix/ios/ios15-original-ui]
