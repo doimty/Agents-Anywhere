@@ -110,6 +110,7 @@ struct SessionInteractionActions: View {
     var body: some View {
             AppObservationTracking {
         let layout = NoticeActionPresentation(item.notice.actions)
+        VStack(alignment: .leading, spacing: 6) {
         if compact {
             HStack(spacing: 8) {
                 buttons(layout.direct, intrinsic: false)
@@ -143,6 +144,12 @@ struct SessionInteractionActions: View {
             } else {
                 VStack(spacing: 8) { buttons(item.notice.actions, intrinsic: false) }
             }
+        }
+        // Approvals may only be answered from fresh runtime facts. Say so
+        // instead of leaving the options looking broken but unresponsive.
+        if !chat.session.runtime.isFresh, item.notice.status == .open {
+            NoticeStaleHint(chat: chat)
+        }
         }
             }
         }
@@ -189,5 +196,25 @@ struct NoticeExpiryClock: TimelineSchedule {
             let next = previous.addingTimeInterval(1)
             return next <= last ? next : nil
         })
+    }
+}
+
+/// Shown where an approval's options are waiting for fresh runtime facts.
+struct NoticeStaleHint: View {
+    let chat: SessionChatModel
+
+    var body: some View {
+        HStack(spacing: 8) {
+            AppSymbol("clock", size: 12).foregroundStyle(.secondary)
+            Text(String(localized: "Agent 状态还没确认，选项暂时不能提交。"))
+                .font(.caption).foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+            Button(String(localized: "刷新状态")) { Task { await chat.session.refresh() } }
+                .font(.caption.weight(.medium))
+                .disabled(chat.session.isLoading)
+                .accessibilityIdentifier("chat.notice.refresh")
+        }
+        .frame(minHeight: 32)
+        .accessibilityElement(children: .combine)
     }
 }

@@ -22,6 +22,7 @@ struct SessionChatView: View, Equatable {
     @State private var toasts = ChatToastStore()
     @State private var pendingTakeover: Bool?
     @State private var hasStartedLoading = false
+    @State private var openingTimedOut = false
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.sidebarDrawerObscuresDetail) private var sidebarObscuresDetail
@@ -73,7 +74,23 @@ struct SessionChatView: View, Equatable {
                             }
                         }
                     }
-                    .overlay { if !model.isContentVisible { openingMask } }
+                    .overlay {
+                    if !model.isContentVisible {
+                        if openingTimedOut {
+                            // A stalled sync feed can withhold every frame, and the
+                            // opaque mask then reads as a black hang. After a bounded
+                            // wait show a small status card with an explicit retry.
+                            openingSlowBanner
+                        } else {
+                            openingMask
+                                .task {
+                                    do { try await ClientTask.sleep(for: .seconds(10)) } catch { return }
+                                    guard !Task.isCancelled, !model.isContentVisible else { return }
+                                    openingTimedOut = true
+                                }
+                        }
+                    }
+                }
                     .safeAreaInset(edge: .bottom, spacing: 0) {
                         AppObservationTracking {
                             VStack(spacing: 0) {
@@ -242,6 +259,24 @@ struct SessionChatView: View, Equatable {
         .buttonStyle(.plain).disabled(!model.canChangeTakeover)
         .accessibilityIdentifier("chat.session.takeover")
         .padding(.horizontal, 20).padding(.bottom, 4)
+    }
+
+    private var openingSlowBanner: some View {
+        VStack(spacing: 12) {
+            ProgressView().progressViewStyle(.circular)
+                .accessibilityIdentifier("chat.opening.slow")
+            Text(String(localized: "正在同步 Agent 状态，稍等片刻…"))
+                .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            Button(String(localized: "重试")) {
+                openingTimedOut = false
+                Task { await model.prepareOpening() }
+            }
+            .accessibilityIdentifier("chat.opening.slow.retry")
+        }
+        .padding(20).frame(maxWidth: 300)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .contain)
     }
 
     private func openFile(_ path: String) {
