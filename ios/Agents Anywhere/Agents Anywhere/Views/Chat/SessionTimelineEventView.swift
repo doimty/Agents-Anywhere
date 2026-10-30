@@ -17,6 +17,7 @@ struct SessionTimelineGroupView: View, Equatable {
     }
 
     var body: some View {
+        AppObservationTracking {
         VStack(alignment: .leading, spacing: 4) {
             content
                 .traceChatLayout("group-content:\(group.id)")
@@ -30,6 +31,7 @@ struct SessionTimelineGroupView: View, Equatable {
             }
         }
         .traceChatLayout("group:\(group.id)", state: "footer=\(turnAction != nil)")
+        }
     }
     @ViewBuilder private var content: some View {
         if group.kind == .single { rows }
@@ -63,6 +65,7 @@ struct SessionTimelineEventView: View {
     let onFile: (String) -> Void
 
     var body: some View {
+            AppObservationTracking {
         let value = row.entry(cwd: cwd)
         switch value.kind {
         case .reasoning:
@@ -105,7 +108,8 @@ struct SessionTimelineEventView: View {
                 }
             } else { TimelineMarkerRow(title: value.title, symbol: value.symbol, status: row.value.status) }
         }
-    }
+            }
+        }
 }
 
 struct TimelineMarkerRow: View {
@@ -115,6 +119,7 @@ struct TimelineMarkerRow: View {
     var expanded: Bool?
     var accessory: String?
     var body: some View {
+            AppObservationTracking {
         HStack(spacing: 8) {
             if let expanded { AppSymbol(expanded ? "chevron.down" : "chevron.right", size: 10).frame(width: 10) }
             AppSymbol(symbol, size: 15).frame(width: 18)
@@ -128,7 +133,8 @@ struct TimelineMarkerRow: View {
         .frame(minHeight: 32).contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityValue(status.label)
-    }
+            }
+        }
 }
 
 /// This subtree is created only inside the expanded branch of TimelineFold.
@@ -138,6 +144,7 @@ private struct TimelineToolDetails: View {
     let cwd: String?
     let onFile: (String) -> Void
     var body: some View {
+            AppObservationTracking {
         let value = row.entry(cwd: cwd)
         let changes = value.changes
         VStack(spacing: 0) {
@@ -148,7 +155,8 @@ private struct TimelineToolDetails: View {
             ForEach(changes) { change in TimelineFileChangeView(change: change, onFile: onFile) }
             if let output = value.output { TimelineCodePanel(label: String(localized: "Output"), code: output) }
         }.clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
+            }
+        }
 }
 
 private struct TimelineMarkerShimmer: ViewModifier {
@@ -194,6 +202,7 @@ private struct TimelineFold<Content: View>: View {
     @ViewBuilder var content: () -> Content
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
+            AppObservationTracking {
         VStack(alignment: .leading, spacing: 4) {
             Button {
                 withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) { disclosures.toggle(id) }
@@ -201,13 +210,15 @@ private struct TimelineFold<Content: View>: View {
             .buttonStyle(.plain).accessibilityValue(disclosures.isExpanded(id) ? String(localized: "已展开") : String(localized: "已折叠"))
             if disclosures.isExpanded(id) { content().transition(.identity) }
         }
-    }
+            }
+        }
 }
 
 private struct TimelineFileChangeView: View {
     let change: TimelineFileChange
     let onFile: (String) -> Void
     var body: some View {
+            AppObservationTracking {
         VStack(spacing: 0) {
             HStack(spacing: 8) {
                 AppSymbol("doc.text").foregroundStyle(.secondary)
@@ -220,7 +231,8 @@ private struct TimelineFileChangeView: View {
             }.padding(.horizontal, 12).frame(minHeight: 44).background(.quaternary.opacity(0.4))
             if let code = change.diff ?? change.code { TimelineCodePanel(label: change.diff == nil ? "code" : "diff", code: code, isDiff: change.diff != nil) }
         }.background(Color(uiColor: .secondarySystemBackground))
-    }
+            }
+        }
 }
 
 struct TimelineCodePanel: View {
@@ -248,6 +260,7 @@ struct TimelineCodePanel: View {
         return memo
     }
     var body: some View {
+            AppObservationTracking {
         let panel = prepared()
         let displayCode = panel.displayCode
         VStack(spacing: 0) {
@@ -284,7 +297,8 @@ struct TimelineCodePanel: View {
             .frame(height: min(320, max(76, CGFloat(panel.lineCount) * rowHeight + 24)))
             if displayCode.count < code.count { Text(String(localized: "预览已截断，复制可获取完整内容")).font(.caption).foregroundStyle(.secondary).padding(8) }
         }.background(Color(uiColor: .secondarySystemBackground))
-    }
+            }
+        }
     private func diffColor(_ kind: TimelineDiff.Line.Kind) -> Color {
         switch kind { case .add: .green; case .delete: .red; case .hunk, .file, .annotation: .secondary; case .context: .primary }
     }

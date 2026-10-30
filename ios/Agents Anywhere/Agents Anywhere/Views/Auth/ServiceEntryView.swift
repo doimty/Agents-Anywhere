@@ -8,6 +8,7 @@ struct ServiceEntryView: View {
     var onQRCodeLogin: () -> Void = {}
 
     var body: some View {
+        AppObservationTracking {
         AppNavigationStack {
             AuthWelcomeLayout {
                 AuthBrandLockup()
@@ -43,6 +44,7 @@ struct ServiceEntryView: View {
         }
         .sheet(isPresented: $showsPrivacyPolicy) {
             PrivacyPolicySheet()
+        }
         }
     }
 }

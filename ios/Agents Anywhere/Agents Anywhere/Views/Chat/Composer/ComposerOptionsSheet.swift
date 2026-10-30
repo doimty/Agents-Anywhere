@@ -24,6 +24,7 @@ struct ComposerOptionsSheet: View {
     private enum Page: Hashable { case models, permissions }
 
     var body: some View {
+        AppObservationTracking {
         AppRouteNavigationStack(path: $path) {
             ScrollView {
                 VStack(spacing: 22) {
@@ -103,6 +104,7 @@ struct ComposerOptionsSheet: View {
         .alert(String(localized: "无法更改设置"), isPresented: $showsApplyError) {
             Button(String(localized: "好"), role: .cancel) {}
         } message: { Text(applyError() ?? String(localized: "当前设置未保存，请稍后重试。")) }
+        }
     }
 
     private func pendingLabel(_ value: String, scope: V2RuntimeSelectionScope) -> String {
@@ -220,9 +222,11 @@ private struct ComposerOptionSurface: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
+            AppObservationTracking {
         let dark = colorScheme == .dark
         RoundedRectangle(cornerRadius: 22, style: .continuous)
             .fill((dark ? Color(white: 0.17) : Color.white)
                 .opacity(reduceTransparency || contrast == .increased ? 1 : 0.92))
-    }
+            }
+        }
 }

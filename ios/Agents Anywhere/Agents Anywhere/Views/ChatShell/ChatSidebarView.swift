@@ -35,6 +35,7 @@ struct ChatSidebarView: View {
     private static let contentInset: CGFloat = 14
 
     var body: some View {
+        AppObservationTracking {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 6) {
                 ChatSidebarDeviceSection(
@@ -147,6 +148,7 @@ struct ChatSidebarView: View {
             PairDeviceSheet()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        }
     }
 
     /// Web's flat-list second line: project first, then the device, which
@@ -172,6 +174,7 @@ struct ChatSidebarListMenu<Filters: View>: View {
     @ViewBuilder var filters: () -> Filters
 
     var body: some View {
+            AppObservationTracking {
         Menu {
             Picker(String(localized: "侧栏显示"), selection: $showsSessionList) {
                 Text(String(localized: "按项目")).tag(false)
@@ -186,7 +189,8 @@ struct ChatSidebarListMenu<Filters: View>: View {
         .appButtonMenuStyle()
         .menuIndicator(.hidden)
         .modifier(ChatSidebarIconControlStyle())
-    }
+            }
+        }
 }
 
 /// Give menu triggers and buttons the same native sizing, including when
@@ -204,17 +208,20 @@ struct ChatSidebarIconControlStyle: ViewModifier {
 
 struct ChatSidebarHeaderView: View {
     var body: some View {
+            AppObservationTracking {
         AAWordmark(fontSize: 24)
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             .padding(.horizontal, 18)
             .appPageHorizontalContainerCornerOffset()
-    }
+            }
+        }
 }
 
 private struct ChatSidebarPairDeviceButton: View {
     let action: () -> Void
 
     var body: some View {
+            AppObservationTracking {
         Button(action: action) {
             Label(String(localized: "Pair device"), appSymbol: "plus")
                 .font(.body.weight(.semibold))
@@ -224,7 +231,8 @@ private struct ChatSidebarPairDeviceButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-    }
+            }
+        }
 }
 
 private struct ChatSidebarDeviceSection: View {
@@ -235,6 +243,7 @@ private struct ChatSidebarDeviceSection: View {
     let onCopyId: (V2ConnectorID) -> Void
 
     var body: some View {
+            AppObservationTracking {
         VStack(alignment: .leading, spacing: 4) {
             ChatSidebarSectionLabel(title: "Devices")
 
@@ -253,7 +262,8 @@ private struct ChatSidebarDeviceSection: View {
                 }
             }
         }
-    }
+            }
+        }
 }
 
 private struct ChatSidebarSessionSection: View {
@@ -270,6 +280,7 @@ private struct ChatSidebarSessionSection: View {
     let onCopyId: (V2SessionID) -> Void
 
     var body: some View {
+            AppObservationTracking {
         LazyVStack(alignment: .leading, spacing: 4) {
             if let title { ChatSidebarSectionLabel(title: title) }
 
@@ -293,20 +304,23 @@ private struct ChatSidebarSessionSection: View {
                 }
             }
         }
-    }
+            }
+        }
 }
 
 private struct ChatSidebarSectionLabel: View {
     let title: LocalizedStringKey
 
     var body: some View {
+            AppObservationTracking {
         Text(title)
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(.secondary)
             .padding(.horizontal, 10)
             .padding(.top, 20)
             .padding(.bottom, 6)
-    }
+            }
+        }
 }
 
 private struct ChatSidebarDeviceRow: View {
@@ -318,6 +332,7 @@ private struct ChatSidebarDeviceRow: View {
     let onCopyId: () -> Void
 
     var body: some View {
+            AppObservationTracking {
         Button(action: onOpen) {
             HStack(spacing: 10) {
                 Circle()
@@ -345,7 +360,8 @@ private struct ChatSidebarDeviceRow: View {
                 Label(String(localized: "Copy device ID"), systemImage: "doc.on.doc")
             }
         }
-    }
+            }
+        }
 }
 
 struct ChatSidebarSessionRow: View {
@@ -367,6 +383,7 @@ struct ChatSidebarSessionRow: View {
     @State private var titleDraft = ""
 
     var body: some View {
+            AppObservationTracking {
         Button(action: onOpen) {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 8) {
@@ -425,7 +442,8 @@ struct ChatSidebarSessionRow: View {
         }
         .appPageTextInputAlert(String(localized: "Rename session"), isPresented: $isRenaming,
             text: $titleDraft, placeholder: String(localized: "Session title"), onSave: submitRename)
-    }
+            }
+        }
 
     private func beginRename() {
         titleDraft = session.title ?? ""
@@ -442,6 +460,7 @@ struct ChatSidebarSessionRow: View {
 struct ChatSidebarSessionIndicator: View {
     let indicator: SessionSidebarPresentation.Indicator
     var body: some View {
+            AppObservationTracking {
         switch indicator {
         case .waitingApproval:
             Text(String(localized: "等待批准")).font(.system(size: 11, weight: .medium))
@@ -456,13 +475,15 @@ struct ChatSidebarSessionIndicator: View {
         case .none:
             EmptyView()
         }
-    }
+            }
+        }
 }
 
 private struct ChatSidebarLoadingRow: View {
     let title: LocalizedStringKey
 
     var body: some View {
+            AppObservationTracking {
         HStack(spacing: 8) {
             ProgressView()
                 .controlSize(.small)
@@ -472,19 +493,22 @@ private struct ChatSidebarLoadingRow: View {
         .foregroundStyle(.secondary)
         .padding(.horizontal, 10)
         .frame(minHeight: 38)
-    }
+            }
+        }
 }
 
 private struct ChatSidebarEmptyRow: View {
     let title: LocalizedStringKey
 
     var body: some View {
+            AppObservationTracking {
         Text(title)
             .font(.caption)
             .foregroundStyle(.secondary)
             .padding(.horizontal, 10)
             .frame(minHeight: 38)
-    }
+            }
+        }
 }
 
 private struct ChatSidebarBottomControls: View {
@@ -495,6 +519,7 @@ private struct ChatSidebarBottomControls: View {
     @State private var isShowingSettings = false
 
     var body: some View {
+            AppObservationTracking {
         HStack(spacing: 10) {
             AppGlassButton(
                 String(localized: "New session"),
@@ -519,17 +544,20 @@ private struct ChatSidebarBottomControls: View {
         .sheet(isPresented: $isShowingSettings) {
             AccountSettingsSheet(appState: appState)
         }
-    }
+            }
+        }
 }
 
 private struct ChatSidebarAvatar: View {
     let account: ChatSidebarAccount
 
     var body: some View {
+            AppObservationTracking {
         AccountAvatarView(
             displayName: account.displayName,
             source: account.avatarSource,
             size: 38
         )
-    }
+            }
+        }
 }

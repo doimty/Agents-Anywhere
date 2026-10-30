@@ -15,6 +15,7 @@ struct SessionTargetSheet: View {
     }
 
     var body: some View {
+        AppObservationTracking {
         AppNavigationStack {
             List {
                 if devices.isEmpty {
@@ -46,6 +47,7 @@ struct SessionTargetSheet: View {
         .appSheetPresentation(.compact)
         .interactiveDismissDisabled(applying != nil)
         .disabled(applying != nil)
+        }
     }
 
     @ViewBuilder private func agents(on device: V2Connector) -> some View {

@@ -15,6 +15,7 @@ struct AccountSettingsSheet: View {
     @State private var confirmsDiscard = false
 
     var body: some View {
+        AppObservationTracking {
         AppNavigationStack {
             List {
                 if let me = appState.me {
@@ -122,6 +123,7 @@ struct AccountSettingsSheet: View {
         .appSheetPresentation(.expanded)
         .interactiveDismissDisabled(drafts.hasChanges || isWorking)
         .confirmDiscardChanges($confirmsDiscard) { dismiss() }
+        }
     }
 
     private var isWorking: Bool { appState.isAccountWorking || drafts.isWorking }

@@ -41,6 +41,7 @@ struct ChatComposerDock: View {
     private enum AttachmentPicker { case photos, files }
 
     var body: some View {
+        AppObservationTracking {
         VStack(spacing: 0) {
             if let sessionChat {
                 CommandSuggestionPanel(chat: sessionChat, draft: draft, forced: $showsCommandMenu)
@@ -83,6 +84,7 @@ struct ChatComposerDock: View {
         .alert(String(localized: "无法添加附件"), isPresented: Binding(get: { attachmentError != nil }, set: { if !$0 { attachmentError = nil } })) {
             Button(String(localized: "好"), role: .cancel) { attachmentError = nil }
         } message: { Text(attachmentError ?? "") }
+        }
     }
 
     private func send() {

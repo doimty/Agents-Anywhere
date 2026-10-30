@@ -51,6 +51,7 @@ struct SessionChatView: View, Equatable {
         lhs.sessionIdentity === rhs.sessionIdentity && lhs.deviceName == rhs.deviceName
     }
     var body: some View {
+        AppObservationTracking {
         GeometryReader { geometry in
             Group {
                 if hasStartedLoading {
@@ -189,6 +190,7 @@ struct SessionChatView: View, Equatable {
         .appOnChange(of: model.openingError, initial: true) { _, message in
             toasts.update(source: "opening", failure: message.map { V2ClientFailure(kind: .unavailable, message: $0) })
         }
+        }
     }
 
     private var openingMask: some View {
@@ -260,6 +262,7 @@ private struct CommandSuccessToast: View {
     let onDismiss: () -> Void
 
     var body: some View {
+            AppObservationTracking {
         Button(action: onDismiss) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 AppSymbol("checkmark.circle", size: 14).foregroundStyle(.secondary)
@@ -280,5 +283,6 @@ private struct CommandSuccessToast: View {
             try? await ClientTask.sleep(for: .seconds(4))
             if !Task.isCancelled { onDismiss() }
         }
-    }
+            }
+        }
 }

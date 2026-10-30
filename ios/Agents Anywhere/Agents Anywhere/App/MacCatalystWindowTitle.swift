@@ -9,10 +9,12 @@ struct MacCatalystWindowTitle: View {
     @Environment(\.locale) private var locale
 
     var body: some View {
+        AppObservationTracking {
         WindowTitleWriter(title: title)
             .frame(width: 0, height: 0)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
+        }
     }
 
     private var title: String {

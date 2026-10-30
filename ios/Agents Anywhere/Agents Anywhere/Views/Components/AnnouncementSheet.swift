@@ -71,6 +71,7 @@ private struct AnnouncementSheet: View {
     let onAcknowledge: () -> Void
 
     var body: some View {
+        AppObservationTracking {
         AppNavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -98,5 +99,6 @@ private struct AnnouncementSheet: View {
             }
         }
         .appSheetPresentation(.compact)
+        }
     }
 }

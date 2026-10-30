@@ -18,6 +18,7 @@ struct SessionTimelineRow: View, Equatable {
     }
 
     var body: some View {
+        AppObservationTracking {
         Group {
             switch row.value.content {
             case let .message(message):
@@ -49,6 +50,7 @@ struct SessionTimelineRow: View, Equatable {
         .traceChatLayout("row:\(row.id)", state: "generation=\(row.layoutGeneration), status=\(row.value.status.rawValue)")
         // Long presses belong to the text selection interaction inside the row.
         // A row-wide context menu would intercept them and highlight the item.
+        }
     }
 
     private var markdown: some View {
@@ -68,6 +70,7 @@ struct UserMessageBubble: View {
     var onDeliveryIssue: (() -> Void)?
     @Environment(\.colorScheme) private var colorScheme
     var body: some View {
+            AppObservationTracking {
         HStack(alignment: .bottom, spacing: 8) {
             Spacer(minLength: 48)
             VStack(alignment: .trailing, spacing: 8) {
@@ -93,7 +96,8 @@ struct UserMessageBubble: View {
                 }
             }
         }
-    }
+            }
+        }
 }
 
 struct PendingMessageRow: View {
@@ -103,6 +107,7 @@ struct PendingMessageRow: View {
     let onDismiss: () -> Void
     @State private var confirmsDismiss = false
     var body: some View {
+            AppObservationTracking {
         UserMessageBubble(text: pending.content,
             attachments: chat.session.attachmentPreviews.resolve(pending.attachments.map(\.content), clientID: pending.id),
             onAttachment: onAttachment, loadThumbnail: chat.thumbnail, isPending: pending.delivery == .sending || pending.delivery == .accepted,
@@ -117,7 +122,8 @@ struct PendingMessageRow: View {
             }
             Button(String(localized: "取消"), role: .cancel) {}
         }
-    }
+            }
+        }
     private var deliveryIssue: String? {
         switch pending.delivery {
         case .uncertain: String(localized: "发送结果尚未确认，草稿已保留。请先检查会话是否已收到消息；移除记录后再次发送可能产生重复消息。")

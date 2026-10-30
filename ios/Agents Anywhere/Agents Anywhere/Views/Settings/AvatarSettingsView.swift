@@ -9,6 +9,7 @@ struct AvatarSettingsView: View {
     @State private var localError: String?
 
     var body: some View {
+        AppObservationTracking {
         Form {
             Section {
                 AvatarEditorPreview(
@@ -68,6 +69,7 @@ struct AvatarSettingsView: View {
             }
         } message: {
             Text(localError ?? "")
+        }
         }
     }
 
@@ -135,6 +137,7 @@ private struct AvatarEditorPreview: View {
     @GestureState private var dragTranslation = CGSize.zero
 
     var body: some View {
+            AppObservationTracking {
         if let selectedImage {
             Image(uiImage: selectedImage)
                 .resizable()
@@ -163,7 +166,8 @@ private struct AvatarEditorPreview: View {
                 size: AccountAvatarProcessor.outputSize
             )
         }
-    }
+            }
+        }
 
     private func displayOffset(image: UIImage) -> CGSize {
         AccountAvatarProcessor.clampedOffset(

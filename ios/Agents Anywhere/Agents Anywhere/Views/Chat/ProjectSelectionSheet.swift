@@ -24,6 +24,7 @@ struct ProjectSelectionSheet: View {
     }
 
     var body: some View {
+        AppObservationTracking {
         AppNavigationStack {
             List {
                 Section {
@@ -96,6 +97,7 @@ struct ProjectSelectionSheet: View {
                     }, initialPath: model.workspace.isEmpty ? "." : model.workspace)
             }
         }
+        }
     }
 
     private var homeRow: some View {
@@ -136,10 +138,12 @@ struct ProjectSelectionSheet: View {
 struct ProjectSummaryLabel: View {
     let project: V2Project
     var body: some View {
+            AppObservationTracking {
         VStack(alignment: .leading, spacing: 5) {
             Text(project.name).font(.headline).foregroundStyle(.primary)
             Text(project.workspacePath).font(.system(.footnote, design: .monospaced))
                 .foregroundStyle(.secondary).lineLimit(2)
         }
-    }
+            }
+        }
 }

@@ -17,6 +17,7 @@ struct PairDeviceSheet: View {
     private enum Step: Hashable { case connectionMethod, desktop, cliConfirm, name, cliMethod, pairCode, token }
 
     var body: some View {
+        AppObservationTracking {
         AppRouteNavigationStack(path: $path) {
             page(.connectionMethod)
         } destination: { page($0) }
@@ -24,6 +25,7 @@ struct PairDeviceSheet: View {
         .disabled(isWorking)
         .interactiveDismissDisabled(isWorking)
         .appOnChange(of: path) { _, _ in error = nil; copied = false }
+        }
     }
 
     private func page(_ step: Step) -> some View {

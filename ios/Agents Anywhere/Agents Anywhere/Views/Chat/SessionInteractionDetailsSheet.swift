@@ -7,6 +7,7 @@ struct SessionInteractionDetailsSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
+        AppObservationTracking {
         AppNavigationStack {
             ScrollView {
                 SessionInteractionContent(item: item, chat: chat, showsContext: true).padding(16)
@@ -14,5 +15,6 @@ struct SessionInteractionDetailsSheet: View {
             .navigationTitle(String(localized: "操作详情")).navigationBarTitleDisplayMode(.inline)
             .toolbar { SheetCloseToolbar { dismiss() } }
         }.appSheetPresentation(.compact)
+        }
     }
 }

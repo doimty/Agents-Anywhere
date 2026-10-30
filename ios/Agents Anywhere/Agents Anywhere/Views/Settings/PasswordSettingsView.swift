@@ -8,6 +8,7 @@ struct PasswordSettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
+        AppObservationTracking {
         Form {
             Section(String(localized: "New password")) {
                 SecureField(String(localized: "New password"), text: $draft.password)
@@ -32,6 +33,7 @@ struct PasswordSettingsView: View {
                 onSave: savePassword)
         }
         .disabled(appState.isAccountWorking)
+        }
     }
 
     private func savePassword() {

@@ -122,6 +122,7 @@ struct SidebarDrawer<SidebarHeader: View, SidebarContent: View, MainContent: Vie
     }
 
     var body: some View {
+        AppObservationTracking {
         if presentation == .nativeSidebar {
             if #available(iOS 16.0, *), AppCompatibility.useNativeUI {
                 SidebarDrawerNativeSplitView(
@@ -151,6 +152,7 @@ struct SidebarDrawer<SidebarHeader: View, SidebarContent: View, MainContent: Vie
                 )
             }
         }
+        }
     }
 }
 
@@ -165,6 +167,7 @@ private struct SidebarDrawerPages<SidebarHeader: View, SidebarContent: View, Mai
     let mainContent: (EdgeInsets) -> MainContent
 
     var body: some View {
+            AppObservationTracking {
         SidebarDrawerInteractive(
             isOpen: $isOpen,
             configuration: configuration,
@@ -173,7 +176,8 @@ private struct SidebarDrawerPages<SidebarHeader: View, SidebarContent: View, Mai
             sidebarContent: sidebarContent(safeAreaInsets),
             mainContent: mainContent(safeAreaInsets)
         )
-    }
+            }
+        }
 }
 
 private struct SidebarDrawerInteractive<
@@ -216,6 +220,7 @@ private struct SidebarDrawerInteractive<
     }
 
     var body: some View {
+            AppObservationTracking {
         GeometryReader { fullScreenGeometry in
             let screenSize = fullScreenGeometry.size
             let revealWidth = max(
@@ -308,7 +313,8 @@ private struct SidebarDrawerInteractive<
         .environment(\.sidebarDrawerIsTransitioning, isAnimating || dragStartProgress != nil
             || motion.restingProgress != (isOpen ? 1 : 0))
         .appImpactFeedback(.light, trigger: feedbackTrigger)
-    }
+            }
+        }
 
     private var usesOpeningEdgeGestureRegion: Bool {
         motion.restingProgress == 0 || dragStartProgress.map { $0 <= 0.001 } == true
@@ -535,6 +541,7 @@ private struct SidebarDrawerNativeSplitView<
     }
 
     var body: some View {
+            AppObservationTracking {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             GeometryReader { geometry in
                 let safeAreaInsets = geometry.safeAreaInsets
@@ -576,7 +583,8 @@ private struct SidebarDrawerNativeSplitView<
                 break
             }
         }
-    }
+            }
+        }
 
     private func updateColumns(open: Bool) {
         animationGeneration &+= 1
@@ -604,6 +612,7 @@ private struct SidebarDrawerNativeSidebar<Header: View, Content: View>: View {
     let content: Content
 
     var body: some View {
+            AppObservationTracking {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .appScrollEdgeEffect(edgeEffectStyle, for: .top)
@@ -614,7 +623,8 @@ private struct SidebarDrawerNativeSidebar<Header: View, Content: View>: View {
                 )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
+            }
+        }
 }
 
 private struct SidebarDrawerHeaderBar<Header: View>: View {
@@ -622,12 +632,14 @@ private struct SidebarDrawerHeaderBar<Header: View>: View {
     let header: Header
 
     var body: some View {
+            AppObservationTracking {
         header
             .padding(.top, safeAreaInsets.top)
             .padding(.leading, safeAreaInsets.leading)
             .padding(.trailing, safeAreaInsets.trailing)
             .frame(maxWidth: .infinity)
-    }
+            }
+        }
 }
 
 private struct SidebarDrawerSidebar<Header: View, Content: View>: View {
@@ -638,6 +650,7 @@ private struct SidebarDrawerSidebar<Header: View, Content: View>: View {
     let content: Content
 
     var body: some View {
+            AppObservationTracking {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .appScrollEdgeEffect(edgeEffectStyle, for: .top)
@@ -650,7 +663,8 @@ private struct SidebarDrawerSidebar<Header: View, Content: View>: View {
             .frame(width: width)
             .frame(maxHeight: .infinity, alignment: .leading)
             .background(drawerSystemBackground)
-    }
+            }
+        }
 }
 
 private struct SidebarDrawerMainCard<Content: View>: View {
@@ -659,6 +673,7 @@ private struct SidebarDrawerMainCard<Content: View>: View {
     let content: Content
 
     var body: some View {
+            AppObservationTracking {
         // Once settled, cover the entire window and let the system clip its
         // outer corners. A second rounded edge can expose the sidebar beneath.
         // Keep the concentric card throughout every drag and spring frame.
@@ -673,7 +688,8 @@ private struct SidebarDrawerMainCard<Content: View>: View {
             .background(drawerSystemBackground, in: screenShape)
             .clipShape(screenShape)
             .contentShape(screenShape)
-    }
+            }
+        }
 }
 
 private enum SidebarDrawerCardShape {
@@ -775,10 +791,12 @@ private struct SidebarDrawerCloseArea: View {
     let revealWidth: CGFloat
 
     var body: some View {
+            AppObservationTracking {
         let region = SidebarDrawerCloseRegion(leadingEdge: revealWidth * motion.progress)
         region.fill(.clear)
             .contentShape(.interaction, region)
-    }
+            }
+        }
 }
 
 private enum DragDisposition {

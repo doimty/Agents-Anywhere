@@ -10,6 +10,7 @@ struct QRCodeLoginView: View {
     var onDashboardRequested: () -> Void = {}
 
     var body: some View {
+        AppObservationTracking {
         AppRouteNavigationStack(path: $path) {
             QRScanStepView(
                 appState: appState,
@@ -56,6 +57,7 @@ struct QRCodeLoginView: View {
             }
         }
         .appSheetPresentation(.expanded)
+        }
     }
 }
 
@@ -76,6 +78,7 @@ private struct QRScanStepView: View {
     @State private var didReadPayload = false
 
     var body: some View {
+            AppObservationTracking {
         AuthScreen(
             title: String(localized: "QR Code Login"),
             subtitle: String(localized: "Scan the login QR code from the web console."),
@@ -120,7 +123,8 @@ private struct QRScanStepView: View {
                 }
             }
         }
-    }
+            }
+        }
 
     private func parsePayload(_ value: String) {
         parseError = nil
@@ -152,6 +156,7 @@ private struct QRConfirmStepView: View {
     @State private var requestTask: Task<Void, Never>?
 
     var body: some View {
+            AppObservationTracking {
         AuthScreen(
             title: String(localized: "Confirm Login"),
             subtitle: String(localized: "Do you want to sign in as \(payload.userId)?"),
@@ -194,7 +199,8 @@ private struct QRConfirmStepView: View {
         } message: {
             Text(alertMessage ?? String(localized: "The login request could not be started."))
         }
-    }
+            }
+        }
 
     private func requestWebConfirmation() async {
         guard !isRequesting else { return }
@@ -222,6 +228,7 @@ private struct QRWaitingStepView: View {
     @State private var pollingTask: Task<Void, Never>?
 
     var body: some View {
+            AppObservationTracking {
         AuthScreen(
             title: String(localized: "Confirm on Web"),
             subtitle: String(localized: "Click confirm in the web console, then return here."),
@@ -260,7 +267,8 @@ private struct QRWaitingStepView: View {
         } message: {
             Text(alertMessage ?? String(localized: "Confirm the login on the web console and try again."))
         }
-    }
+            }
+        }
 
     private func startPolling() {
         stopPolling()

@@ -26,6 +26,7 @@ struct CommandSuggestionPanel: View {
     }
 
     var body: some View {
+        AppObservationTracking {
         if isVisible {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
@@ -45,6 +46,7 @@ struct CommandSuggestionPanel: View {
             .padding(.horizontal, draft.isExpanded ? ChatControlMetrics.expandedHorizontalInset : ChatControlMetrics.collapsedHorizontalInset)
             .transition(.opacity)
             .task(id: chat.canUseCommands) { await chat.loadCommands() }
+        }
         }
     }
 

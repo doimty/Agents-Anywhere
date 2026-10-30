@@ -36,6 +36,7 @@ struct NewSessionView: View, Equatable {
     }
 
     var body: some View {
+        AppObservationTracking {
         GeometryReader { geometry in
             GeometryReader { viewport in
                 ScrollView {
@@ -111,6 +112,7 @@ struct NewSessionView: View, Equatable {
         .confirmationDialog(String(localized: "创建结果仍未确认，再次创建可能产生重复会话。"), isPresented: $confirmsRetry, titleVisibility: .visible) {
             Button(String(localized: "保留草稿并允许重新创建")) { model.acknowledgeUncertainCreation() }
             Button(String(localized: "取消"), role: .cancel) {}
+        }
         }
     }
 
@@ -272,6 +274,7 @@ private struct LegacyNewSessionContent<Welcome: View, Status: View>: View {
     }
 
     var body: some View {
+            AppObservationTracking {
         let top = max(0, (viewportHeight - welcomeHeight) / 2)
         VStack(alignment: .leading, spacing: spacing) {
             welcome()
@@ -288,7 +291,8 @@ private struct LegacyNewSessionContent<Welcome: View, Status: View>: View {
         .onPreferenceChange(LegacyWelcomeHeightKey.self) { height in
             if abs(height - welcomeHeight) > 0.5 { welcomeHeight = height }
         }
-    }
+            }
+        }
 }
 
 private struct LegacyWelcomeHeightKey: PreferenceKey {

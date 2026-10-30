@@ -9,6 +9,7 @@ struct SessionInteractionContent: View {
     @State private var showsDetails = false
 
     var body: some View {
+        AppObservationTracking {
         TimelineView(NoticeExpiryClock(expiresAt: item.expiresAt)) { timeline in
             VStack(alignment: .leading, spacing: 14) {
                 Label(item.notice.title, appSymbol: icon).font(.subheadline.weight(.semibold))
@@ -59,6 +60,7 @@ struct SessionInteractionContent: View {
         .confirmationDialog(String(localized: "回应结果尚未确认。再次回应前，请确认 Agent 仍在等待此操作。"), isPresented: $confirmsRetry, titleVisibility: .visible) {
             Button(String(localized: "已检查，允许再次回应")) { item.acknowledgeUncertain() }
             Button(String(localized: "取消"), role: .cancel) {}
+        }
         }
     }
 
@@ -169,6 +171,7 @@ private struct NoticeTextInput: View {
     @State private var editor = ComposerEditorController()
 
     var body: some View {
+            AppObservationTracking {
         ZStack(alignment: .topLeading) {
             if draft.text.isEmpty { Text(placeholder).foregroundStyle(.secondary).allowsHitTesting(false) }
             NativeComposerEditor(draft: draft, controller: editor, maximumHeight: 120,
@@ -184,7 +187,8 @@ private struct NoticeTextInput: View {
         // Delegate callbacks commit current native text. Only release the IME
         // guard here: replaying a captured value can overwrite a newer choice.
         .onDisappear { editor.finishEditing(); onEditingEnded(editorID) }
-    }
+            }
+        }
 }
 
 private struct NoticeActionFields: View {
@@ -193,6 +197,7 @@ private struct NoticeActionFields: View {
     let form: NoticeActionForm
 
     var body: some View {
+            AppObservationTracking {
         VStack(alignment: .leading, spacing: 14) {
             ForEach(form.fields) { field in
                 VStack(alignment: .leading, spacing: 6) {
@@ -202,7 +207,8 @@ private struct NoticeActionFields: View {
                 }
             }
         }
-    }
+            }
+        }
     private func value(_ field: NoticeActionForm.Field) -> JSONValue? {
         item.fields[action.id]?[field.id] ?? field.defaultValue
     }

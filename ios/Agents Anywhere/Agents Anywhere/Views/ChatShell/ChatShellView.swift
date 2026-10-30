@@ -15,6 +15,7 @@ struct ChatShellView: View {
     }
 
     var body: some View {
+        AppObservationTracking {
         // NavigationSplitView adapts to a single stack in a compact system size
         // class. Use that same system trait for the drawer fallback, never a
         // device model, screen measurement or custom window-width breakpoint.
@@ -49,6 +50,7 @@ struct ChatShellView: View {
             appState.setVisibleSession(id)
         }
         .onDisappear { appState.setVisibleSession(nil) }
+        }
     }
 
     private var agentSetupBinding: Binding<V2Connector?> {
@@ -308,6 +310,7 @@ private struct ChatShellPlaceholderPage: View {
     let onOpenSidebar: () -> Void
 
     var body: some View {
+            AppObservationTracking {
         Color(.systemBackground)
             .overlay {
                 if isConnecting {
@@ -316,7 +319,8 @@ private struct ChatShellPlaceholderPage: View {
                 }
             }
             .modifier(ChatPageToolbar(title: title, onMenu: onOpenSidebar))
-    }
+            }
+        }
 }
 
 #Preview {

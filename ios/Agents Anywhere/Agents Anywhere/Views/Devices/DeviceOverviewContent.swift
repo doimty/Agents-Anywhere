@@ -19,6 +19,7 @@ struct DeviceProjectList: View {
     let onDelete: (V2Project) -> Void
 
     var body: some View {
+        AppObservationTracking {
         DeviceSection(String(localized: "Projects")) {
             DeviceHeaderIconButton(title: String(localized: "Create project"), symbol: "plus", action: onCreate)
                 .disabled(!canManage)
@@ -45,6 +46,7 @@ struct DeviceProjectList: View {
                 }
             }
         }
+        }
     }
 }
 
@@ -56,6 +58,7 @@ struct DeviceWorkspaceList: View {
     let onNewSession: (WorkspaceDirectoryChoice) -> Void
 
     var body: some View {
+            AppObservationTracking {
         DeviceSection(String(localized: "工作目录")) {
             DeviceHeaderIconButton(title: String(localized: "选择工作目录"), symbol: "plus", action: onBrowse)
                 .disabled(!canReadFiles)
@@ -75,7 +78,8 @@ struct DeviceWorkspaceList: View {
                 }
             }
         }
-    }
+            }
+        }
 }
 
 struct DeviceHeaderIconButton: View {
@@ -84,11 +88,13 @@ struct DeviceHeaderIconButton: View {
     let action: () -> Void
 
     var body: some View {
+            AppObservationTracking {
         Button(action: action) {
             AppSymbol(symbol, size: 18).frame(width: 36, height: 36).contentShape(Rectangle())
         }
         .buttonStyle(.plain).accessibilityLabel(title)
-    }
+            }
+        }
 }
 
 /// One column on phones, two on wider layouts, collapsed to a few cards.
@@ -98,6 +104,7 @@ private struct DeviceDirectoryGrid<Item: Identifiable, Card: View>: View {
     @State private var expanded = false
 
     var body: some View {
+            AppObservationTracking {
         VStack(alignment: .leading, spacing: 4) {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 8)], spacing: 8) {
                 ForEach(expanded ? items : Array(items.prefix(collapsedDirectoryCount))) { card($0) }
@@ -115,7 +122,8 @@ private struct DeviceDirectoryGrid<Item: Identifiable, Card: View>: View {
                 .buttonStyle(.plain)
             }
         }
-    }
+            }
+        }
 }
 
 private struct DeviceDirectoryCard: View {
@@ -129,6 +137,7 @@ private struct DeviceDirectoryCard: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
+            AppObservationTracking {
         HStack(spacing: 4) {
             Button(action: onOpen) {
                 HStack(spacing: 12) {
@@ -154,7 +163,8 @@ private struct DeviceDirectoryCard: View {
         .padding(.leading, 14).padding(.trailing, 4).padding(.vertical, 6)
         .background(AppTheme.groupedFill(colorScheme), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 16, style: .continuous))
-    }
+            }
+        }
 }
 
 struct DeviceSessionList: View {
@@ -172,6 +182,7 @@ struct DeviceSessionList: View {
     private var isEmpty: Bool { model.filteredSessions.isEmpty }
 
     var body: some View {
+            AppObservationTracking {
         DeviceSection(String(localized: "Sessions")) {
             HStack(spacing: 8) {
                 DevicePillButton(title: model.isSelectingSessions ? String(localized: "Cancel") : String(localized: "Select sessions")) {
@@ -203,7 +214,8 @@ struct DeviceSessionList: View {
                 DeviceRows(model.filteredSessions) { session in row(session) }
             }
         }
-    }
+            }
+        }
 
     private var filters: some View {
         DeviceFilterTags(values: V2DeviceSessionFilter.allCases,
@@ -308,6 +320,7 @@ struct DeviceSessionSelectionDock: View {
     let onCancel: () -> Void
     let onSubmit: () -> Void
     var body: some View {
+            AppObservationTracking {
         HStack(spacing: 12) {
             Text("\(count) selected").font(.subheadline).monospacedDigit()
             Spacer(minLength: 0)
@@ -317,5 +330,6 @@ struct DeviceSessionSelectionDock: View {
         }
         .padding(14).appGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .padding(.horizontal, 24).padding(.bottom, 12).frame(maxWidth: 760).frame(maxWidth: .infinity)
-    }
+            }
+        }
 }

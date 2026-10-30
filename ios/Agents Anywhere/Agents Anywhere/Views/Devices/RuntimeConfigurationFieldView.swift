@@ -10,6 +10,7 @@ struct RuntimeConfigurationFieldView: View {
     private var description: String? { RuntimeConfigCopy.description(field, locale: locale) }
 
     var body: some View {
+        AppObservationTracking {
         Section {
             if field.kind == .boolean {
                 Toggle(title, isOn: binding(\.boolValues, default: false))
@@ -27,6 +28,7 @@ struct RuntimeConfigurationFieldView: View {
             if let description, !description.isEmpty {
                 Text(description)
             }
+        }
         }
     }
 
@@ -129,6 +131,7 @@ struct RuntimeSecretInput: View {
     var hideTitle = String(localized: "Hide secret")
     @State private var isVisible = false
     var body: some View {
+            AppObservationTracking {
         HStack(spacing: 8) {
             Group {
                 if isVisible { TextField(title, text: $text) }
@@ -138,7 +141,8 @@ struct RuntimeSecretInput: View {
                 isVisible.toggle()
             }.labelStyle(.iconOnly).frame(width: 32, height: 32)
         }.runtimeConfigInput()
-    }
+            }
+        }
 }
 
 extension View {

@@ -18,6 +18,7 @@ struct DeviceAgentSection: View {
         var id: String { runtime.id }
     }
     var body: some View {
+        AppObservationTracking {
         DeviceSection(String(localized: "dashboard.device.agentRuntimes")) {
             AgentRediscoveryButton(model: model)
         } content: {
@@ -70,6 +71,7 @@ struct DeviceAgentSection: View {
             Button(String(localized: "好"), role: .cancel) { schemaError = nil; model.dismissError() }
         } message: { Text(schemaError ?? model.error ?? "") }
         .appOnChange(of: currentError, initial: true) { _, error in onError?(error) }
+        }
     }
     private var canChange: Bool { model.connected && model.busyID == nil }
 
@@ -156,6 +158,7 @@ struct AgentRediscoveryButton: View {
     let model: DeviceAgentModel
 
     var body: some View {
+            AppObservationTracking {
         Button { Task { await model.refresh(discover: true) } } label: {
             AppSymbol("arrow.clockwise")
                 .opacity(model.isLoading ? 0 : 1)
@@ -167,7 +170,8 @@ struct AgentRediscoveryButton: View {
         .buttonStyle(.plain)
         .disabled(!model.connected || model.isLoading || model.busyID != nil)
         .accessibilityLabel(model.isLoading ? String(localized: "正在刷新 Agent") : String(localized: "重新发现 Agent"))
-    }
+            }
+        }
 }
 
 struct AgentSetupSheet: View {
@@ -175,6 +179,7 @@ struct AgentSetupSheet: View {
     let model: DeviceAgentModel
     let onFinish: () -> Void
     var body: some View {
+            AppObservationTracking {
         AppNavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
@@ -193,5 +198,6 @@ struct AgentSetupSheet: View {
             }
         }
         .appSheetPresentation(.compact).interactiveDismissDisabled(model.busyID != nil)
-    }
+            }
+        }
 }

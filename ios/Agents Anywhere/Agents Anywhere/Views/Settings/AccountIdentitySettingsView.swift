@@ -23,6 +23,7 @@ struct AccountIdentitySettingsView: View {
     }
 
     var body: some View {
+        AppObservationTracking {
         Form {
             Section(title) {
                 TextField(title, text: $draft.text)
@@ -77,6 +78,7 @@ struct AccountIdentitySettingsView: View {
         .alert(String(localized: "Account update failed"), isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button(String(localized: "OK"), role: .cancel) { error = nil }
         } message: { Text(error ?? "") }
+        }
     }
 
     private func loadConfig() async {

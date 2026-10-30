@@ -17,6 +17,7 @@ struct SessionInteractionCard: View {
     var metrics = SessionInteractionMetrics()
 
     var body: some View {
+        AppObservationTracking {
         TimelineView(NoticeExpiryClock(expiresAt: item.expiresAt)) { timeline in
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .center, spacing: 8) {
@@ -64,6 +65,7 @@ struct SessionInteractionCard: View {
             case .details: SessionInteractionDetailsSheet(item: item, chat: chat)
             }
         }
+        }
     }
 
     private var title: String {
@@ -106,6 +108,7 @@ struct SessionInteractionActions: View {
     var onEdit: (() -> Void)? = nil
 
     var body: some View {
+            AppObservationTracking {
         let layout = NoticeActionPresentation(item.notice.actions)
         if compact {
             HStack(spacing: 8) {
@@ -141,7 +144,8 @@ struct SessionInteractionActions: View {
                 VStack(spacing: 8) { buttons(item.notice.actions, intrinsic: false) }
             }
         }
-    }
+            }
+        }
     @ViewBuilder private func buttons(_ actions: [V2RuntimeNoticeAction], intrinsic: Bool) -> some View {
         ForEach(actions) { action in
             AppGlassButton(NoticeActionPresentation.title(action, notice: item.notice),

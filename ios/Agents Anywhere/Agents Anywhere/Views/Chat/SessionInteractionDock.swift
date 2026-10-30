@@ -18,6 +18,7 @@ struct SessionInteractionDock: View {
     }
 
     var body: some View {
+        AppObservationTracking {
         let motionReduced = reduceMotion
         if !items.isEmpty {
             Group {
@@ -34,6 +35,7 @@ struct SessionInteractionDock: View {
                 selectedID = next.isEmpty ? nil : next[min(index, next.count - 1)]
             }
             .padding(.horizontal, 24)
+        }
         }
     }
 

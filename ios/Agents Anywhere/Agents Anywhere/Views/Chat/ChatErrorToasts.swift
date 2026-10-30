@@ -14,6 +14,7 @@ struct ChatErrorToasts: View {
     private var height: CGFloat { min(220, max(136, lineHeight * 4 + 74)) }
 
     var body: some View {
+        AppObservationTracking {
         if !store.items.isEmpty {
             Group {
                 if #available(iOS 17.0, *), AppCompatibility.useNativeUI {
@@ -30,6 +31,7 @@ struct ChatErrorToasts: View {
                 if selected == nil || !ids.contains(selected ?? "") { selected = ids.first }
             }
             .accessibilityHint(store.items.count > 1 ? String(localized: "左右滑动查看其他提示") : "")
+        }
         }
     }
 

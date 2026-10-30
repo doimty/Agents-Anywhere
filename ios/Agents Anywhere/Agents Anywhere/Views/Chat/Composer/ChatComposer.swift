@@ -26,6 +26,7 @@ struct ChatComposer: View {
     @Namespace private var glass
 
     var body: some View {
+        AppObservationTracking {
         AppGlassEffectContainer(spacing: 12) {
             VStack(spacing: 0) {
                 if !draft.attachments.isEmpty { attachmentTray }
@@ -43,6 +44,7 @@ struct ChatComposer: View {
         // the draft from the page root re-evaluated the whole conversation.
         .appOnChange(of: draft.text) { _, _ in onDraftChange() }
         .appOnChange(of: draft.attachments) { _, _ in onDraftChange() }
+        }
     }
 
     @ViewBuilder private var composerLayout: some View {

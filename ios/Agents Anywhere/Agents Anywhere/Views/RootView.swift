@@ -8,6 +8,7 @@ struct RootView: View {
     @State private var showingQRCodeLogin = false
 
     var body: some View {
+        AppObservationTracking {
         Group {
             switch appState.route {
             case .loading:
@@ -57,6 +58,7 @@ struct RootView: View {
         }
         .tint(AppTheme.primaryText(colorScheme))
         .background(AppTheme.appBackground(colorScheme))
+        }
     }
 
     private func retryServerConnection() {

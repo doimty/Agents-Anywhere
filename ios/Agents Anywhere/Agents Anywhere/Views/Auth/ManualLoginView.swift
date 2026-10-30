@@ -17,6 +17,7 @@ struct ManualLoginView: View {
     var onDashboardRequested: () -> Void = {}
 
     var body: some View {
+        AppObservationTracking {
         AppRouteNavigationStack(path: $path) {
             AuthScreen(title: String(localized: "Manual Login"), onCancel: close) {
                 VStack(spacing: 16) {
@@ -91,6 +92,7 @@ struct ManualLoginView: View {
             Text(alertMessage ?? String(localized: "The server could not be reached."))
         }
         .appSheetPresentation(.compact)
+        }
     }
 
     private var isSigningIn: Bool { loginRequest != nil }
@@ -171,6 +173,7 @@ private struct ServerAddressView<Status: View>: View {
     @State private var serverText = ""
 
     var body: some View {
+            AppObservationTracking {
         AuthScreen(
             title: String(localized: "Enter Server"),
             subtitle: String(localized: "Enter your server address, then sign in with the server's web login."),
@@ -201,7 +204,8 @@ private struct ServerAddressView<Status: View>: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-    }
+            }
+        }
 
     private var canContinue: Bool {
         !isSigningIn && !serverText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -226,6 +230,7 @@ private struct UnderlinedTextField: View {
     var onSubmit: () -> Void = {}
 
     var body: some View {
+            AppObservationTracking {
         TextField(placeholder, text: $text)
             .textFieldStyle(.plain)
             .textInputAutocapitalization(.never)
@@ -240,5 +245,6 @@ private struct UnderlinedTextField: View {
             .overlay(alignment: .bottom) {
                 Divider()
             }
-    }
+            }
+        }
 }

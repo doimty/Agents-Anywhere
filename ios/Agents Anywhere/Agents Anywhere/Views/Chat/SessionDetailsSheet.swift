@@ -11,6 +11,7 @@ struct SessionDetailsSheet: View {
     @State private var showsExporter = false
     @State private var error: String?
     var body: some View {
+        AppObservationTracking {
         AppNavigationStack {
             List {
                 if let meta = chat.session.metadata {
@@ -67,6 +68,7 @@ struct SessionDetailsSheet: View {
         .fileExporter(isPresented: $showsExporter, document: document, contentType: .json, defaultFilename: document?.name ?? "timeline") { result in
             if case let .failure(failure) = result { error = failure.localizedDescription }
             document = nil
+        }
         }
     }
     private func row(_ title: String, _ value: String) -> some View {

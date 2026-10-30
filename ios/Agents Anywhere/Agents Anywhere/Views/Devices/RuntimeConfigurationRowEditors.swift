@@ -7,6 +7,7 @@ struct RuntimeEnvironmentRowEditor: View {
     @FocusState private var focusedField: RuntimeConfigurationInput?
 
     var body: some View {
+        AppObservationTracking {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 12) {
@@ -26,6 +27,7 @@ struct RuntimeEnvironmentRowEditor: View {
             }
         }
         .padding(.vertical, 8)
+        }
     }
 }
 
@@ -35,6 +37,7 @@ struct RuntimeCustomModelRowEditor: View {
     @FocusState private var focusedField: RuntimeConfigurationInput?
 
     var body: some View {
+            AppObservationTracking {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text(String(localized: "Custom model")).font(.subheadline.weight(.medium))
@@ -65,7 +68,8 @@ struct RuntimeCustomModelRowEditor: View {
             }
         }
         .padding(.vertical, 8)
-    }
+            }
+        }
 }
 
 private struct RuntimeEffortRowEditor: View {
@@ -74,6 +78,7 @@ private struct RuntimeEffortRowEditor: View {
     @FocusState private var focusedField: RuntimeConfigurationInput?
 
     var body: some View {
+            AppObservationTracking {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 12) {
                 TextField(String(localized: "Effort ID"), text: $row.effortID)
@@ -86,7 +91,8 @@ private struct RuntimeEffortRowEditor: View {
                 onRemove()
             }.buttonStyle(.borderless).labelStyle(.iconOnly).frame(width: 44, height: 44)
         }
-    }
+            }
+        }
 }
 
 private enum RuntimeConfigurationInput: Hashable { case identifier, value }

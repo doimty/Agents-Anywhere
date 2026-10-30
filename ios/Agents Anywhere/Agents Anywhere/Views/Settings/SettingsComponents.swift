@@ -16,6 +16,7 @@ struct SettingsRow: View {
     let symbol: String
     var value: String?
     var body: some View {
+        AppObservationTracking {
         if let value, !value.isEmpty {
             AppLabeledContent {
                 Text(value).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
@@ -24,6 +25,7 @@ struct SettingsRow: View {
             }
         } else {
             Label(title, appSymbol: symbol)
+        }
         }
     }
 }
@@ -45,6 +47,7 @@ extension View {
 struct SettingsLanguageView: View {
     @Environment(\.openURL) private var openURL
     var body: some View {
+            AppObservationTracking {
         List {
             Section {
                 AppLabeledContent(String(localized: "Current language"), value: Self.currentLanguage)
@@ -55,7 +58,8 @@ struct SettingsLanguageView: View {
                 Text(String(localized: "Choose English or Simplified Chinese in the app's iOS language settings. Without an override, the app follows your preferred system language."))
             }
         }.settingsPage(String(localized: "Language"))
-    }
+            }
+        }
     static var currentLanguage: String {
         Bundle.main.preferredLocalizations.first?.hasPrefix("zh") == true ? "简体中文" : "English"
     }
@@ -64,6 +68,7 @@ struct SettingsLanguageView: View {
 struct SettingsServerView: View {
     @Environment(AppState.self) private var appState
     var body: some View {
+            AppObservationTracking {
         List {
             Section(String(localized: "Connection")) {
                 AppLabeledContent(String(localized: "Status"), value: appState.isServerConnected ? String(localized: "Connected") : String(localized: "Offline"))
@@ -78,11 +83,13 @@ struct SettingsServerView: View {
                 Section { Text(error).foregroundStyle(.secondary) }
             }
         }.settingsPage(String(localized: "Server"))
-    }
+            }
+        }
 }
 
 struct SettingsAboutView: View {
     var body: some View {
+            AppObservationTracking {
         List {
             Section {
                 AppLabeledContent(String(localized: "Version"), value: Self.version)
@@ -96,7 +103,8 @@ struct SettingsAboutView: View {
                 } label: { SettingsRow(title: String(localized: "Open-source notices"), symbol: "doc.text") }
             }
         }.settingsPage(String(localized: "About"))
-    }
+            }
+        }
     static var version: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—" }
     private var license: String {
         Bundle.main.url(forResource: "Lucide", withExtension: "txt").flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "Lucide · ISC"

@@ -28,6 +28,7 @@ struct ChatSidebarProjects: View {
         var id: String { project.id }
     }
     var body: some View {
+        AppObservationTracking {
         let projects = ProjectSidebarPresentation.projects(repository.projects, filter: filter, sessions: repository.sessions)
         let unassigned = ProjectSidebarPresentation.unassignedSessions(repository.sessions, projects: repository.projects, filter: filter)
         // Capture the value in this body, then pass it through the lazy builders.
@@ -97,6 +98,7 @@ struct ChatSidebarProjects: View {
         .alert(String(localized: "操作未完成"), isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button(String(localized: "好")) { error = nil }
         } message: { Text(error ?? "") }
+        }
     }
 
     private var expanded: Set<String> { repository.sidebarPreferences.expandedProjects }
@@ -203,6 +205,7 @@ struct ArchivedSessionsSheet: View {
     @State private var busy: Set<String> = []
     @State private var restoreError = false
     var body: some View {
+            AppObservationTracking {
         AppNavigationStack {
             List {
                 ForEach(ProjectSidebarPresentation.sessions(repository.sessions, projectID: nil, filter: .archived)) { session in
@@ -232,5 +235,6 @@ struct ArchivedSessionsSheet: View {
         }
         .appSheetPresentation(.compact)
         .alert(String(localized: "无法恢复会话，请稍后重试。"), isPresented: $restoreError) { Button(String(localized: "好"), role: .cancel) {} }
-    }
+            }
+        }
 }

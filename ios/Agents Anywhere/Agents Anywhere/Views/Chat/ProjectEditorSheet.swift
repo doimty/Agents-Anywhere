@@ -47,6 +47,7 @@ struct ProjectEditorSheet: View {
     }
 
     var body: some View {
+        AppObservationTracking {
         AppNavigationStack {
             Form {
                 Section(String(localized: "运行设备")) {
@@ -124,6 +125,7 @@ struct ProjectEditorSheet: View {
                     permitsReading: device.status == .online && repository.canWrite,
                     onSelectDirectory: { updatePath($0); showsFiles = false }, initialPath: draft.path.isEmpty ? "." : draft.path)
             }
+        }
         }
     }
 

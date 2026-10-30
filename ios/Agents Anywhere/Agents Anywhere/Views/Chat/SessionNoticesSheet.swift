@@ -6,6 +6,7 @@ struct SessionNoticesSheet: View {
     var initialNoticeID: String? = nil
     @Environment(\.dismiss) private var dismiss
     var body: some View {
+        AppObservationTracking {
         AppNavigationStack {
             ScrollViewReader { proxy in
                 ScrollView {
@@ -22,5 +23,6 @@ struct SessionNoticesSheet: View {
             .toolbar { SheetCloseToolbar { dismiss() } }
         }
         .appSheetPresentation(.compact)
+        }
     }
 }

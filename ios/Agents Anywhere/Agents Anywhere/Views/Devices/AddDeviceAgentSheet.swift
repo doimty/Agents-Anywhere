@@ -14,6 +14,7 @@ struct AddDeviceAgentSheet: View {
     }
 
     var body: some View {
+        AppObservationTracking {
         AppNavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -51,6 +52,7 @@ struct AddDeviceAgentSheet: View {
         )) {
             Button(String(localized: "好"), role: .cancel) { schemaError = nil; model.dismissError() }
         } message: { Text(schemaError ?? model.error ?? "") }
+        }
     }
 
     private func agentCard(_ type: V2RuntimeType) -> some View {
