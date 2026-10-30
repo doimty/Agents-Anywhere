@@ -42,7 +42,7 @@ public struct PerceptionRegistrar: Sendable {
       _isPerceptionCheckingEnabled = isPerceptionCheckingEnabled
     #endif
     #if canImport(Observation)
-      if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *), !isObservationBeta {
+      if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *), isNativeObservationEnabled {
         rawValue = ObservationRegistrar()
         return
       }
@@ -68,7 +68,7 @@ public struct PerceptionRegistrar: Sendable {
     #endif
     #if canImport(Observation)
       if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
-        !isObservationBeta,
+        isNativeObservationEnabled,
         let subject = subject as? any Observable
       {
         func open<S: Observable>(_ subject: S) {
@@ -95,7 +95,7 @@ public struct PerceptionRegistrar: Sendable {
   ) {
     #if canImport(Observation)
       if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
-        !isObservationBeta,
+        isNativeObservationEnabled,
         let subject = subject as? any Observable
       {
         func open<S: Observable>(_ subject: S) {
@@ -122,7 +122,7 @@ public struct PerceptionRegistrar: Sendable {
   ) {
     #if canImport(Observation)
       if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
-        !isObservationBeta,
+        isNativeObservationEnabled,
         let subject = subject as? any Observable
       {
         func open<S: Observable>(_ subject: S) {
@@ -152,7 +152,7 @@ public struct PerceptionRegistrar: Sendable {
   ) rethrows -> T {
     #if canImport(Observation)
       if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
-        !isObservationBeta,
+        isNativeObservationEnabled,
         let subject = subject as? any Observable
       {
         func open<S: Observable>(_ subject: S) throws -> T {

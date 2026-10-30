@@ -58,13 +58,13 @@ struct ChatComposer: View {
         } else {
             ComposerLayoutLegacy(expanded: draft.isExpanded, maximumEditorHeight: maximumEditorHeight,
                 controls: controls, editorController: editor, textRevision: draft.text, showsCommands: showsCommands) {
-                optionsButton
+                AppObservationTracking { optionsButton }
             } text: {
-                textEditor
+                AppObservationTracking { textEditor }
             } send: {
-                sendButton
+                AppObservationTracking { sendButton }
             } commands: {
-                commandsButton
+                AppObservationTracking { commandsButton }
             }
         }
     }

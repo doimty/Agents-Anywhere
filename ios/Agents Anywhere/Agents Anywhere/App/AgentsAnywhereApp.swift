@@ -13,8 +13,17 @@ struct AgentsAnywhereApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(appState)
+            Group {
+                #if DEBUG
+                if CompatibilityRegressionScene.isEnabled {
+                    CompatibilityRegressionScene()
+                } else {
+                    RootView().environment(appState)
+                }
+                #else
+                RootView().environment(appState)
+                #endif
+            }
                 .background {
                     #if targetEnvironment(macCatalyst)
                     MacCatalystWindowTitle(appState: appState)

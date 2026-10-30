@@ -137,33 +137,21 @@ struct SidebarDrawer<SidebarHeader: View, SidebarContent: View, MainContent: Vie
                     edgeStyle: configuration.sidebarHeaderEdgeEffectStyle,
                     header: sidebarHeader, sidebar: sidebarContent, detail: mainContent)
             }
-        } else if #available(iOS 16.0, *), AppCompatibility.useNativeUI {
+        } else {
             // Resolve page builders above the state that changes on every pan
             // sample. Equality on the resulting page cannot prevent expensive
             // work that has already happened in its initializer.
             GeometryReader { geometry in
-                SidebarDrawerPages(
-                    isOpen: $isOpen,
-                    configuration: configuration,
-                    safeAreaInsets: geometry.safeAreaInsets,
-                    sidebarHeader: sidebarHeader,
-                    sidebarContent: sidebarContent,
-                    mainContent: mainContent
-                )
-            }
-        } else {
-            // iOS 15: drive the same sidebar from `isOpen` only. The interactive
-            // path needs a UIKit recogniser bridge and per-frame animation state,
-            // which left the drawer unresponsive on the older system.
-            GeometryReader { geometry in
-                SidebarDrawerPlainOverlay(
-                    isOpen: $isOpen,
-                    configuration: configuration,
-                    safeAreaInsets: geometry.safeAreaInsets,
-                    sidebarHeader: sidebarHeader(geometry.safeAreaInsets),
-                    sidebarContent: sidebarContent(geometry.safeAreaInsets),
-                    mainContent: mainContent(geometry.safeAreaInsets)
-                )
+                AppObservationTracking {
+                    SidebarDrawerPages(
+                        isOpen: $isOpen,
+                        configuration: configuration,
+                        safeAreaInsets: geometry.safeAreaInsets,
+                        sidebarHeader: sidebarHeader,
+                        sidebarContent: sidebarContent,
+                        mainContent: mainContent
+                    )
+                }
             }
         }
         }
@@ -236,89 +224,92 @@ private struct SidebarDrawerInteractive<
     var body: some View {
             AppObservationTracking {
         GeometryReader { fullScreenGeometry in
-            let screenSize = fullScreenGeometry.size
-            let revealWidth = max(
-                screenSize.width * configuration.revealFraction.clamped(to: 0.01 ... 1),
-                1
-            )
-            let interaction = DrawerInteractionState(isOpen: isOpen, progress: motion.restingProgress,
-                isAnimating: isAnimating, isDragging: dragStartProgress != nil)
-
-            ZStack(alignment: .leading) {
-                drawerSystemBackground
-
-                SidebarDrawerSidebar(
-                    width: revealWidth,
-                    safeAreaInsets: safeAreaInsets,
-                    edgeEffectStyle: configuration.sidebarHeaderEdgeEffectStyle,
-                    header: sidebarHeader,
-                    content: sidebarContent
+            AppObservationTracking {
+                let screenSize = fullScreenGeometry.size
+                let revealWidth = max(
+                    screenSize.width * configuration.revealFraction.clamped(to: 0.01 ... 1),
+                    1
                 )
-                .modifier(SidebarDrawerSidebarMotion(
-                    motion: motion,
-                    closedScale: configuration.sidebarClosedScale.clamped(to: 0 ... 1),
-                    overlayOpacity: configuration.sidebarOverlayOpacity.clamped(to: 0 ... 1)
-                ))
-                .allowsHitTesting(interaction.acceptsSidebarTouches)
-                .accessibilityHidden(!interaction.acceptsSidebarTouches)
+                let interaction = DrawerInteractionState(isOpen: isOpen, progress: motion.restingProgress,
+                    isAnimating: isAnimating, isDragging: dragStartProgress != nil)
 
-                SidebarDrawerMainCard(
-                    size: screenSize,
-                    isFullyClosed: interaction.acceptsContentTouches,
-                    content: mainContent
-                )
-                .modifier(SidebarDrawerCardMotion(
-                    motion: motion,
-                    isFullyClosed: interaction.acceptsContentTouches,
-                    revealWidth: revealWidth,
-                    overlayOpacity: configuration.contentOverlayOpacity.clamped(to: 0 ... 1)
-                ))
-                .allowsHitTesting(interaction.acceptsContentTouches)
-                .accessibilityHidden(!interaction.acceptsContentTouches)
+                ZStack(alignment: .leading) {
+                    drawerSystemBackground
 
-                // Only the screen-space strip occupied by the visible card
-                // closes the drawer. Its untranslated hit targets are disabled.
-                SidebarDrawerCloseArea(motion: motion, revealWidth: revealWidth)
-                    .onTapGesture(perform: closeFromOverlay)
+                    SidebarDrawerSidebar(
+                        width: revealWidth,
+                        safeAreaInsets: safeAreaInsets,
+                        edgeEffectStyle: configuration.sidebarHeaderEdgeEffectStyle,
+                        header: sidebarHeader,
+                        content: sidebarContent
+                    )
+                    .modifier(SidebarDrawerSidebarMotion(
+                        motion: motion,
+                        closedScale: configuration.sidebarClosedScale.clamped(to: 0 ... 1),
+                        overlayOpacity: configuration.sidebarOverlayOpacity.clamped(to: 0 ... 1)
+                    ))
                     .allowsHitTesting(interaction.acceptsSidebarTouches)
                     .accessibilityHidden(!interaction.acceptsSidebarTouches)
-                    .accessibilityLabel(String(localized: "关闭侧栏"))
-                    .accessibilityAddTraits(.isButton)
 
-#if !canImport(UIKit)
-                if usesOpeningEdgeGestureRegion {
-                    Color.clear
-                        .frame(
-                            width: max(configuration.edgeActivationWidth, 0),
-                            height: screenSize.height
-                        )
-                        .contentShape(Rectangle())
-                        .highPriorityGesture(drawerGesture(revealWidth: revealWidth))
+                    SidebarDrawerMainCard(
+                        size: screenSize,
+                        isFullyClosed: interaction.acceptsContentTouches,
+                        content: mainContent
+                    )
+                    .modifier(SidebarDrawerCardMotion(
+                        motion: motion,
+                        isFullyClosed: interaction.acceptsContentTouches,
+                        revealWidth: revealWidth,
+                        overlayOpacity: configuration.contentOverlayOpacity.clamped(to: 0 ... 1)
+                    ))
+                    .allowsHitTesting(interaction.acceptsContentTouches)
+                    .accessibilityHidden(!interaction.acceptsContentTouches)
+
+                    // Only the screen-space strip occupied by the visible card
+                    // closes the drawer. Its untranslated hit targets are disabled.
+                    SidebarDrawerCloseArea(motion: motion, revealWidth: revealWidth)
+                        .onTapGesture(perform: closeFromOverlay)
+                        .allowsHitTesting(interaction.acceptsSidebarTouches)
+                        .accessibilityHidden(!interaction.acceptsSidebarTouches)
+                        .accessibilityLabel(String(localized: "关闭侧栏"))
+                    .accessibilityIdentifier("chat.sidebar.close")
+                        .accessibilityAddTraits(.isButton)
+
+    #if !canImport(UIKit)
+                    if usesOpeningEdgeGestureRegion {
+                        Color.clear
+                            .frame(
+                                width: max(configuration.edgeActivationWidth, 0),
+                                height: screenSize.height
+                            )
+                            .contentShape(Rectangle())
+                            .highPriorityGesture(drawerGesture(revealWidth: revealWidth))
+                    }
+    #endif
                 }
-#endif
-            }
-            .frame(width: screenSize.width, height: screenSize.height)
-            .contentShape(Rectangle())
-#if canImport(UIKit)
-            .appSidebarPanGesture(
-                progress: motion.restingProgress,
-                edgeActivationWidth: configuration.edgeActivationWidth,
-                onBegan: beginDirectionalPan,
-                onChanged: { translationX in
-                    updateDirectionalPan(translationX: translationX, revealWidth: revealWidth)
-                },
-                onEnded: { translationX, velocityX, cancelled in
-                    endDirectionalPan(translationX: translationX, velocityX: velocityX,
-                                      revealWidth: revealWidth, cancelled: cancelled)
-                })
-#else
-            .simultaneousGesture(
-                drawerGesture(revealWidth: revealWidth),
-                isEnabled: !usesOpeningEdgeGestureRegion
-            )
-#endif
-            .appOnChange(of: isOpen) { _, newValue in
-                synchronizeProgress(with: newValue)
+                .frame(width: screenSize.width, height: screenSize.height)
+                .contentShape(Rectangle())
+    #if canImport(UIKit)
+                .appSidebarPanGesture(
+                    progress: motion.restingProgress,
+                    edgeActivationWidth: configuration.edgeActivationWidth,
+                    onBegan: beginDirectionalPan,
+                    onChanged: { translationX in
+                        updateDirectionalPan(translationX: translationX, revealWidth: revealWidth)
+                    },
+                    onEnded: { translationX, velocityX, cancelled in
+                        endDirectionalPan(translationX: translationX, velocityX: velocityX,
+                                          revealWidth: revealWidth, cancelled: cancelled)
+                    })
+    #else
+                .simultaneousGesture(
+                    drawerGesture(revealWidth: revealWidth),
+                    isEnabled: !usesOpeningEdgeGestureRegion
+                )
+    #endif
+                .appOnChange(of: isOpen) { _, newValue in
+                    synchronizeProgress(with: newValue)
+                }
             }
         }
         .ignoresSafeArea()
@@ -746,14 +737,16 @@ private struct SidebarDrawerSidebarMotion: ViewModifier {
     let overlayOpacity: CGFloat
 
     func body(content: Content) -> some View {
-        let progress = motion.progress
-        content
-            .overlay {
-                drawerSystemBackground
-                    .opacity(overlayOpacity * (1 - progress))
-                    .allowsHitTesting(false)
-            }
-            .scaleEffect(closedScale + ((1 - closedScale) * progress), anchor: .leading)
+        AppObservationTracking {
+            let progress = motion.progress
+            content
+                .overlay {
+                    drawerSystemBackground
+                        .opacity(overlayOpacity * (1 - progress))
+                        .allowsHitTesting(false)
+                }
+                .scaleEffect(closedScale + ((1 - closedScale) * progress), anchor: .leading)
+        }
     }
 }
 
@@ -764,38 +757,40 @@ private struct SidebarDrawerCardMotion: ViewModifier {
     let overlayOpacity: CGFloat
 
     func body(content: Content) -> some View {
-        let progress = motion.progress
-        let screenShape = SidebarDrawerCardShape.shape(isFullyClosed: isFullyClosed)
+        AppObservationTracking {
+            let progress = motion.progress
+            let screenShape = SidebarDrawerCardShape.shape(isFullyClosed: isFullyClosed)
 
-        content
-            .background {
-                // Shadow only the card shape. Compositing the entire conversation
-                // into an animated shadow layer repaints its text during a pan.
-                // Keep the drawn shadow constant and fade its layer: a changing
-                // radius re-blurs a full-screen shape on every frame.
-                screenShape.fill(drawerSystemBackground)
-                    .shadow(color: .black.opacity(0.28), radius: 18, x: -3, y: 0)
-                    .opacity(progress)
-                    .allowsHitTesting(false)
-            }
-            // Constant fills with layer opacity composite without redrawing.
-            .overlay {
-                screenShape
-                    .fill(.white)
-                    .opacity(overlayOpacity * progress)
-                    .allowsHitTesting(false)
-            }
-            .overlay {
-                screenShape
-                    .stroke(Color.primary.opacity(0.2), lineWidth: 1)
-                    .opacity(progress)
-                    .allowsHitTesting(false)
-            }
-            // Ordinary offset still participates in descendant coordinates:
-            // subpixel motion can round this 402-point column to 402 1/3 and
-            // change paragraph wrapping. Keep the whole translation out of
-            // layout, including every interpolated frame of the spring.
-            .modifier(SidebarDrawerTranslation(x: revealWidth * progress).ignoredByLayout())
+            content
+                .background {
+                    // Shadow only the card shape. Compositing the entire conversation
+                    // into an animated shadow layer repaints its text during a pan.
+                    // Keep the drawn shadow constant and fade its layer: a changing
+                    // radius re-blurs a full-screen shape on every frame.
+                    screenShape.fill(drawerSystemBackground)
+                        .shadow(color: .black.opacity(0.28), radius: 18, x: -3, y: 0)
+                        .opacity(progress)
+                        .allowsHitTesting(false)
+                }
+                // Constant fills with layer opacity composite without redrawing.
+                .overlay {
+                    screenShape
+                        .fill(.white)
+                        .opacity(overlayOpacity * progress)
+                        .allowsHitTesting(false)
+                }
+                .overlay {
+                    screenShape
+                        .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                        .opacity(progress)
+                        .allowsHitTesting(false)
+                }
+                // Ordinary offset still participates in descendant coordinates:
+                // subpixel motion can round this 402-point column to 402 1/3 and
+                // change paragraph wrapping. Keep the whole translation out of
+                // layout, including every interpolated frame of the spring.
+                .modifier(SidebarDrawerTranslation(x: revealWidth * progress).ignoredByLayout())
+        }
     }
 }
 
@@ -839,57 +834,4 @@ private var drawerSystemBackground: Color {
 #else
     Color.clear
 #endif
-}
-
-
-/// Deterministic drawer for iOS 15. Same sidebar, header and detail views as the
-/// interactive drawer, but the slide is derived from `isOpen` alone: no
-/// recogniser bridge and no per-frame animation state to get stuck in.
-private struct SidebarDrawerPlainOverlay<SidebarHeader: View, SidebarContent: View, MainContent: View>: View {
-    @Binding var isOpen: Bool
-    let configuration: SidebarDrawerConfiguration
-    let safeAreaInsets: EdgeInsets
-    let sidebarHeader: SidebarHeader
-    let sidebarContent: SidebarContent
-    let mainContent: MainContent
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    private var revealWidth: CGFloat {
-        max(UIScreen.main.bounds.width * configuration.revealFraction.clamped(to: 0.01 ... 1), 1)
-    }
-
-    var body: some View {
-        ZStack(alignment: .leading) {
-            mainContent
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            if isOpen {
-                Color.black.opacity(0.25)
-                    .ignoresSafeArea()
-                    .contentShape(Rectangle())
-                    .onTapGesture { isOpen = false }
-                    .accessibilityLabel(String(localized: "关闭侧栏"))
-                    .accessibilityAddTraits(.isButton)
-                    .transition(.opacity)
-            }
-
-            SidebarDrawerSidebar(
-                width: revealWidth,
-                safeAreaInsets: safeAreaInsets,
-                edgeEffectStyle: configuration.sidebarHeaderEdgeEffectStyle,
-                header: sidebarHeader,
-                content: sidebarContent
-            )
-            .offset(x: isOpen ? 0 : -revealWidth)
-            .allowsHitTesting(isOpen)
-            .accessibilityHidden(!isOpen)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .ignoresSafeArea()
-        .environment(\.sidebarDrawerPresentation, .drawer)
-        .environment(\.sidebarDrawerObscuresDetail, isOpen)
-        .environment(\.sidebarDrawerIsTransitioning, false)
-        .animation(reduceMotion ? nil : .easeOut(duration: 0.22), value: isOpen)
-    }
 }

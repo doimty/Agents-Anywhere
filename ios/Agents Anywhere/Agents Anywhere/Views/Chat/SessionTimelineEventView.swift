@@ -47,11 +47,13 @@ struct SessionTimelineGroupView: View, Equatable {
     private var rows: some View {
         VStack(alignment: .leading, spacing: 2) {
             ForEach(group.rows) { row in
-                SessionTimelineRow(row: row, chat: chat, onAttachment: onAttachment, cwd: chat.session.metadata?.cwd,
-                    disclosures: chat.disclosures, onFile: onFile)
-                    .equatable()
-                ForEach(inlineNotices.filter { $0.timelineTargetID == row.id }) { notice in
-                    SessionInteractionCard(item: notice, chat: chat)
+                AppObservationTracking {
+                    SessionTimelineRow(row: row, chat: chat, onAttachment: onAttachment, cwd: chat.session.metadata?.cwd,
+                        disclosures: chat.disclosures, onFile: onFile)
+                        .equatable()
+                    ForEach(inlineNotices.filter { $0.timelineTargetID == row.id }) { notice in
+                        AppObservationTracking { SessionInteractionCard(item: notice, chat: chat) }
+                    }
                 }
             }
         }
@@ -208,7 +210,9 @@ private struct TimelineFold<Content: View>: View {
                 withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) { disclosures.toggle(id) }
             } label: { TimelineMarkerRow(title: title, symbol: symbol, status: status, expanded: disclosures.isExpanded(id)) }
             .buttonStyle(.plain).accessibilityValue(disclosures.isExpanded(id) ? String(localized: "已展开") : String(localized: "已折叠"))
-            if disclosures.isExpanded(id) { content().transition(.identity) }
+            if disclosures.isExpanded(id) {
+                AppObservationTracking { content() }.transition(.identity)
+            }
         }
             }
         }

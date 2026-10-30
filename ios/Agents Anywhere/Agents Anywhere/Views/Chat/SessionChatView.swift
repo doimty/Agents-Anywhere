@@ -23,6 +23,8 @@ struct SessionChatView: View, Equatable {
     @State private var pendingTakeover: Bool?
     @State private var hasStartedLoading = false
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.sidebarDrawerObscuresDetail) private var sidebarObscuresDetail
     @ScaledMetric(relativeTo: .body) private var bodyLineHeight: CGFloat = 22
     @ScaledMetric(relativeTo: .footnote) private var takeoverPillHeight: CGFloat = 32
 
@@ -53,59 +55,67 @@ struct SessionChatView: View, Equatable {
     var body: some View {
         AppObservationTracking {
         GeometryReader { geometry in
-            Group {
-                if hasStartedLoading {
-                    ChatTimelineView(model: model,
-                        onAttachment: openAttachment, onFile: openFile)
-                } else {
-                    Color.clear.frame(maxWidth: .infinity, maxHeight: .infinity)
+            AppObservationTracking {
+                Group {
+                    if hasStartedLoading {
+                        ChatTimelineView(model: model,
+                            onAttachment: openAttachment, onFile: openFile)
+                    } else {
+                        Color.clear.frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 }
+                    .overlay {
+                        AppObservationTracking {
+                            if model.isOpeningReady && model.timeline.rows.isEmpty && model.timeline.pendingMessages.isEmpty {
+                                VStack(spacing: 12) {
+                                    Text(String(localized: "在这里继续你的任务")).foregroundStyle(.secondary)
+                                }.allowsHitTesting(false)
+                            }
+                        }
+                    }
+                    .overlay { if !model.isOpeningReady { openingMask } }
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        AppObservationTracking {
+                            VStack(spacing: 0) {
+                                SessionInteractionDock(chat: model,
+                                    onShowAll: { expandedNoticeID = $0; sheet = .notices })
+                                    .traceChatLayout("interaction-dock")
+                                ChatComposerDock(draft: session.composer, settings: model.settings,
+                                    maximumEditorHeight: min(160, max(72, geometry.size.height * 0.30)), controls: controls,
+                                    canSend: session.canSend, canAttach: model.canAttach,
+                                    canSelectModel: session.runtime.allows("catalog.model"),
+                                    canSelectPermission: session.runtime.allows("catalog.permission"),
+                                    isStreaming: model.isRunning, canStop: session.runtime.allows("session.interrupt"),
+                                    isBusy: model.isWorking || !model.isOpeningReady, placeholder: requiresTakeover ? String(localized: "请先接管") : String(localized: "询问 Agents"),
+                                    isLoadingSettings: model.isLoadingSettings,
+                                    settingsError: model.settingsError, sessionChat: model,
+                                    onSend: model.send, onStop: model.interrupt, onLoadSettings: model.loadSettings,
+                                    onApplySettings: model.applySettings, applyError: { model.settingsError },
+                                    onDraftChange: { model.repository.draftDidChange(sessionID: model.session.id) })
+                                    .traceChatLayout("composer-dock")
+                            }
+                            .frame(maxWidth: ChatControlMetrics.maximumContentWidth).frame(maxWidth: .infinity)
+                            // Native safe-area layout owns both the visible scroll
+                            // region and the dock's space; do not add a second margin.
+                        }
+                    }
+                    .overlay(alignment: .topLeading) {
+                        AppObservationTracking {
+                            VStack(alignment: .leading, spacing: 4) {
+                                // Metadata can arrive after history. Transient controls
+                                // float below the header instead of resizing its inset.
+                                if requiresTakeover {
+                                    takeoverPill.frame(maxWidth: .infinity, alignment: .center)
+                                }
+                                ChatErrorToasts(store: toasts, isRetrying: session.isLoading, onRetry: { _ in await session.refresh() })
+                                if let success = model.commandSuccess {
+                                    CommandSuccessToast(feedback: success) { model.commandSuccess = nil }
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                }
+                            }.padding(.top, 8)
+                        }
+                    }
             }
-                .overlay {
-                    if model.isOpeningReady && model.timeline.rows.isEmpty && model.timeline.pendingMessages.isEmpty {
-                        VStack(spacing: 12) {
-                            Text(String(localized: "在这里继续你的任务")).foregroundStyle(.secondary)
-                        }.allowsHitTesting(false)
-                    }
-                }
-                .overlay { if !model.isOpeningReady { openingMask } }
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    VStack(spacing: 0) {
-                        SessionInteractionDock(chat: model,
-                            onShowAll: { expandedNoticeID = $0; sheet = .notices })
-                            .traceChatLayout("interaction-dock")
-                        ChatComposerDock(draft: session.composer, settings: model.settings,
-                            maximumEditorHeight: min(160, max(72, geometry.size.height * 0.30)), controls: controls,
-                            canSend: session.canSend, canAttach: model.canAttach,
-                            canSelectModel: session.runtime.allows("catalog.model"),
-                            canSelectPermission: session.runtime.allows("catalog.permission"),
-                            isStreaming: model.isRunning, canStop: session.runtime.allows("session.interrupt"),
-                            isBusy: model.isWorking || !model.isOpeningReady, placeholder: requiresTakeover ? String(localized: "请先接管") : String(localized: "询问 Agents"),
-                            isLoadingSettings: model.isLoadingSettings,
-                            settingsError: model.settingsError, sessionChat: model,
-                            onSend: model.send, onStop: model.interrupt, onLoadSettings: model.loadSettings,
-                            onApplySettings: model.applySettings, applyError: { model.settingsError },
-                            onDraftChange: { model.repository.draftDidChange(sessionID: model.session.id) })
-                            .traceChatLayout("composer-dock")
-                    }
-                    .frame(maxWidth: ChatControlMetrics.maximumContentWidth).frame(maxWidth: .infinity)
-                    // Native safe-area layout owns both the visible scroll
-                    // region and the dock's space; do not add a second margin.
-                }
-                .overlay(alignment: .topLeading) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        // Metadata can arrive after history. Transient controls
-                        // float below the header instead of resizing its inset.
-                        if requiresTakeover {
-                            takeoverPill.frame(maxWidth: .infinity, alignment: .center)
-                        }
-                        ChatErrorToasts(store: toasts, isRetrying: session.isLoading, onRetry: { _ in await session.refresh() })
-                        if let success = model.commandSuccess {
-                            CommandSuccessToast(feedback: success) { model.commandSuccess = nil }
-                                .frame(maxWidth: .infinity, alignment: .center)
-                        }
-                    }.padding(.top, 8)
-                }
         }
         .modifier(ChatPageToolbar(title: session.metadata?.title ?? String(localized: "会话"),
             subtitle: [session.metadata?.runtimeName ?? session.metadata?.runtime ?? String(localized: "Agent"),
@@ -148,21 +158,26 @@ struct SessionChatView: View, Equatable {
             guard !Task.isCancelled else { return }
             await model.timeline.run(sessionID: session.id, repository: model.repository)
         }
+        .appOnChange(of: scenePhase != .active || sidebarObscuresDetail, initial: true) { _, suspended in
+            model.timeline.setPresentationSuspended(suspended)
+        }
         .sheet(item: $sheet) { destination in
-            switch destination {
-            case .notices: SessionNoticesSheet(model: model, initialNoticeID: expandedNoticeID)
-            case .details: SessionDetailsSheet(chat: model, service: detailService)
-            case .files:
-                if let meta = session.metadata, let cwd = meta.cwd {
-                    WorkspaceFilesSheet(connectorId: meta.connectorId,
-                        deviceName: deviceName ?? meta.connectorId,
-                        workspace: V2DeviceWorkspace(path: cwd, name: String(localized: "会话文件"), sessionCount: 1, lastActiveAt: nil),
-                        service: fileService, session: session)
-                }
-            case .preview(let reference, let root):
-                if let meta = session.metadata {
-                    WorkspaceFilePreviewSheet(connectorId: meta.connectorId, root: root ?? meta.cwd ?? ".", path: reference.path,
-                        service: fileService, session: session, location: reference)
+            AppObservationTracking {
+                switch destination {
+                case .notices: SessionNoticesSheet(model: model, initialNoticeID: expandedNoticeID)
+                case .details: SessionDetailsSheet(chat: model, service: detailService)
+                case .files:
+                    if let meta = session.metadata, let cwd = meta.cwd {
+                        WorkspaceFilesSheet(connectorId: meta.connectorId,
+                            deviceName: deviceName ?? meta.connectorId,
+                            workspace: V2DeviceWorkspace(path: cwd, name: String(localized: "会话文件"), sessionCount: 1, lastActiveAt: nil),
+                            service: fileService, session: session)
+                    }
+                case .preview(let reference, let root):
+                    if let meta = session.metadata {
+                        WorkspaceFilePreviewSheet(connectorId: meta.connectorId, root: root ?? meta.cwd ?? ".", path: reference.path,
+                            service: fileService, session: session, location: reference)
+                    }
                 }
             }
         }
@@ -175,7 +190,10 @@ struct SessionChatView: View, Equatable {
         })
         .quickLookPreview($previewURL)
         .appOnChange(of: previewURL) { _, url in if url == nil { cleanPreview() } }
-        .onDisappear { if previewURL == nil { cleanPreview() } }
+        .onDisappear {
+            model.timeline.setPresentationSuspended(false)
+            if previewURL == nil { cleanPreview() }
+        }
         .appOnChange(of: session.failure, initial: true) { _, failure in
             toasts.update(source: "session", failure: failure, canRetry: failure?.kind != .authentication)
         }

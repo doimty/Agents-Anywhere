@@ -121,8 +121,10 @@ struct ChatShellView: View {
                 onCopySessionId: copySessionId
             )
         } content: { safeAreaInsets in
-            mainContent
-                .modifier(ChatDetailNavigation(insets: safeAreaInsets))
+            AppObservationTracking {
+                mainContent
+                    .modifier(ChatDetailNavigation(insets: safeAreaInsets))
+            }
         }
     }
 

@@ -80,33 +80,14 @@ jobs:
             --exit-code "$status" --output "$evidence/diagnostics.json" \
             | tee -a "$GITHUB_STEP_SUMMARY"
           exit "$status"
-      - name: Render the forced iOS 15 path in a simulator
-        # Evidence for the older branches on a newer system: `--force-ios15-paths`
-        # makes every availability adapter take its iOS 15 implementation.
-        continue-on-error: true
+      - name: Exercise native and backport drawer and long conversation
+        timeout-minutes: 30
         shell: bash
         run: |
           set -euo pipefail
-          evidence="$RUNNER_TEMP/original-ui"
-          xcodebuild \
-            -project "ios/Agents Anywhere/Agents Anywhere.xcodeproj" \
-            -scheme "Agents Anywhere" \
-            -configuration Debug \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath "$RUNNER_TEMP/SimDerivedData" \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
-            build > "$evidence/simulator-build.log" 2>&1
-          udid="$(xcrun simctl list devices available | grep -m 1 -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')"
-          test -n "$udid"
-          xcrun simctl boot "$udid" || true
-          xcrun simctl bootstatus "$udid" -b || true
-          app="$RUNNER_TEMP/SimDerivedData/Build/Products/Debug-iphonesimulator/Agents Anywhere.app"
-          xcrun simctl install "$udid" "$app"
-          xcrun simctl launch "$udid" com.agentsanywhere.app --force-ios15-paths | tee "$evidence/simulator-launch.txt"
-          sleep 10
-          xcrun simctl io "$udid" screenshot "$evidence/forced-ios15-path.png"
-          xcrun simctl terminate "$udid" com.agentsanywhere.app || true
-          xcrun simctl shutdown "$udid" || true
+          python3 ios/scripts/run_compatibility_ui_tests.py \
+            --evidence "$RUNNER_TEMP/original-ui" \
+            --derived-data "$RUNNER_TEMP/SimDerivedData"
       - name: Upload all compiler evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -117,6 +98,8 @@ jobs:
             ${{ runner.temp }}/original-ui/*.log
             ${{ runner.temp }}/original-ui/*.json
             ${{ runner.temp }}/original-ui/*.png
+            ${{ runner.temp }}/original-ui/screenshots/**
+            ${{ runner.temp }}/original-ui/CompatibilityUI.xcresult/**
           if-no-files-found: warn
           retention-days: 14
       - name: Package the unsigned iOS 15 IPA
@@ -168,3 +151,13 @@ jobs:
           printf '%s\n' "$status" > "$RUNNER_TEMP/original-ui/core-tests-exit.txt"
           tail -n 40 "$RUNNER_TEMP/original-ui/core-tests.log" | tee -a "$GITHUB_STEP_SUMMARY"
           exit "$status"
+      - name: Upload state regression diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-tests-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/original-ui/core-tests.log
+            ${{ runner.temp }}/original-ui/core-tests-exit.txt
+          if-no-files-found: warn
+          retention-days: 14

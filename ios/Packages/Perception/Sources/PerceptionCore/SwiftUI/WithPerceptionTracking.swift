@@ -78,7 +78,7 @@
       case tracked(() -> Content)
 
       init(_ content: @escaping () -> Content) {
-        if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *), !isObservationBeta {
+        if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *), isNativeObservationEnabled {
           #if DEBUG
             self = .instrumented(content)
           #else

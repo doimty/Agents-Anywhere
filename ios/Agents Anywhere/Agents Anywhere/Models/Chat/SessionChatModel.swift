@@ -43,7 +43,7 @@ final class SessionChatModel {
     }
 
     var isRunning: Bool {
-        guard let status = session.runtime.state?.status else { return false }
+        guard session.runtime.isFresh, let status = session.runtime.state?.status else { return false }
         return [.running, .pending, .waiting, .waitingApproval, .stopping, .blocked].contains(status)
     }
     /// The configured instance name, like Web, then its runtime type. Status

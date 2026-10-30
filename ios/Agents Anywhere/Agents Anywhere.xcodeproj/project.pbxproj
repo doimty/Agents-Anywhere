@@ -6,6 +6,13 @@
 	objectVersion = 90;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+        A15000000000000000000009 = {isa = PBXContainerItemProxy; containerPortal = 000000000000000000000000; proxyType = 1; remoteGlobalIDString = 000000000000000100000000; remoteInfo = "Agents Anywhere"; };
+/* End PBXContainerItemProxy section */
+/* Begin PBXTargetDependency section */
+        A15000000000000000000008 = {isa = PBXTargetDependency; target = 000000000000000100000000; targetProxy = A15000000000000000000009; };
+/* End PBXTargetDependency section */
+
 /* Begin PBXBuildFile section */
 		000000000000000130000001 /* Textual in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000300000001 /* Textual */; };
 		000000000000000150000001 /* Perception in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000400000001 /* Perception */; };
@@ -14,6 +21,7 @@
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* Agents Anywhere.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Agents Anywhere.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000121 /* MacCatalyst.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MacCatalyst.entitlements; sourceTree = "<group>"; };
+		A15000000000000000000001 /* CompatibilityUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = CompatibilityUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -22,6 +30,7 @@
 			path = "Agents Anywhere";
 			sourceTree = "<group>";
 		};
+		A15000000000000000000002 /* CompatibilityUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = CompatibilityUITests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +41,7 @@
 				000000000000000150000001 /* Perception in Frameworks */,
 			);
 		};
+		A15000000000000000000006 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -39,6 +49,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000010 /* Agents Anywhere */,
+				A15000000000000000000002 /* CompatibilityUITests */,
 				000000000000000000000121 /* MacCatalyst.entitlements */,
 				000000000000000000000020 /* Products */,
 			);
@@ -48,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000120 /* Agents Anywhere.app */,
+				A15000000000000000000001 /* CompatibilityUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -77,6 +89,18 @@
 			productReference = 000000000000000000000120 /* Agents Anywhere.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A15000000000000000000003 /* CompatibilityUITests */ = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A15000000000000000000004;
+            buildPhases = (A15000000000000000000005, A15000000000000000000006, A15000000000000000000007);
+            buildRules = ();
+            dependencies = (A15000000000000000000008);
+            fileSystemSynchronizedGroups = (A15000000000000000000002);
+            name = CompatibilityUITests;
+            productName = CompatibilityUITests;
+            productReference = A15000000000000000000001;
+            productType = "com.apple.product-type.bundle.ui-testing";
+        };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -90,6 +114,7 @@
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
+                    A15000000000000000000003 = {CreatedOnToolsVersion = 26.0; TestTargetID = 000000000000000100000000; };
 					000000000000000100000000 = {
 						CreatedOnToolsVersion = 26.3;
 					};
@@ -114,6 +139,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				A15000000000000000000003 /* CompatibilityUITests */,
 				000000000000000100000000 /* Agents Anywhere */,
 			);
 		};
@@ -125,6 +151,7 @@
 			files = (
 			);
 		};
+		A15000000000000000000007 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -133,6 +160,7 @@
 			files = (
 			);
 		};
+		A15000000000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -276,7 +304,7 @@
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = MacCatalyst.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				ENABLE_APP_SANDBOX = YES;
 				"ENABLE_OUTGOING_NETWORK_CONNECTIONS[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
@@ -332,7 +360,7 @@
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = MacCatalyst.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				ENABLE_APP_SANDBOX = YES;
 				"ENABLE_OUTGOING_NETWORK_CONNECTIONS[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
@@ -380,6 +408,36 @@
 			};
 			name = Release;
 		};
+        A1500000000000000000000A = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.agentsanywhere.compatibilityuitests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = iphoneos;
+                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_TARGET_NAME = "Agents Anywhere";
+            };
+            name = Debug;
+        };
+        A1500000000000000000000B = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.agentsanywhere.compatibilityuitests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = iphoneos;
+                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_TARGET_NAME = "Agents Anywhere";
+            };
+            name = Release;
+        };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -399,6 +457,7 @@
 			);
 			defaultConfigurationName = Release;
 		};
+		A15000000000000000000004 = {isa = XCConfigurationList; buildConfigurations = (A1500000000000000000000A, A1500000000000000000000B); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */

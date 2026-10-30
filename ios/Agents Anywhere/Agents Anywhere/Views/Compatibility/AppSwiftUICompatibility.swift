@@ -189,12 +189,16 @@ extension View {
         }
     }
 
-    /// Row visibility without `onScrollVisibilityChange` (iOS 18): the row is
-    /// reported visible while it is mounted. Thumbnail loading and prompt state
-    /// therefore keep working on older systems instead of silently staying false.
+    /// Keep the native visibility signal on modern systems. The older timeline
+    /// uses its own UIScrollView viewport; other legacy rows use lifetime here.
+    @ViewBuilder
     func appScrollVisibilityChange(threshold: Double = 0.5,
                                    _ action: @escaping (Bool) -> Void) -> some View {
-        modifier(AppLifetimeVisibility(action: action))
+        if #available(iOS 18.0, *), AppCompatibility.useNativeUI {
+            onScrollVisibilityChange(threshold: threshold) { visible in action(visible) }
+        } else {
+            modifier(AppLifetimeVisibility(action: action))
+        }
     }
 
     /// Same contract for timeline prompt edges.

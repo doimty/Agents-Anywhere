@@ -58,7 +58,7 @@ private struct NativeChatTimeline: View {
     private var viewport: TimelineViewport { viewportSample.value ?? scrolling.viewport }
     private var navigationIsSuspended: Bool { sidebarIsTransitioning || sidebarObscuresDetail }
 
-    var body: some View { nativeTimeline }
+    var body: some View { AppObservationTracking { nativeTimeline } }
 
     @available(iOS 18.0, *)
     private var nativeTimeline: some View {
@@ -319,88 +319,228 @@ private struct NativeChatTimeline: View {
     }
 }
 
-/// Same transcript and navigation intentions, using only iOS 15 scroll APIs.
-/// Geometry remains local to the renderer; reads still go through the session.
-/// iOS 15–17: the same ChatTimelineContent, row cards and explicit history
-/// loads, followed with ScrollViewReader instead of ScrollPosition and phases.
+/// The original transcript with iOS 15 scroll APIs. Network task ownership,
+/// reading intent and layout restoration have independent lifetimes.
 private struct LegacyChatTimeline: View {
     let model: SessionChatModel
     let onAttachment: (V2AttachmentContent) -> Void
     let onFile: (String) -> Void
 
-    @State private var scrollToken = 0
+    @State private var driver = AppTimelineScrollDriver()
+    @State private var scrolling = TimelineScrollState()
+    @State private var historyLoad = TimelineHistoryLoadState()
+    @State private var hasRequestedOlder = false
+    @State private var isVisible = false
+    @State private var animatesReturn = false
     @State private var keyboardVisible = false
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.sidebarDrawerIsTransitioning) private var sidebarIsTransitioning
+    @Environment(\.sidebarDrawerObscuresDetail) private var sidebarObscuresDetail
     @ScaledMetric(relativeTo: .caption) private var returnPillHeight: CGFloat = 32
 
+    private var viewportIsActive: Bool {
+        isVisible && scenePhase == .active && !sidebarIsTransitioning && !sidebarObscuresDetail
+    }
+    private var hasInteractions: Bool {
+        model.session.notices.notices.contains { $0.isVisible && $0.notice.type == "interaction" }
+    }
+
     var body: some View {
-        ZStack(alignment: .bottom) {
-            ScrollViewReader { proxy in
-                ScrollView {
-                    ChatTimelineContent(model: model, onAttachment: onAttachment, onFile: onFile,
-                        latestPullReady: false,
-                        isLoadingLatest: model.session.isLoadingHistory,
-                        olderPullReady: false,
-                        isLoadingOlder: model.session.isLoadingHistory,
-                        keepsOlderPrompt: model.session.hasOlderItems,
-                        historyAnchor: nil,
-                        onLoadOlder: { Task { await model.session.loadOlder() } },
-                        onLoadLatest: { Task { await model.session.loadLatest() } },
-                        onHistoryLayout: { _ in },
-                        onPromptVisibility: { _ in },
-                        onOlderPromptVisibility: { _ in },
-                        onTailVisibility: { _, _ in })
-                        .equatable()
-                }
-                .appScrollDismissesKeyboardInteractively()
-                .appHiddenScrollIndicators()
-                .appAlwaysVerticalBounce()
-                .appScrollEdgeEffect(.soft, for: .top)
-                .allowsHitTesting(model.isOpeningReady)
-                .accessibilityHidden(!model.isOpeningReady)
-                .appOnChange(of: model.timeline.rows.count) { _, _ in
-                    guard model.isOpeningReady, let last = model.timeline.rows.last else { return }
-                    // Each batch appends a row; animating every append replays a
-                    // scroll on top of the streaming layout and stutters on older
-                    // devices. Only user-initiated jumps animate.
-                    if model.isRunning {
-                        proxy.scrollTo(last.id, anchor: .bottom)
-                    } else {
-                        withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(last.id, anchor: .bottom) }
+        AppObservationTracking {
+            ZStack(alignment: .bottom) {
+                ScrollViewReader { proxy in
+                    // ScrollViewReader evaluates its builder after body tracking
+                    // has ended, as does ScrollView's content builder.
+                    AppObservationTracking {
+                        ScrollView {
+                            AppObservationTracking {
+                                ChatTimelineContent(model: model, onAttachment: onAttachment, onFile: onFile,
+                                    latestPullReady: false, isLoadingLatest: historyLoad.isLoadingLatest,
+                                    olderPullReady: false, isLoadingOlder: historyLoad.isLoadingOlder,
+                                    keepsOlderPrompt: hasRequestedOlder, historyAnchor: nil,
+                                    onLoadOlder: loadOlder, onLoadLatest: loadLatest,
+                                    onHistoryLayout: { _ in }, onPromptVisibility: { _ in },
+                                    onOlderPromptVisibility: { _ in }, onTailVisibility: { _, _ in },
+                                    legacyScroll: LegacyTimelineConfiguration(driver: driver, isActive: viewportIsActive,
+                                        onSample: { sample in
+                                            receivedSample(sample)
+                                            updateBottom(using: proxy)
+                                        }, revealAnchor: { id in
+                                            guard viewportIsActive, driver.canNavigate else { return }
+                                            withoutAnimation { proxy.scrollTo(id, anchor: .top) }
+                                        }))
+                                    .equatable()
+                            }
+                        }
+                        .appScrollDismissesKeyboardInteractively()
+                        .appHiddenScrollIndicators()
+                        .appAlwaysVerticalBounce()
+                        .appScrollEdgeEffect(.soft, for: .top)
+                        .allowsHitTesting(model.isOpeningReady)
+                        .accessibilityHidden(!model.isOpeningReady)
+                        .appOnChange(of: viewportIsActive, initial: true) { _, active in
+                            scrolling.setNavigationSuspended(!active)
+                            if !active { driver.suspend() }
+                        }
+                        .appOnChange(of: model.isOpeningReady, initial: true) { _, ready in
+                            if ready { scrolling.open(interactionPresented: hasInteractions) }
+                        }
+                        .appOnChange(of: hasInteractions, initial: true) { _, presented in
+                            scrolling.setInteractionPresented(presented)
+                            if presented { driver.cancelHistoryRestoration() }
+                        }
+                        .appOnChange(of: model.session.pendingMessages.last?.id) { _, id in
+                            if model.isOpeningReady, id != nil && !hasInteractions {
+                                driver.cancelHistoryRestoration()
+                                scrolling.requestBottom()
+                            }
+                        }
+                        .appOnChange(of: model.responseRevision) { _, _ in
+                            if model.isOpeningReady {
+                                driver.cancelHistoryRestoration()
+                                scrolling.requestBottom()
+                            }
+                        }
+                        .appOnChange(of: scrolling.pendingBottomRequest, initial: true) { _, _ in
+                            updateBottom(using: proxy)
+                        }
+                        .task(id: UserSettlement(needed: scrolling.needsUserScrollSettlement,
+                            tail: scrolling.tail, generation: scrolling.navigationGeneration)) {
+                            guard scrolling.needsUserScrollSettlement, viewportIsActive else { return }
+                            do { try await ClientTask.sleep(for: .milliseconds(64)) } catch { return }
+                            guard !Task.isCancelled, viewportIsActive else { return }
+                            scrolling.settleUserScroll()
+                        }
+                        .task(id: historyLoad.request) {
+                            guard let request = historyLoad.request else { return }
+                            // A cancellation or an old completion can clear only
+                            // the task that owns this particular indicator.
+                            defer { historyLoad.finish(request) }
+                            if request.direction == .older { await model.session.loadOlder() }
+                            else { await model.session.loadLatest() }
+                            guard !Task.isCancelled, historyLoad.request == request,
+                                  model.session.isValid,
+                                  scrolling.navigationGeneration == request.navigationGeneration else { return }
+                            if request.direction == .older {
+                                driver.receivedHistoryPage(id: request.id,
+                                    firstRowID: model.session.timeline.first { $0.value.isVisibleInChat }?.id)
+                            } else {
+                                scrolling.requestBottom()
+                            }
+                        }
                     }
                 }
-                .appOnChange(of: model.responseRevision) { _, _ in
-                    guard model.isOpeningReady, let last = model.timeline.rows.last else { return }
-                    proxy.scrollTo(last.id, anchor: .bottom)
-                }
-                .appOnChange(of: scrollToken) { _, _ in
-                    guard let last = model.timeline.rows.last else { return }
-                    withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(last.id, anchor: .bottom) }
+                if !keyboardVisible, scrolling.showsBottomButton() {
+                    Button {
+                        driver.cancelHistoryRestoration()
+                        animatesReturn = true
+                        scrolling.requestBottom()
+                    } label: {
+                        Label(String(localized: "到底部"), appSymbol: "arrow.down")
+                            .font(.caption.weight(.medium)).foregroundStyle(.primary)
+                            .padding(.horizontal, 12).frame(height: returnPillHeight)
+                            .background(.regularMaterial, in: Capsule())
+                            .frame(minHeight: 44).contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain).accessibilityIdentifier("chat.timeline.bottom")
+                    .padding(.bottom, 2)
                 }
             }
-
-            if !keyboardVisible {
-                Button {
-                    scrollToken &+= 1
-                } label: {
-                    Label(String(localized: "到底部"), appSymbol: "arrow.down")
-                        .font(.caption.weight(.medium)).foregroundStyle(.primary)
-                        .padding(.horizontal, 12).frame(height: returnPillHeight)
-                        .background(.regularMaterial, in: Capsule())
-                        .frame(minHeight: 44).contentShape(Rectangle())
-                }
-                .buttonStyle(.plain).accessibilityIdentifier("chat.timeline.bottom")
-                .padding(.bottom, 2)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .traceChatLayout("timeline-viewport")
+            .onAppear { isVisible = true }
+            .onDisappear {
+                isVisible = false
+                scrolling.setNavigationSuspended(true)
+                historyLoad.cancel()
+                driver.suspend()
+                driver.cancelHistoryRestoration()
             }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .traceChatLayout("timeline-viewport")
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-            keyboardVisible = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-            keyboardVisible = false
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+                keyboardVisible = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                keyboardVisible = false
+            }
         }
     }
+
+    private func loadOlder() {
+        guard viewportIsActive, model.session.isValid, model.session.hasOlderItems,
+              !model.session.isLoadingHistory, historyLoad.request == nil else { return }
+        scrolling.browseHistory()
+        hasRequestedOlder = true
+        if let request = historyLoad.begin(.older, generation: scrolling.navigationGeneration) {
+            driver.beginHistoryRestoration(id: request.id)
+        }
+    }
+
+    private func loadLatest() {
+        guard viewportIsActive, model.session.isValid, model.session.hasNewerItems,
+              !model.session.isLoadingHistory, historyLoad.request == nil else { return }
+        driver.cancelHistoryRestoration()
+        scrolling.browseHistory()
+        historyLoad.begin(.latest, generation: scrolling.navigationGeneration)
+    }
+
+    private func updateBottom(using proxy: ScrollViewProxy) {
+        guard scrolling.pendingBottomRequest != nil, viewportIsActive else { driver.cancelBottom(); return }
+        driver.coalesceBottom {
+            guard viewportIsActive, driver.canNavigate, let request = scrolling.pendingBottomRequest,
+                  let command = scrolling.begin(request) else { return }
+            let animate = animatesReturn && !reduceMotion
+            animatesReturn = false
+            appWithAnimation(animate ? .easeOut(duration: 0.2) : nil, completionDelay: 0.22) {
+                // A permanent target follows notices, pending sends and grouped
+                // tools. Streaming changes in the same row can follow it too.
+                proxy.scrollTo("tail", anchor: .bottom)
+            } completion: {
+                guard viewportIsActive, driver.canNavigate else { return }
+                _ = scrolling.complete(command)
+            }
+        }
+    }
+
+    private func receivedSample(_ sample: AppTimelineScrollDriver.Sample) {
+        guard viewportIsActive else { return }
+        var next = scrolling
+        let previous = next.viewport, viewport = sample.viewport
+        // Pure offset samples stay in the driver, outside SwiftUI state. They
+        // cannot reconstruct the content tree or restart an unchanged request.
+        if previous.contentHeight != viewport.contentHeight || previous.visibleHeight != viewport.visibleHeight
+            || previous.topInset != viewport.topInset {
+            next.geometryChanged(viewport)
+        }
+        if next.phase != sample.phase {
+            if next.phaseChanged(sample.phase, viewport: viewport) {
+                animatesReturn = false
+                driver.cancelHistoryRestoration()
+            }
+        }
+        next.tailVisibilityChanged(.near, visible: sample.nearTail)
+        next.tailVisibilityChanged(.end, visible: sample.atTail)
+        if scrolling != next { scrolling = next }
+    }
+
+    private func withoutAnimation(_ action: () -> Void) {
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction, action)
+    }
+
+    private struct UserSettlement: Equatable {
+        let needed: Bool
+        let tail: TimelineTailVisibility
+        let generation: Int
+    }
+}
+
+private struct LegacyTimelineConfiguration {
+    let driver: AppTimelineScrollDriver
+    let isActive: Bool
+    let onSample: (AppTimelineScrollDriver.Sample) -> Void
+    let revealAnchor: (String) -> Void
 }
 
 
@@ -448,59 +588,76 @@ private struct ChatTimelineContent: View, Equatable {
     let onPromptVisibility: (Bool) -> Void
     let onOlderPromptVisibility: (Bool) -> Void
     let onTailVisibility: (TimelineTailVisibility.Region, Bool) -> Void
+    var legacyScroll: LegacyTimelineConfiguration? = nil
 
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.model === rhs.model && lhs.latestPullReady == rhs.latestPullReady && lhs.isLoadingLatest == rhs.isLoadingLatest
             && lhs.olderPullReady == rhs.olderPullReady && lhs.isLoadingOlder == rhs.isLoadingOlder
             && lhs.keepsOlderPrompt == rhs.keepsOlderPrompt && lhs.historyAnchor == rhs.historyAnchor
+            && lhs.legacyScroll?.driver === rhs.legacyScroll?.driver
+            && lhs.legacyScroll?.isActive == rhs.legacyScroll?.isActive
     }
     var body: some View {
-        let visibleNotices = model.session.notices.notices.filter { $0.isVisible && !$0.blocks(model.session.id) }
-        let groups = TimelineGrouping.groups(model.timeline.rows, interactionTargets: Set(model.session.notices.notices
-            .filter(\.isVisible).compactMap(\.timelineTargetID)))
-        // Resolve notice targets once per body instead of once per row.
-        let rowIDs = Set(model.timeline.rows.map(\.id))
-        let noticesByTarget = Dictionary(grouping: visibleNotices.filter { $0.timelineTargetID != nil }) { $0.timelineTargetID! }
-        let actions = TimelineTurnActions.build(groups: groups, suppressLatest: model.isRunning || model.session.hasNewerItems,
-            hasPendingUserMessage: !model.session.hasNewerItems && (!model.timeline.pendingMessages.isEmpty || !model.session.pendingMessages.isEmpty))
-        // Prefer a message whose start cannot move into a prefixed tool group.
-        // For an all-tools page, retain the existing group's trailing edge.
-        let anchorGroup = historyAnchor.flatMap { anchor in groups.first { $0.rows.contains { $0.id == anchor.anchorRowID } } }
-            ?? groups.first { $0.rows.first?.structure.groupKind == .single } ?? groups.last
-        let anchorEdge = historyAnchor?.edge ?? (anchorGroup?.rows.first?.structure.groupKind == .single ? .top : .bottom)
-        // Keep actual row geometry available as Markdown grows and tool groups
-        // change height. Hidden tool details own their deferred work separately.
-        VStack(alignment: .leading, spacing: 20) {
-            if model.session.hasOlderItems || keepsOlderPrompt {
-                Group {
-                    if isLoadingOlder {
-                        HStack(spacing: 8) {
-                            ProgressView().progressViewStyle(.circular).controlSize(.small)
-                            Text(String(localized: "正在加载较早的消息…"))
-                        }.accessibilityElement(children: .combine)
-                    } else if model.session.hasOlderItems {
-                        Button(action: onLoadOlder) {
-                            Text(olderPullReady ? String(localized: "松开加载较早的消息") : String(localized: "加载较早的消息"))
-                                .frame(maxWidth: .infinity, minHeight: 44)
-                                .contentShape(Rectangle())
-                        }.disabled(model.session.isLoadingHistory || isLoadingLatest)
-                    } else {
-                        // Retain the prompt's footprint on the final page; removing
-                        // it after restoring would move the reader by another row.
-                        Text(String(localized: "已到达会话开头")).foregroundStyle(.secondary)
-                    }
-                }
-                .font(.footnote).frame(maxWidth: .infinity, minHeight: 44)
-                .timelineVisibility(threshold: 0.9) { onOlderPromptVisibility($0) }
+        AppObservationTracking {
+            // Snapshot every model read before the stack's deferred builder.
+            // ForEach remains a direct stack child, preserving LazyVStack's
+            // per-group laziness instead of wrapping the entire list as one row.
+            let rows = model.timeline.rows
+            let pendingMessages = model.timeline.pendingMessages
+            let notices = model.session.notices.notices
+            let visibleNotices = notices.filter { $0.isVisible && !$0.blocks(model.session.id) }
+            let groups = TimelineGrouping.groups(rows, interactionTargets: Set(notices.filter(\.isVisible).compactMap(\.timelineTargetID)))
+            let rowIDs = Set(rows.map(\.id))
+            let noticesByTarget = Dictionary(grouping: visibleNotices.filter { $0.timelineTargetID != nil }) { $0.timelineTargetID! }
+            let hasOlder = model.session.hasOlderItems, hasNewer = model.session.hasNewerItems
+            let historyIsBusy = model.session.isLoadingHistory
+            let running = model.isRunning
+            let placeholder = model.sendingPlaceholder
+            let firstRowID = rows.first?.id
+            let actions = TimelineTurnActions.build(groups: groups, suppressLatest: running || hasNewer,
+                hasPendingUserMessage: !hasNewer && (!pendingMessages.isEmpty || !model.session.pendingMessages.isEmpty))
+            let anchorGroup = historyAnchor.flatMap { anchor in groups.first { $0.rows.contains { $0.id == anchor.anchorRowID } } }
+                ?? groups.first { $0.rows.first?.structure.groupKind == .single } ?? groups.last
+            let anchorEdge = historyAnchor?.edge ?? (anchorGroup?.rows.first?.structure.groupKind == .single ? .top : .bottom)
+            let legacyAnchors = legacyScroll == nil ? [] : groups.map {
+                AppTimelineScrollDriver.GroupAnchor(id: $0.id, rowIDs: $0.rows.map(\.id), usesTrailingEdge: $0.kind != .single)
             }
-            ForEach(groups) { group in
-                SessionTimelineGroupView(group: group, chat: model, onAttachment: onAttachment, onFile: onFile,
-                    turnAction: actions[group.id],
-                    inlineNotices: group.rows.flatMap { noticesByTarget[$0.id] ?? [] })
-                    .equatable()
+            ChatTimelineStack(isLazy: legacyScroll != nil) {
+                if hasOlder || keepsOlderPrompt {
+                    Group {
+                        if isLoadingOlder {
+                            HStack(spacing: 8) {
+                                ProgressView().progressViewStyle(.circular).controlSize(.small)
+                                Text(String(localized: "正在加载较早的消息…"))
+                            }.accessibilityElement(children: .combine)
+                                .accessibilityIdentifier("chat.timeline.older.loading")
+                        } else if hasOlder {
+                            Button(action: onLoadOlder) {
+                                Text(olderPullReady ? String(localized: "松开加载较早的消息") : String(localized: "加载较早的消息"))
+                                    .frame(maxWidth: .infinity, minHeight: 44).contentShape(Rectangle())
+                            }
+                            .disabled(historyIsBusy || isLoadingLatest)
+                            .accessibilityIdentifier("chat.timeline.older")
+                        } else {
+                            Text(String(localized: "已到达会话开头")).foregroundStyle(.secondary)
+                        }
+                    }
+                    .font(.footnote).frame(maxWidth: .infinity, minHeight: 44)
+                    .timelineVisibility(threshold: 0.9) { onOlderPromptVisibility($0) }
+                }
+                ForEach(groups) { group in
+                    AppObservationTracking {
+                        SessionTimelineGroupView(group: group, chat: model, onAttachment: onAttachment, onFile: onFile,
+                            turnAction: actions[group.id], inlineNotices: group.rows.flatMap { noticesByTarget[$0.id] ?? [] })
+                            .equatable()
+                    }
                     .id(group.id)
                     .background {
-                        if group.id == anchorGroup?.id, let firstRowID = model.timeline.rows.first?.id {
+                        if let legacyScroll {
+                            AppTimelineAnchorProbe(driver: legacyScroll.driver, groupID: group.id)
+                        } else if group.id == anchorGroup?.id, let firstRowID {
+                            // Only captured value types are read in this deferred
+                            // geometry closure, including on the native path.
                             Color.clear.appOnGeometryChange(for: TimelineHistoryLayout.self) { geometry in
                                 let frame = geometry.frame(in: .named("chat.timeline.content"))
                                 return TimelineHistoryLayout(firstRowID: firstRowID,
@@ -509,54 +666,78 @@ private struct ChatTimelineContent: View, Equatable {
                             } action: { onHistoryLayout($0) }
                         }
                     }
-            }
-            ForEach(visibleNotices.filter { notice in
-                notice.timelineTargetID.map { !rowIDs.contains($0) } ?? true
-            }) { item in SessionInteractionCard(item: item, chat: model) }
-            ForEach(model.timeline.pendingMessages) { pending in
-                PendingMessageRow(pending: pending, chat: model, onAttachment: onAttachment,
-                    onDismiss: { model.session.dismissPendingMessage(id: pending.id) })
-                    .id(pending.id)
-            }
-            if model.session.hasNewerItems {
-                Button(action: onLoadLatest) {
-                    Group {
-                        if isLoadingLatest { ProgressView(String(localized: "正在加载更新的记录…")) }
-                        else { Text(latestPullReady ? String(localized: "松开加载更新的记录") : String(localized: "继续上拉加载更新的记录")) }
-                    }.font(.footnote).frame(maxWidth: .infinity, minHeight: 44)
                 }
-                .disabled(model.session.isLoadingHistory || isLoadingLatest || isLoadingOlder)
-                .timelineVisibility { onPromptVisibility($0) }
-            }
-            // Constant breathing room: status text and card counts cannot
-            // change this spacer or create a spurious follow request.
-            Group {
-                if let text = model.sendingPlaceholder {
-                    HStack(spacing: 8) {
-                        ProgressView().controlSize(.small)
-                        Text(text).font(.footnote).foregroundStyle(.secondary).lineLimit(1)
-                        Spacer(minLength: 0)
+                ForEach(visibleNotices.filter { notice in
+                    notice.timelineTargetID.map { !rowIDs.contains($0) } ?? true
+                }) { item in
+                    AppObservationTracking { SessionInteractionCard(item: item, chat: model) }
+                }
+                ForEach(pendingMessages) { pending in
+                    AppObservationTracking {
+                        PendingMessageRow(pending: pending, chat: model, onAttachment: onAttachment,
+                            onDismiss: { model.session.dismissPendingMessage(id: pending.id) })
                     }
-                } else { Color.clear }
-            }.frame(height: 32)
-                .traceChatLayout("tail-spacer")
-                .overlay(alignment: .bottom) {
-                    Color.clear.frame(height: 96)
-                        .timelineVisibility(threshold: 0.01) { onTailVisibility(.near, $0) }
-                        .allowsHitTesting(false).accessibilityHidden(true)
+                    .id(pending.id)
                 }
-                .overlay(alignment: .bottom) {
-                    Color.clear.frame(height: 2)
-                        .timelineVisibility(threshold: 0.5) { onTailVisibility(.end, $0) }
-                        .allowsHitTesting(false).accessibilityHidden(true)
+                if hasNewer {
+                    Button(action: onLoadLatest) {
+                        Group {
+                            if isLoadingLatest { ProgressView(String(localized: "正在加载更新的记录…")) }
+                            else { Text(latestPullReady ? String(localized: "松开加载更新的记录") : String(localized: "继续上拉加载更新的记录")) }
+                        }.font(.footnote).frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .disabled(historyIsBusy || isLoadingLatest || isLoadingOlder)
+                    .accessibilityIdentifier("chat.timeline.latest")
+                    .timelineVisibility { onPromptVisibility($0) }
                 }
-                .id("tail")
+                Group {
+                    if let text = placeholder {
+                        HStack(spacing: 8) {
+                            ProgressView().controlSize(.small)
+                            Text(text).font(.footnote).foregroundStyle(.secondary).lineLimit(1)
+                            Spacer(minLength: 0)
+                        }
+                    } else { Color.clear }
+                }.frame(height: 32)
+                    .traceChatLayout("tail-spacer")
+                    .background {
+                        if let legacyScroll { AppTimelineAnchorProbe(driver: legacyScroll.driver, isTail: true) }
+                    }
+                    .overlay(alignment: .bottom) {
+                        Color.clear.frame(height: 96)
+                            .timelineVisibility(threshold: 0.01) { onTailVisibility(.near, $0) }
+                            .allowsHitTesting(false).accessibilityHidden(true)
+                    }
+                    .overlay(alignment: .bottom) {
+                        Color.clear.frame(height: 2)
+                            .timelineVisibility(threshold: 0.5) { onTailVisibility(.end, $0) }
+                            .allowsHitTesting(false).accessibilityHidden(true)
+                    }
+                    .id("tail")
+            }
+            .modifier(ChatPageContentColumn(horizontalInset: nil))
+            .coordinateSpace(name: "chat.timeline.content")
+            .background {
+                if let legacyScroll {
+                    AppTimelineScrollProbe(driver: legacyScroll.driver, isActive: legacyScroll.isActive,
+                        firstRowID: firstRowID, groups: legacyAnchors, onSample: legacyScroll.onSample,
+                        revealAnchor: legacyScroll.revealAnchor)
+                }
+            }
+            .traceChatLayout("timeline-content", state: "groups=\(groups.count), footers=\(actions.count), running=\(running)")
         }
-        .modifier(ChatPageContentColumn(horizontalInset: nil))
-        .coordinateSpace(name: "chat.timeline.content")
-        .traceChatLayout("timeline-content", state: "groups=\(groups.count), footers=\(actions.count), running=\(model.isRunning)")
     }
+}
 
+/// Keep the modern layout unchanged. Only iOS 15's adapter opts into deferred
+/// group layout; every card, Markdown body and expanded tool still uses its view.
+private struct ChatTimelineStack<Content: View>: View {
+    let isLazy: Bool
+    @ViewBuilder let content: () -> Content
+    var body: some View {
+        if isLazy { LazyVStack(alignment: .leading, spacing: 20, content: content) }
+        else { VStack(alignment: .leading, spacing: 20, content: content) }
+    }
 }
 
 @available(iOS 18.0, *)

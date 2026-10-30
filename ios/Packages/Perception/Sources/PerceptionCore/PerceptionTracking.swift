@@ -232,7 +232,7 @@ public func withPerceptionTracking<T>(
     let apply = { _PerceptionLocals.$isInPerceptionTracking.withValue(true, operation: apply) }
   #endif
   #if canImport(Observation)
-    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *), !isObservationBeta {
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *), isNativeObservationEnabled {
       return withObservationTracking(apply, onChange: onChange())
     }
   #endif

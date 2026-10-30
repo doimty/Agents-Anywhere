@@ -264,8 +264,12 @@ final class V2SessionRepository {
     func executeCommand(sessionId: V2SessionID, request: RuntimeCommandRequest) async throws -> V2RuntimeCommandExecuteResponse {
         try requireNetwork()
         let entry = entry(for: sessionId)
-        let response = try await interactions.executeCommand(sessionId: sessionId, command: request.command, arguments: request.args, raw: request.raw)
-        try requireCurrent(entry)
+        let response = try await runtimeWrite(entry) {
+            try await interactions.executeCommand(sessionId: sessionId, command: request.command, arguments: request.args, raw: request.raw)
+        }
+        if !response.ok {
+            runtimeWriteFailed(V2RuntimeError(code: response.code, message: response.message ?? String(localized: "The runtime did not accept this operation.")), entry: entry)
+        }
         if let session = response.session { entry.projection?.applyMeta(session); emit(entry) }
         return response
     }
@@ -282,8 +286,9 @@ final class V2SessionRepository {
     func send(sessionId: V2SessionID, content: String, attachmentIDs: [V2AttachmentID] = [], clientMessageID: String) async throws -> V2RuntimeActionResponse {
         try requireNetwork()
         let entry = entry(for: sessionId)
-        let response = try await detail.sendMessage(sessionId: sessionId, content: content, attachmentIds: attachmentIDs, clientMessageId: clientMessageID)
-        try requireCurrent(entry)
+        let response = try await runtimeWrite(entry) {
+            try await detail.sendMessage(sessionId: sessionId, content: content, attachmentIds: attachmentIDs, clientMessageId: clientMessageID)
+        }
         // Timeline echoes reconcile by clientMessageId; sending never refetches the snapshot.
         return response
     }
@@ -291,16 +296,15 @@ final class V2SessionRepository {
     func steer(sessionId: V2SessionID, content: String, attachmentIDs: [V2AttachmentID] = [], clientMessageID: String) async throws -> V2RuntimeActionResponse {
         try requireNetwork()
         let entry = entry(for: sessionId)
-        let response = try await detail.steer(sessionId: sessionId, content: content, attachmentIds: attachmentIDs, clientMessageId: clientMessageID)
-        try requireCurrent(entry)
-        return response
+        return try await runtimeWrite(entry) {
+            try await detail.steer(sessionId: sessionId, content: content, attachmentIds: attachmentIDs, clientMessageId: clientMessageID)
+        }
     }
 
     func interrupt(sessionId: V2SessionID) async throws {
         try requireNetwork()
         let entry = entry(for: sessionId)
-        _ = try await detail.interrupt(sessionId: sessionId)
-        try requireCurrent(entry)
+        _ = try await runtimeWrite(entry) { try await detail.interrupt(sessionId: sessionId) }
     }
 
     func setTakeover(sessionId: V2SessionID, enabled: Bool) async throws {
@@ -320,8 +324,9 @@ final class V2SessionRepository {
     func setSelection(sessionId: V2SessionID, scope: V2RuntimeSelectionScope, selectionId: V2SelectionID?) async throws {
         try requireNetwork()
         let entry = entry(for: sessionId)
-        let state = try await detail.updateSelection(sessionId: sessionId, scope: scope, selectionId: selectionId)
-        try requireCurrent(entry)
+        let state = try await runtimeWrite(entry) {
+            try await detail.updateSelection(sessionId: sessionId, scope: scope, selectionId: selectionId)
+        }
         if let state { entry.projection?.applyState(state) }
         invalidateCatalogs(entry)
         emit(entry)
@@ -330,8 +335,9 @@ final class V2SessionRepository {
     func respond(sessionId: V2SessionID, noticeId: V2NoticeID, actionId: String, input: JSONValue? = nil) async throws {
         try requireNetwork()
         let entry = entry(for: sessionId)
-        _ = try await interactions.respond(sessionId: sessionId, noticeId: noticeId, actionId: actionId, input: input)
-        try requireCurrent(entry)
+        _ = try await runtimeWrite(entry) {
+            try await interactions.respond(sessionId: sessionId, noticeId: noticeId, actionId: actionId, input: input)
+        }
         // Response acceptance is not notice resolution; wait for authoritative live facts.
         entry.projection?.markStale()
         emit(entry)
@@ -346,9 +352,70 @@ final class V2SessionRepository {
     func sync(sessionId: V2SessionID) async throws {
         try requireNetwork()
         let entry = entry(for: sessionId)
-        _ = try await detail.sync(sessionId: sessionId)
-        try requireCurrent(entry)
+        _ = try await runtimeWrite(entry) { try await detail.sync(sessionId: sessionId) }
         try await reconcile(entry)
+    }
+
+    /// A failed Runtime RPC makes its cached live facts untrustworthy, including
+    /// definite remote rejections such as an unavailable instance. Only local
+    /// business validation proves no Runtime request was attempted.
+    private func runtimeWrite<Value>(_ entry: Entry, operation: () async throws -> Value) async throws -> Value {
+        do {
+            let value = try await operation()
+            try requireCurrent(entry)
+            return value
+        } catch {
+            if !(error is V2BusinessError) { runtimeWriteFailed(error, entry: entry) }
+            throw error
+        }
+    }
+
+    private func runtimeWriteFailed(_ error: Error, entry: Entry) {
+        guard isCurrent(entry) else { return }
+        entry.liveVersion += 1
+        entry.projection?.markStale()
+        invalidateCatalogs(entry)
+        entry.error = V2ClientFailure(error)
+        emit(entry, persist: false)
+
+        // Never await a read in the write's error path or replay the write. One
+        // in-flight recovery coalesces failures; there is no retry loop. A later
+        // failure also fences this read, leaving facts stale until a newer read.
+        guard entry.runtimeFailureRecoveryTask == nil, !suspended, network.availability != .offline,
+              entry.projection?.data.session.connectorStatus == .online else { return }
+        let recoveryID = UUID()
+        entry.runtimeFailureRecoveryID = recoveryID
+        let connectionID = entry.connectionID
+        entry.runtimeFailureRecoveryTask = Task { [weak self] in
+            guard let self else { return }
+            defer {
+                if entry.runtimeFailureRecoveryID == recoveryID { entry.runtimeFailureRecoveryTask = nil }
+                self.evict()
+            }
+            guard self.isCurrent(entry), !Task.isCancelled, entry.connectionID == connectionID else { return }
+            let liveVersion = entry.liveVersion
+            entry.liveReadVersion += 1
+            let readVersion = entry.liveReadVersion
+            let barrier = self.now()
+            do {
+                let live = try await self.detail.liveState(sessionId: entry.id)
+                try self.requireCurrent(entry)
+                guard entry.connectionID == connectionID, entry.liveVersion == liveVersion,
+                      entry.liveReadVersion == readVersion else { return }
+                entry.projection?.applyLive(live)
+                entry.projectionBarrier = barrier
+                entry.error = nil
+                self.emit(entry, persist: false)
+            } catch {
+                // Keep the original write failure and stale facts. Connection,
+                // account and task fences also reject cancellation-ignoring reads.
+                guard self.isCurrent(entry), !Task.isCancelled,
+                      entry.connectionID == connectionID, entry.liveVersion == liveVersion,
+                      entry.liveReadVersion == readVersion else { return }
+                entry.projection?.markStale()
+                self.emit(entry, persist: false)
+            }
+        }
     }
 
     func applyMetadata(_ sessions: [V2SessionMeta]) {
@@ -523,6 +590,9 @@ final class V2SessionRepository {
             entry.historyTask = nil
         }
         try entry.projection?.apply(event)
+        // A live push received during a read wins over that read's older facts.
+        // A single push still cannot make an invalidated live aggregate fresh.
+        if readTypes.contains(event.type) { entry.liveVersion += 1 }
         if event.type == "runtime.catalog.updated" || entry.projection?.data.session.connectorStatus != .online {
             invalidateCatalogs(entry)
         }
@@ -556,16 +626,21 @@ final class V2SessionRepository {
             if entry.projection?.data.session.connectorStatus == .online {
                 // Frames received before this read must not overwrite its newer live projection.
                 let barrier = now()
+                let liveVersion = entry.liveVersion
+                entry.liveReadVersion += 1
+                let readVersion = entry.liveReadVersion
                 do {
                     let live = try await detail.liveState(sessionId: entry.id)
                     try requireCurrent(entry)
                     guard entry.connectionID == version else { throw CacheError.invalidated }
+                    guard entry.liveVersion == liveVersion, entry.liveReadVersion == readVersion else { return }
                     entry.projection?.applyLive(live)
                     entry.projectionBarrier = barrier
                     entry.error = nil
                 } catch {
                     try requireCurrent(entry)
                     guard entry.connectionID == version else { throw CacheError.invalidated }
+                    guard entry.liveVersion == liveVersion, entry.liveReadVersion == readVersion else { return }
                     entry.error = V2ClientFailure(error)
                     throw error
                 }
@@ -642,6 +717,10 @@ final class V2SessionRepository {
         entry.connectionTask = nil
         entry.recoveryTask?.cancel()
         entry.recoveryTask = nil
+        entry.liveVersion += 1
+        entry.runtimeFailureRecoveryID = UUID()
+        entry.runtimeFailureRecoveryTask?.cancel()
+        entry.runtimeFailureRecoveryTask = nil
         entry.connection = .inactive
         entry.projection?.markStale()
         invalidateCatalogs(entry)
@@ -660,7 +739,7 @@ final class V2SessionRepository {
     private func evict(protecting protected: Entry? = nil) {
         let candidates = entries.values.filter {
             $0 !== protected && $0.observers.isEmpty && $0.loadTask == nil && $0.catalogTask == nil
-                && $0.historyTask == nil && !$0.model.hasLocalWork
+                && $0.historyTask == nil && $0.runtimeFailureRecoveryTask == nil && !$0.model.hasLocalWork
         }
             .sorted { $0.lastAccess < $1.lastAccess }
         for entry in candidates where entries.count > max(1, policy.maximumSessions) {
@@ -685,6 +764,8 @@ private final class Entry {
     var lastAccess = 0
     var readVersion = 0
     var catalogVersion = 0
+    var liveVersion = 0
+    var liveReadVersion = 0
     var projectionBarrier = Date.distantPast
     var connectionID = UUID()
     var observers: [UUID: AsyncStream<V2SessionObservation>.Continuation] = [:]
@@ -692,6 +773,8 @@ private final class Entry {
     var historyTask: Task<V2SessionData, Error>?
     var catalogTask: Task<V2SessionCatalogs, Error>?
     var recoveryTask: Task<Void, Error>?
+    var runtimeFailureRecoveryID = UUID()
+    var runtimeFailureRecoveryTask: Task<Void, Never>?
     var connectionTask: Task<Void, Never>?
     var catalogs: V2SessionCatalogs?
     var catalogScopes: Set<String>?

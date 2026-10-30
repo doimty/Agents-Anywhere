@@ -47,6 +47,7 @@ struct ChatPageToolbar: ViewModifier {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: onMenu) { SidebarMenuIcon() }
                         .accessibilityLabel(String(localized: "打开侧栏"))
+                        .accessibilityIdentifier("chat.sidebar.open")
                 }
                 ToolbarItem(placement: .principal) {
                     // No subtitle placement below iOS 26: the same title and

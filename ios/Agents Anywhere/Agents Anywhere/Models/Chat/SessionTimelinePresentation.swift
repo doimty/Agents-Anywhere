@@ -82,6 +82,28 @@ final class SessionTimelinePresentation {
     @PerceptionIgnored private var wake: AsyncStream<Void>.Continuation?
     /// When the newest reveal batch ends and the buffer may publish again.
     @PerceptionIgnored private(set) var nextBatchAt: TimeInterval = 0
+    @PerceptionIgnored private var presentationIsSuspended = false
+
+    /// Rendering visibility does not own the repository subscription. Keep only
+    /// the latest staged projection while hidden, then present it in one batch.
+    func setPresentationSuspended(_ suspended: Bool) {
+        guard presentationIsSuspended != suspended else { return }
+        presentationIsSuspended = suspended
+        if suspended {
+            // Stop active reveal clocks too; otherwise an already-published row
+            // could keep asking Markdown to draw behind an opaque drawer.
+            for row in rows where row.isRevealing { row.settle(now: .infinity) }
+        } else {
+            nextBatchAt = 0
+            animatePending = false
+            if pending == nil {
+                let now = ProcessInfo.processInfo.systemUptime
+                for row in rows where row.value.isStreamingText { row.flush(row.value, animate: false, now: now) }
+            }
+            flush()
+            wake?.yield(())
+        }
+    }
 
     func presentOpening(_ items: [V2TimelineItem], pendingMessages: [V2PendingMessage]) {
         stage(items, animate: false)
@@ -102,11 +124,12 @@ final class SessionTimelinePresentation {
         // that tick even if a live event arrives immediately afterwards.
         animatePending = pendingWasStaged ? animatePending && animate : animate
         pendingWasStaged = true
-        wake?.yield(())
+        if !presentationIsSuspended { wake?.yield(()) }
     }
     @PerceptionIgnored private var pendingWasStaged = false
 
     func flush(now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
+        guard !presentationIsSuspended else { return }
         if let pending {
             let previousTail = rows.last?.value.orderSeq ?? Int.min
             var started = false
@@ -152,6 +175,7 @@ final class SessionTimelinePresentation {
             group.addTask { @MainActor [weak self] in
                 for await _ in signal.stream {
                     guard !Task.isCancelled, let self else { return }
+                    guard !self.presentationIsSuspended else { continue }
                     repeat {
                         // Text received during a reveal waits for it to end, then
                         // goes on screen as one batch. Text after a pause shows at
@@ -165,11 +189,13 @@ final class SessionTimelinePresentation {
                         if wait > 0 {
                             do { try await ClientTask.sleep(for: .seconds(wait)) } catch { return }
                         }
+                        guard !Task.isCancelled, !self.presentationIsSuspended else { break }
                         let current = ProcessInfo.processInfo.systemUptime
                         guard self.pending == nil || current >= self.nextBatchAt else { continue }
                         self.flush(now: current)
                         self.synchronizePending(session.pendingMessages)
-                    } while !Task.isCancelled && (self.pending != nil || self.rows.contains { $0.isRevealing })
+                    } while !Task.isCancelled && !self.presentationIsSuspended
+                        && (self.pending != nil || self.rows.contains { $0.isRevealing })
                 }
             }
             await group.waitForAll()
@@ -179,6 +205,7 @@ final class SessionTimelinePresentation {
     private static let minimumIdleWait: TimeInterval = 1.0 / 60
 
     func synchronizePending(_ messages: [V2PendingMessage]) {
+        guard !presentationIsSuspended else { return }
         // Change optimistic membership in the same tick that publishes echoes,
         // avoiding a blank first user row between HTTP/realtime and UI clocks.
         let visible = messages.filter { message in
