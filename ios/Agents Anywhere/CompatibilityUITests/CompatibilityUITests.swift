@@ -84,7 +84,9 @@ final class CompatibilityUITests: XCTestCase {
         conversation.tap()
         let editor = app.textViews["chat.composer.editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 20), "Long transcript/composer did not finish opening")
-        XCTAssertTrue(waitUntil { menu.isHittable })
+        let detailReady = waitUntil { menu.isHittable }
+        if !detailReady { recordFailure(app, name: "after-conversation-navigation") }
+        XCTAssertTrue(detailReady, "Drawer did not release the newly selected conversation")
         screenshot(app, name: backport ? "backport-long-conversation" : "native-long-conversation")
 
         // A long transcript must not block the toolbar/main thread while its

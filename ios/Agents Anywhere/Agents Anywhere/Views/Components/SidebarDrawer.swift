@@ -479,7 +479,7 @@ private struct SidebarDrawerInteractive<
         }
 
         let completion = {
-            guard generation == animationGeneration else { return }
+            guard generation == animationGeneration, isAnimating else { return }
 
             isAnimating = false
             motion.move(to: target)
@@ -508,6 +508,12 @@ private struct SidebarDrawerInteractive<
             } completion: {
                 completion()
             }
+            // Replacing the destination while this card closes can remove an
+            // animated subtree before SwiftUI delivers `.removed`. Visual motion
+            // still uses the same spring; a generation-fenced backstop releases
+            // interaction after it settles instead of leaving both surfaces
+            // permanently inaccessible. A new drag invalidates this completion.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: completion)
         }
     }
 }
