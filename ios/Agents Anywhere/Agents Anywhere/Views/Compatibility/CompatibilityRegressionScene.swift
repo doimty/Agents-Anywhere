@@ -13,6 +13,7 @@ struct CompatibilityRegressionScene: View {
     @StateObject private var storage = StableViewModel { CompatibilityRegressionData() }
     @State private var isSidebarOpen = false
     @State private var showsTranscript = false
+    @State private var transcriptMounted = false
     @State private var ready = false
     private var data: CompatibilityRegressionData { storage.value }
 
@@ -45,7 +46,7 @@ struct CompatibilityRegressionScene: View {
         } content: { insets in
             AppObservationTracking {
                 Group {
-                    if showsTranscript, ready {
+                    if showsTranscript, ready, transcriptMounted {
                         ChatTimelineView(model: data.chat, onAttachment: { _ in }, onFile: { _ in })
                             .safeAreaInset(edge: .bottom, spacing: 0) {
                                 AppObservationTracking {
@@ -67,6 +68,19 @@ struct CompatibilityRegressionScene: View {
                         }
                         .padding(24)
                     }
+                }
+                .sidebarDrawerSettledTask(id: showsTranscript) { settled in
+                    guard showsTranscript, !transcriptMounted, settled else { return }
+                    // Same ownership and delay as SessionChatView: navigation
+                    // settles before mounting the expensive transcript subtree.
+                    do { try await ClientTask.sleep(for: .milliseconds(120)) } catch { return }
+                    guard !Task.isCancelled else { return }
+                    var transaction = Transaction(animation: nil)
+                    transaction.disablesAnimations = true
+                    withTransaction(transaction) { transcriptMounted = true }
+                }
+                .appOnChange(of: showsTranscript) { _, shows in
+                    if !shows { transcriptMounted = false }
                 }
                 .modifier(ChatPageToolbar(title: showsTranscript ? "Long conversation" : "New session",
                     onMenu: { isSidebarOpen.toggle() }))

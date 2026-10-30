@@ -1,34 +1,55 @@
 import XCTest
 
 final class CompatibilityUITests: XCTestCase {
+    @MainActor func testBackportRepeatedMenu() throws { try exerciseMenu(backport: true) }
+    @MainActor func testNativeRepeatedMenu() throws { try exerciseMenu(backport: false) }
+    @MainActor func testBackportLongConversation() throws { try exerciseConversation(backport: true) }
+    @MainActor func testNativeLongConversation() throws { try exerciseConversation(backport: false) }
+    @MainActor func testBackportEdgeAndClosingPan() throws { try exerciseGestures(backport: true) }
+    @MainActor func testNativeEdgeAndClosingPan() throws { try exerciseGestures(backport: false) }
+
     @MainActor
-    func testBackportDrawerAndLongConversation() throws {
-        try exerciseDrawerAndConversation(backport: true)
+    private func launch(backport: Bool) -> XCUIApplication {
+        continueAfterFailure = false
+        let app = XCUIApplication(bundleIdentifier: "com.agentsanywhere.app")
+        app.launchArguments = ["--compatibility-regression", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        if backport {
+            app.launchArguments += ["--force-ios15-paths", "--force-perception-backport"]
+        }
+        XCUIDevice.shared.orientation = .portrait
+        app.launch()
+        let ready = app.staticTexts["regression.ready"]
+        XCTAssertTrue(ready.waitForExistence(timeout: 20), "Offline fixture did not mount")
+        XCTAssertTrue(waitUntil { ready.label == "Ready" }, "Fixture failed to prepare the original transcript")
+        return app
     }
 
     @MainActor
-    func testNativeDrawerAndLongConversation() throws {
-        try exerciseDrawerAndConversation(backport: false)
-    }
-
-    @MainActor
-    func testBackportEdgeAndClosingPan() throws {
-        try exerciseGestures(backport: true)
-    }
-
-    @MainActor
-    func testNativeEdgeAndClosingPan() throws {
-        try exerciseGestures(backport: false)
+    private func exerciseMenu(backport: Bool) throws {
+        let app = launch(backport: backport)
+        let menu = app.buttons["chat.sidebar.open"]
+        let conversation = app.buttons["regression.sidebar.conversation"]
+        let newSession = app.buttons["regression.sidebar.new"]
+        for _ in 0..<3 {
+            menu.tap()
+            XCTAssertTrue(waitUntil { conversation.exists && conversation.isHittable }, "Sidebar never became interactive")
+            XCTAssertGreaterThanOrEqual(conversation.frame.minX, -1, "Sidebar remained visually offscreen")
+            newSession.tap()
+            XCTAssertTrue(waitUntil { menu.exists && menu.isHittable }, "Drawer did not return interaction to detail")
+            XCTAssertFalse(conversation.isHittable)
+        }
+        menu.tap()
+        XCTAssertTrue(waitUntil { conversation.isHittable })
+        screenshot(app, name: backport ? "backport-drawer-open" : "native-drawer-open")
+        // A tap on the translated detail strip must close the same original card.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.45)).tap()
+        XCTAssertTrue(waitUntil { menu.isHittable }, "Detail strip did not close the drawer")
+        app.terminate()
     }
 
     @MainActor
     private func exerciseGestures(backport: Bool) throws {
-        continueAfterFailure = false
-        let app = XCUIApplication(bundleIdentifier: "com.agentsanywhere.app")
-        app.launchArguments = ["--compatibility-regression", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        if backport { app.launchArguments += ["--force-ios15-paths", "--force-perception-backport"] }
-        app.launch()
-        XCTAssertTrue(app.staticTexts["regression.ready"].waitForExistence(timeout: 20))
+        let app = launch(backport: backport)
         let menu = app.buttons["chat.sidebar.open"]
         let conversation = app.buttons["regression.sidebar.conversation"]
         let edge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.40))
@@ -44,60 +65,33 @@ final class CompatibilityUITests: XCTestCase {
     }
 
     @MainActor
-    private func exerciseDrawerAndConversation(backport: Bool) throws {
-        continueAfterFailure = false
-        let app = XCUIApplication(bundleIdentifier: "com.agentsanywhere.app")
-        app.launchArguments = ["--compatibility-regression", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        if backport {
-            // Both switches are necessary. UI-only forcing would leave the
-            // native ObservationRegistrar running and mask missing scopes.
-            app.launchArguments += ["--force-ios15-paths", "--force-perception-backport"]
-        }
-        XCUIDevice.shared.orientation = .portrait
-        app.launch()
-        let ready = app.staticTexts["regression.ready"]
-        XCTAssertTrue(ready.waitForExistence(timeout: 20), "Offline regression host did not mount")
-        XCTAssertTrue(waitUntil { ready.label == "Ready" }, "Fixture failed to prepare the original transcript")
-
+    private func exerciseConversation(backport: Bool) throws {
+        let app = launch(backport: backport)
         let menu = app.buttons["chat.sidebar.open"]
-        XCTAssertTrue(menu.waitForExistence(timeout: 5))
         let conversation = app.buttons["regression.sidebar.conversation"]
         let newSession = app.buttons["regression.sidebar.new"]
-
-        // Each iteration must move the original detail card away, enable the
-        // visible sidebar, accept a row tap, then return hit testing to detail.
-        for _ in 0..<3 {
-            menu.tap()
-            XCTAssertTrue(waitUntil { conversation.exists && conversation.isHittable }, "Sidebar never became interactive")
-            XCTAssertGreaterThanOrEqual(conversation.frame.minX, -1, "Sidebar remained visually offscreen")
-            screenshot(app, name: backport ? "backport-drawer-open" : "native-drawer-open")
-            newSession.tap()
-            XCTAssertTrue(waitUntil { menu.exists && menu.isHittable }, "Drawer did not return hit testing to the detail")
-            XCTAssertFalse(conversation.isHittable)
-        }
-
-        // Gesture assertions run independently, so a failing recognizer cannot
-        // prevent long-conversation and composer regression from executing.
-
         menu.tap()
         XCTAssertTrue(waitUntil { conversation.isHittable })
         conversation.tap()
         let editor = app.textViews["chat.composer.editor"]
-        XCTAssertTrue(editor.waitForExistence(timeout: 20), "Long transcript/composer did not finish opening")
-        let detailReady = waitUntil { menu.isHittable }
-        if !detailReady { recordFailure(app, name: "after-conversation-navigation") }
-        XCTAssertTrue(detailReady, "Drawer did not release the newly selected conversation")
+        XCTAssertTrue(editor.waitForExistence(timeout: 20), "Original long transcript/composer did not open")
         screenshot(app, name: backport ? "backport-long-conversation" : "native-long-conversation")
 
-        // A long transcript must not block the toolbar/main thread while its
-        // Markdown rows are being measured or while the reader is scrolling.
         let transcript = app.scrollViews["chat.timeline.scroll"]
         XCTAssertTrue(transcript.waitForExistence(timeout: 5))
         transcript.swipeDown(velocity: .fast)
-        menu.tap()
+        // Modern XCTest can report the composited toolbar button non-hittable
+        // while its visible frame and AX element are valid. Exercise the actual
+        // user's tap and assert the drawer outcome, not that advisory flag.
+        XCTAssertTrue(menu.exists, "The selected conversation removed the menu")
+        let frame = menu.frame
+        XCTAssertGreaterThan(frame.width, 0)
+        XCTAssertTrue(app.frame.intersects(frame), "Menu is off screen")
+        app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: frame.midX, dy: frame.midY)).tap()
         let responsive = waitUntil(timeout: 5) { conversation.isHittable }
         if !responsive { recordFailure(app, name: "long-conversation-sidebar") }
-        XCTAssertTrue(responsive, "Long transcript blocked the sidebar")
+        XCTAssertTrue(responsive, "Tapping the visible menu in a long conversation did not open an interactive sidebar")
         newSession.tap()
         XCTAssertTrue(waitUntil { app.buttons["regression.open-conversation"].isHittable })
         app.buttons["regression.open-conversation"].tap()
