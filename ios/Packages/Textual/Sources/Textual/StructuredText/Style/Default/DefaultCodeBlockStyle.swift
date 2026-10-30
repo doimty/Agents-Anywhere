@@ -34,7 +34,7 @@ extension StructuredText.CodeBlockStyle where Self == StructuredText.DefaultCode
     .init()
   }
 }
-#if DEBUG
+#if DEBUG && !os(tvOS) && !os(watchOS)
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)

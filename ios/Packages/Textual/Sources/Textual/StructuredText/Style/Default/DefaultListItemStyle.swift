@@ -36,7 +36,7 @@ extension StructuredText.ListItemStyle where Self == StructuredText.DefaultListI
     .init(markerSpacing: markerSpacing)
   }
 }
-#if DEBUG
+#if DEBUG && !os(tvOS) && !os(watchOS)
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)

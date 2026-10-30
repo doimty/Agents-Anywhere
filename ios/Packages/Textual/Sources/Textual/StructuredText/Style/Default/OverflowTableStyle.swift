@@ -55,7 +55,7 @@ extension StructuredText.TableStyle where Self == StructuredText.OverflowTableSt
     .init(relativeWidth: relativeWidth)
   }
 }
-#if DEBUG
+#if DEBUG && !os(tvOS) && !os(watchOS)
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)

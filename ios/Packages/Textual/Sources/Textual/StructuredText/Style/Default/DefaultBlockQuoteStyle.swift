@@ -38,7 +38,7 @@ extension StructuredText.BlockQuoteStyle where Self == StructuredText.DefaultBlo
     .init(backgroundColor: .asideBackground, borderColor: .asideBorder)
   }
 }
-#if DEBUG
+#if DEBUG && !os(tvOS) && !os(watchOS)
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)

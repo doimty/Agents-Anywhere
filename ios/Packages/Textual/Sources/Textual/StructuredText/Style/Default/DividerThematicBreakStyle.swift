@@ -22,7 +22,7 @@ extension StructuredText.ThematicBreakStyle where Self == StructuredText.Divider
     .init()
   }
 }
-#if DEBUG
+#if DEBUG && !os(tvOS) && !os(watchOS)
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)

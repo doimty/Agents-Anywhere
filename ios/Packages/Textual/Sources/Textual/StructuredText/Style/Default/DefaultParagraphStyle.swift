@@ -20,7 +20,7 @@ extension StructuredText.ParagraphStyle where Self == StructuredText.DefaultPara
     .init()
   }
 }
-#if DEBUG
+#if DEBUG && !os(tvOS) && !os(watchOS)
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)

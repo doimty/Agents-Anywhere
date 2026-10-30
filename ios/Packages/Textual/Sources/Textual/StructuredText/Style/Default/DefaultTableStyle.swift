@@ -33,7 +33,7 @@ extension StructuredText.TableStyle where Self == StructuredText.DefaultTableSty
     .init()
   }
 }
-#if DEBUG
+#if DEBUG && !os(tvOS) && !os(watchOS)
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)

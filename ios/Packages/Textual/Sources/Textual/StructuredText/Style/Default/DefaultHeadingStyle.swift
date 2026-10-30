@@ -26,7 +26,7 @@ extension StructuredText.HeadingStyle where Self == StructuredText.DefaultHeadin
     .init()
   }
 }
-#if DEBUG
+#if DEBUG && !os(tvOS) && !os(watchOS)
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)

@@ -152,7 +152,7 @@ extension InlineText {
 }
 
 // MARK: - Previews
-#if DEBUG
+#if DEBUG && !os(tvOS) && !os(watchOS)
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
