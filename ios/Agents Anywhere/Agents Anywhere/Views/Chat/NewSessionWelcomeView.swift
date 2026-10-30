@@ -60,7 +60,7 @@ struct NewSessionWelcomeView: View {
                 streamingText(detail, underlined: detail.range(of: agent),
                               revealedPhrases: detailPhraseCount, ledger: detailLedger)
                     .font(.body).foregroundStyle(.secondary)
-                    .lineLimit(2...)
+                    .appLineLimit(2...)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .buttonStyle(.plain)

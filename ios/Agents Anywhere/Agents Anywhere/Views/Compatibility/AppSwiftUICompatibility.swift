@@ -191,6 +191,13 @@ extension View {
 
     /// View `tracking` is iOS 16; older systems keep the same text without the
     /// extra letter spacing instead of dropping the label.
+    /// `.menuStyle(.button)` is iOS 16; the default menu style stays on iOS 15.
+    @ViewBuilder
+    func appButtonMenuStyle() -> some View {
+        if #available(iOS 16.0, *), AppCompatibility.useNativeUI { menuStyle(.button) }
+        else { self }
+    }
+
     @ViewBuilder
     func appTracking(_ value: CGFloat) -> some View {
         if #available(iOS 16.0, *), AppCompatibility.useNativeUI { tracking(value) }

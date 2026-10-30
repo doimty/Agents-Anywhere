@@ -132,8 +132,12 @@ struct SessionInteractionActions: View {
                 }
             }
         } else {
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 8) { buttons(item.notice.actions, intrinsic: true) }.fixedSize(horizontal: true, vertical: false)
+            if #available(iOS 16.0, *), AppCompatibility.useNativeUI {
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 8) { buttons(item.notice.actions, intrinsic: true) }.fixedSize(horizontal: true, vertical: false)
+                    VStack(spacing: 8) { buttons(item.notice.actions, intrinsic: false) }
+                }
+            } else {
                 VStack(spacing: 8) { buttons(item.notice.actions, intrinsic: false) }
             }
         }

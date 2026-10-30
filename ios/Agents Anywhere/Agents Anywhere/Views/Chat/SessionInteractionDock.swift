@@ -52,7 +52,7 @@ struct SessionInteractionDock: View {
             }.scrollTargetLayout()
         }
         .contentMargins(.vertical, peek, for: .scrollContent)
-        .scrollTargetBehavior(.viewAligned(limitBehavior: .alwaysByOne))
+        .scrollTargetBehavior(.viewAligned)
         .scrollPosition(id: $selectedID, anchor: .center)
         .scrollIndicators(.hidden).scrollBounceBehavior(.basedOnSize)
     }

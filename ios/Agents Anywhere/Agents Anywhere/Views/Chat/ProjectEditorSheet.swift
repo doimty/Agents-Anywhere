@@ -53,7 +53,10 @@ struct ProjectEditorSheet: View {
                             Text(draft.path).textSelection(.enabled)
                                 .font(.system(.body, design: .monospaced))
                         } else {
-                            TextField(String(localized: "设备上的完整路径"), text: Binding(get: { draft.path }, set: updatePath), axis: .vertical)
+                            AppMultilineTextField(String(localized: "设备上的完整路径"),
+                            text: Binding(get: { draft.path }, set: updatePath), lineLimit: 1...4)
+                                .font(.system(.body, design: .monospaced))
+                                .textInputAutocapitalization(.never).autocorrectionDisabled().disabled(device == nil)
                                 .font(.system(.body, design: .monospaced))
                                 .textInputAutocapitalization(.never).autocorrectionDisabled().disabled(device == nil)
                         }

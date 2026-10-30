@@ -213,7 +213,7 @@ struct SessionChatView: View, Equatable {
                 .font(.footnote.weight(.medium))
                 .foregroundStyle(AppTheme.primaryText(colorScheme))
                 .padding(.horizontal, 14).frame(minHeight: takeoverPillHeight)
-                .glassEffect(.regular.interactive(), in: .capsule)
+                .appGlassEffect(.interactive, in: Capsule())
                 .frame(minHeight: 44).contentShape(Rectangle())
         }
         .buttonStyle(.plain).disabled(!model.canChangeTakeover)
@@ -271,7 +271,7 @@ private struct CommandSuccessToast: View {
                 }
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
-            .glassEffect(.regular, in: .rect(cornerRadius: 20))
+            .appGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)
         .padding(.horizontal, ChatControlMetrics.collapsedHorizontalInset)

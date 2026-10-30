@@ -183,7 +183,7 @@ struct ChatSidebarListMenu<Filters: View>: View {
         } label: {
             Label(String(localized: "列表选项"), appSymbol: "ellipsis")
         }
-        .menuStyle(.button)
+        .appButtonMenuStyle()
         .menuIndicator(.hidden)
         .modifier(ChatSidebarIconControlStyle())
     }
