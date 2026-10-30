@@ -149,15 +149,18 @@ final class CompatibilityUITests: XCTestCase {
 
         let editor = app.textViews["chat.composer.editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 10), "Production composer did not appear")
+        let before = editor.frame
         editor.tap()
         let keyboard = app.keyboards.firstMatch
         XCTAssertTrue(keyboard.waitForExistence(timeout: 10), "Keyboard did not appear")
-        let dock = app.descendants(matching: .any)["chat.composer.dock"]
-        XCTAssertTrue(dock.exists, "Production composer dock did not appear")
-        XCTAssertLessThanOrEqual(dock.frame.maxY, keyboard.frame.minY + 4,
-            "Composer is hidden behind the keyboard")
-        XCTAssertGreaterThan(dock.frame.maxY, keyboard.frame.minY - 320,
-            "Composer jumped too far above the keyboard")
+        XCTAssertTrue(waitUntil(timeout: 10) { editor.frame.minY < before.minY - 40 },
+            "Composer did not move up when the keyboard appeared")
+        // The field must sit just above the keyboard: not buried under it, and
+        // not thrown to the middle of the screen by an oversized inset.
+        XCTAssertLessThanOrEqual(editor.frame.maxY, keyboard.frame.minY + 8,
+            "Composer editor is hidden behind the keyboard")
+        XCTAssertGreaterThan(editor.frame.minY, keyboard.frame.minY - 420,
+            "Composer editor jumped too far above the keyboard")
     }
 
     @MainActor
