@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
@@ -5,7 +6,7 @@ import UniformTypeIdentifiers
 /// Both New Session and existing sessions use the same persistent editor and
 /// picker hosts. Only the commit action and capability facts differ.
 struct ChatComposerDock: View {
-    @Bindable var draft: ComposerDraft
+    @Perception.Bindable var draft: ComposerDraft
     let settings: ConversationSettings
     let maximumEditorHeight: CGFloat
     let controls: ChatControlMetrics

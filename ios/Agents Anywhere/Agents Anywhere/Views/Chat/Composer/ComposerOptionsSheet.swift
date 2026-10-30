@@ -1,7 +1,8 @@
+import Perception
 import SwiftUI
 
 struct ComposerOptionsSheet: View {
-    @Bindable var settings: ConversationSettings
+    @Perception.Bindable var settings: ConversationSettings
     let onPhotos: () -> Void
     let onFiles: () -> Void
     var canAttach = true

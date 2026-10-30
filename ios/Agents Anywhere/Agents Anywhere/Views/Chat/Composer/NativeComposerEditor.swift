@@ -1,12 +1,13 @@
+import Perception
 import SwiftUI
 import UIKit
 
 /// Keep this controller and the underlying UITextView alive while the glass
 /// container changes layout. Never derive submission from SwiftUI .onSubmit.
-@MainActor @Observable
+@MainActor @Perceptible
 final class ComposerEditorController {
-    @ObservationIgnored weak var textView: ComposerTextView?
-    @ObservationIgnored weak var draft: ComposerDraft?
+    @PerceptionIgnored weak var textView: ComposerTextView?
+    @PerceptionIgnored weak var draft: ComposerDraft?
 
     func finishEditing() {
         guard let textView else { return }
@@ -53,7 +54,7 @@ final class ComposerTextView: UITextView {
 }
 
 struct NativeComposerEditor: UIViewRepresentable {
-    @Bindable var draft: ComposerDraft
+    @Perception.Bindable var draft: ComposerDraft
     let controller: ComposerEditorController
     let maximumHeight: CGFloat
     let onCommandSend: () -> Void

@@ -1,7 +1,8 @@
+import Perception
 import SwiftUI
 
 struct ChatComposer: View {
-    @Bindable var draft: ComposerDraft
+    @Perception.Bindable var draft: ComposerDraft
     let editor: ComposerEditorController
     let isStreaming: Bool
     var canSend = true

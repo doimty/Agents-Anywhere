@@ -16,7 +16,7 @@ nonisolated struct ChatGitBadgeAttachment: Attachment {
         -FontScaled(CGFloat(0.22)).resolve(in: environment)
     }
 
-    func sizeThatFits(_ proposal: ProposedViewSize, in environment: TextEnvironmentValues) -> CGSize {
+    func sizeThatFits(_ proposal: TextualSizeProposal, in environment: TextEnvironmentValues) -> CGSize {
         let size = FontScaled(CGFloat(0.8)).resolve(in: environment)
         let font = CTFontCreateUIFontForLanguage(.system, size, nil) ?? CTFontCreateWithName("Helvetica" as CFString, size, nil)
         let text = NSAttributedString(string: description, attributes: [NSAttributedString.Key(kCTFontAttributeName as String): font])

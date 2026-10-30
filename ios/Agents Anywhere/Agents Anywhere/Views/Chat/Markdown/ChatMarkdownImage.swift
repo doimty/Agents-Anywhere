@@ -19,7 +19,7 @@ nonisolated struct ChatMarkdownImageAttachment: Attachment {
             .textual.textSelectionExcluded()
     }
 
-    func sizeThatFits(_ proposal: ProposedViewSize, in environment: TextEnvironmentValues) -> CGSize {
+    func sizeThatFits(_ proposal: TextualSizeProposal, in environment: TextEnvironmentValues) -> CGSize {
         let width = min(420, proposal.width ?? 320)
         return CGSize(width: width, height: SessionFileReference.path(from: url) == nil ? width * 0.75 : 68)
     }

@@ -1,3 +1,4 @@
+import Perception
 import SwiftUI
 
 /// Slash-command suggestions above the composer. It reads the draft itself so
@@ -5,7 +6,7 @@ import SwiftUI
 /// it lists every command regardless of the draft.
 struct CommandSuggestionPanel: View {
     let chat: SessionChatModel
-    @Bindable var draft: ComposerDraft
+    @Perception.Bindable var draft: ComposerDraft
     @Binding var forced: Bool
     @State private var dismissedFor: String?
 
