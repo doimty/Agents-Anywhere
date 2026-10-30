@@ -45,7 +45,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ios/.build
-          key: original-ios15-xcode266-${{ hashFiles('ios/Package.swift', 'ios/Packages/**/Package.swift') }}
+          key: original-ios15-xcode266-${{ github.sha }}
       - name: Type-check portable SwiftUI adapters at iOS 15
         shell: bash
         run: |

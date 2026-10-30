@@ -114,7 +114,8 @@ extension Math {
     typographicBounds(for: latex, fittingWidth: proposal.width, font: font, style: style)
   }
 
-  @_spi(Textual)
+  // Public (not SPI): the vendored Textual target calls this from another
+  // module and must see it with the package's iOS 15 deployment floor.
   public static nonisolated func typographicBounds(
     for latex: String,
     fittingWidth width: CGFloat?,
