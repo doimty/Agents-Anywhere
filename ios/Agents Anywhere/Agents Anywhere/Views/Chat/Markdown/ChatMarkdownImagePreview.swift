@@ -10,7 +10,7 @@ struct ChatMarkdownImagePreview: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
+        AppNavigationStack {
             Group {
                 if let image {
                     ZoomableMarkdownImage(image: image).id(ObjectIdentifier(image))

@@ -44,7 +44,7 @@ struct ChatMarkdownCodeBlock<Code: View>: View {
                     .fixedSize(horizontal: true, vertical: false)
                     .padding(12)
             }
-            .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
+            .appScrollBounceBasedOnSize(axes: .horizontal)
             .fixedSize(horizontal: false, vertical: true)
         }
         .background(Color(uiColor: .secondarySystemBackground))

@@ -41,7 +41,7 @@ struct CommandSuggestionPanel: View {
                 content
             }
             .padding(.bottom, 8)
-            .glassEffect(.regular, in: .rect(cornerRadius: 22))
+            .appGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
             .padding(.horizontal, draft.isExpanded ? ChatControlMetrics.expandedHorizontalInset : ChatControlMetrics.collapsedHorizontalInset)
             .transition(.opacity)
             .task(id: chat.canUseCommands) { await chat.loadCommands() }
@@ -70,7 +70,7 @@ struct CommandSuggestionPanel: View {
                     ForEach(suggestions) { command in row(command) }
                 }
             }
-            .scrollBounceBehavior(.basedOnSize)
+            .appScrollBounceBasedOnSize(axes: .vertical)
             .frame(maxHeight: 240)
             .fixedSize(horizontal: false, vertical: true)
         }

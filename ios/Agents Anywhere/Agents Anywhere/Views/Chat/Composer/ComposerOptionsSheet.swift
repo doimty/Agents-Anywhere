@@ -24,7 +24,7 @@ struct ComposerOptionsSheet: View {
     private enum Page: Hashable { case models, permissions }
 
     var body: some View {
-        NavigationStack(path: $path) {
+        AppRouteNavigationStack(path: $path) {
             ScrollView {
                 VStack(spacing: 22) {
                     HStack(spacing: 12) {
@@ -42,7 +42,7 @@ struct ComposerOptionsSheet: View {
                         Button(String(localized: "重新加载")) { Task { await onReload() } }
                     }
                     VStack(spacing: 0) {
-                        NavigationLink(value: Page.models) {
+                        AppRouteNavigationLink(value: Page.models, path: $path) {
                             optionRow(
                                 String(localized: "dashboard.new.modelAndReasoning"),
                                 icon: "sparkles",
@@ -51,7 +51,7 @@ struct ComposerOptionsSheet: View {
                         }
                         .disabled(isLoading || !canSelectModel || settings.catalog.models.isEmpty)
                         Divider().padding(.leading, 52)
-                        NavigationLink(value: Page.permissions) {
+                        AppRouteNavigationLink(value: Page.permissions, path: $path) {
                             optionRow(
                                 String(localized: "权限"),
                                 icon: "checkmark.shield",
