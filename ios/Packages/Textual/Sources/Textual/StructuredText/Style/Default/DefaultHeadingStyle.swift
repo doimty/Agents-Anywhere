@@ -15,7 +15,7 @@ extension StructuredText {
         .textual.fontScale(fontScale)
         .textual.lineSpacing(.fontScaled(lineSpacing))
         .textual.blockSpacing(.fontScaled(top: 1.6, bottom: 0.8))
-        .fontWeight(.semibold)
+        .textual.textProperties(AnyTextProperty(.fontWeight(.semibold)))
     }
   }
 }
