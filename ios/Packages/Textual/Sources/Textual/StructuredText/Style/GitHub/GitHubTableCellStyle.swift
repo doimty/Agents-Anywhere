@@ -8,7 +8,7 @@ extension StructuredText {
 
     public func makeBody(configuration: Configuration) -> some View {
       configuration.label
-        .fontWeight(configuration.row == 0 ? .semibold : .regular)
+        .textual.textProperties(AnyTextProperty(.fontWeight(configuration.row == 0 ? .semibold : .regular)))
         .padding(.vertical, 6)
         .padding(.horizontal, 13)
         .textual.lineSpacing(.fontScaled(0.25))

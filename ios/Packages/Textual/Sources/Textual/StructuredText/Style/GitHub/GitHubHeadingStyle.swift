@@ -16,7 +16,7 @@ extension StructuredText {
             .textual.fontScale(fontScale)
             .textual.lineSpacing(.fontScaled(0.125))
             .textual.blockSpacing(.init(top: 24, bottom: 16))
-            .fontWeight(.semibold)
+            .textual.textProperties(AnyTextProperty(.fontWeight(.semibold)))
           if headingLevel <= 2 {
             Divider()
               .overlay(DynamicColor.gitHubDivider.bestMatch(for: colors) ?? .clear)
