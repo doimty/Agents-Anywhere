@@ -80,6 +80,22 @@ jobs:
             --exit-code "$status" --output "$evidence/diagnostics.json" \
             | tee -a "$GITHUB_STEP_SUMMARY"
           exit "$status"
+      - name: Test original state and scheduling semantics
+        # Full logs exposed obsolete test bindings and mutating macro inputs.
+        # These are corrected; compilation and runtime cases now gate packaging.
+        timeout-minutes: 15
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          xcrun swift test --package-path ios \
+            > "$RUNNER_TEMP/original-ui/core-tests.log" 2>&1
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$RUNNER_TEMP/original-ui/core-tests-exit.txt"
+          tail -n 40 "$RUNNER_TEMP/original-ui/core-tests.log" | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "$status"
       - name: Exercise native and backport drawer and long conversation
         timeout-minutes: 30
         shell: bash
@@ -99,7 +115,6 @@ jobs:
             ${{ runner.temp }}/original-ui/*.json
             ${{ runner.temp }}/original-ui/*.png
             ${{ runner.temp }}/original-ui/screenshots/**
-            ${{ runner.temp }}/original-ui/CompatibilityUI.xcresult/**
           if-no-files-found: warn
           retention-days: 14
       - name: Package the unsigned iOS 15 IPA
@@ -123,6 +138,9 @@ jobs:
             shasum -a 256 AgentsAnywhere-ios15-unsigned.ipa > SHA256SUMS
             ls -lh AgentsAnywhere-ios15-unsigned.ipa
           )
+          python3 ios/scripts/verify_ios15_ipa.py \
+            "$RUNNER_TEMP/original-ui/ipa/AgentsAnywhere-ios15-unsigned.ipa" \
+            --expected-build 15 --report "$RUNNER_TEMP/original-ui/ipa-verification.json"
       - name: Upload the IPA
         if: success()
         uses: actions/upload-artifact@v4
@@ -133,24 +151,9 @@ jobs:
             ${{ runner.temp }}/original-ui/ipa/SHA256SUMS
             ${{ runner.temp }}/original-ui/macho.txt
             ${{ runner.temp }}/original-ui/dependencies.txt
+            ${{ runner.temp }}/original-ui/ipa-verification.json
           if-no-files-found: error
           retention-days: 30
-      - name: Test original state and scheduling semantics (diagnostic)
-        # The runner currently aborts this bundle with `error: fatalError` and no
-        # test output, so it is reported but cannot gate the app build yet.
-        continue-on-error: true
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          set +e
-          xcrun swift test --package-path ios \
-            > "$RUNNER_TEMP/original-ui/core-tests.log" 2>&1
-          status=$?
-          set -e
-          printf '%s\n' "$status" > "$RUNNER_TEMP/original-ui/core-tests-exit.txt"
-          tail -n 40 "$RUNNER_TEMP/original-ui/core-tests.log" | tee -a "$GITHUB_STEP_SUMMARY"
-          exit "$status"
       - name: Upload state regression diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -159,5 +162,13 @@ jobs:
           path: |
             ${{ runner.temp }}/original-ui/core-tests.log
             ${{ runner.temp }}/original-ui/core-tests-exit.txt
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload complete UI test result bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-xcresult-${{ github.sha }}
+          path: ${{ runner.temp }}/original-ui/CompatibilityUI.xcresult
           if-no-files-found: warn
           retention-days: 14

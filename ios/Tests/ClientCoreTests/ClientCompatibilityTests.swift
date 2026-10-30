@@ -128,14 +128,15 @@ import Testing
         #expect(changed.withLock { $0 })
     }
 
+    @available(macOS 14, *)
     @Test func environmentAndBindableBackportsKeepTheSameModelReference() {
         let draft = ComposerDraft()
-        @Perception.Bindable var bound = draft
+        @TestBindable var bound = draft
         let input = $bound.text
         input.wrappedValue = "Same draft"
         #expect(bound === draft && draft.text == "Same draft")
         // Compile the non-optional/optional Environment overloads and modifier
-        // at the package's iOS 15/macOS 13 deployment floor, without a second UI.
+        // with the platform's binding wrapper, without a second UI.
         _ = PerceptionEnvironmentProbe().environment(draft).environment(ConversationSettings())
     }
 
@@ -166,12 +167,13 @@ private enum LockTestError: Error { case expected }
     init(value: Int) { self.value = value }
 }
 
+@available(macOS 14, *)
 private struct PerceptionEnvironmentProbe: View {
     @Environment(ComposerDraft.self) private var draft
     @Environment(ConversationSettings.self) private var optionalSettings: ConversationSettings?
     var body: some View {
         WithPerceptionTracking {
-            @Perception.Bindable var bound = draft
+            @TestBindable var bound = draft
             TextField("Draft", text: $bound.text)
                 .disabled(optionalSettings == nil)
         }

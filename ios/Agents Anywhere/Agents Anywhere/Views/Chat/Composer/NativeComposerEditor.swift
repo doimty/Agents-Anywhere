@@ -54,11 +54,27 @@ final class ComposerTextView: UITextView {
 }
 
 struct NativeComposerEditor: UIViewRepresentable {
-    @Perception.Bindable var draft: ComposerDraft
+    let draft: ComposerDraft
     let controller: ComposerEditorController
     let maximumHeight: CGFloat
     let onCommandSend: () -> Void
     var onTextChange: ((String, Bool) -> Void)? = nil
+    private let text: String
+    private let isFocused: Bool
+
+    init(draft: ComposerDraft, controller: ComposerEditorController, maximumHeight: CGFloat,
+         onCommandSend: @escaping () -> Void, onTextChange: ((String, Bool) -> Void)? = nil) {
+        self.draft = draft
+        self.controller = controller
+        self.maximumHeight = maximumHeight
+        self.onCommandSend = onCommandSend
+        self.onTextChange = onTextChange
+        // The parent constructs us in a tracking scope. UIKit's lifecycle
+        // methods run later and must use this captured value, not register an
+        // unobserved read of the draft outside that scope.
+        text = draft.text
+        isFocused = draft.isFocused
+    }
 
     func makeUIView(context: Context) -> ComposerTextView {
         let view = ComposerTextView()
@@ -89,15 +105,15 @@ struct NativeComposerEditor: UIViewRepresentable {
         controller.textView = view; controller.draft = draft
         view.commandSend = onCommandSend
         // Do not replace native pre-edit text or disrupt its selection/candidate bar.
-        if view.markedTextRange == nil, view.text != draft.text {
+        if view.markedTextRange == nil, view.text != text {
             let selection = view.selectedRange
-            view.text = draft.text
-            let end = (draft.text as NSString).length
+            view.text = text
+            let end = (text as NSString).length
             view.selectedRange = NSRange(location: min(selection.location, end), length: 0)
         }
-        if draft.isFocused, !view.isFirstResponder {
+        if isFocused, !view.isFirstResponder {
             view.becomeFirstResponder()
-        } else if !draft.isFocused, view.isFirstResponder {
+        } else if !isFocused, view.isFirstResponder {
             view.resignFirstResponder()
         }
     }

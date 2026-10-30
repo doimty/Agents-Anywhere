@@ -12,6 +12,38 @@ final class CompatibilityUITests: XCTestCase {
     }
 
     @MainActor
+    func testBackportEdgeAndClosingPan() throws {
+        try exerciseGestures(backport: true)
+    }
+
+    @MainActor
+    func testNativeEdgeAndClosingPan() throws {
+        try exerciseGestures(backport: false)
+    }
+
+    @MainActor
+    private func exerciseGestures(backport: Bool) throws {
+        continueAfterFailure = false
+        let app = XCUIApplication(bundleIdentifier: "com.agentsanywhere.app")
+        app.launchArguments = ["--compatibility-regression", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        if backport { app.launchArguments += ["--force-ios15-paths", "--force-perception-backport"] }
+        app.launch()
+        XCTAssertTrue(app.staticTexts["regression.ready"].waitForExistence(timeout: 20))
+        let menu = app.buttons["chat.sidebar.open"]
+        let conversation = app.buttons["regression.sidebar.conversation"]
+        let edge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.40))
+        edge.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.65, dy: 0.40)))
+        let opened = waitUntil { conversation.exists && conversation.isHittable }
+        if !opened { recordFailure(app, name: "opening-pan") }
+        XCTAssertTrue(opened, "Opening edge pan did not open the original drawer")
+        screenshot(app, name: backport ? "backport-edge-open" : "native-edge-open")
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.60, dy: 0.40))
+        start.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.08, dy: 0.40)))
+        XCTAssertTrue(waitUntil { menu.exists && menu.isHittable }, "Closing pan left the drawer stuck")
+        app.terminate()
+    }
+
+    @MainActor
     private func exerciseDrawerAndConversation(backport: Bool) throws {
         continueAfterFailure = false
         let app = XCUIApplication(bundleIdentifier: "com.agentsanywhere.app")
@@ -44,13 +76,8 @@ final class CompatibilityUITests: XCTestCase {
             XCTAssertFalse(conversation.isHittable)
         }
 
-        // The left-edge gesture and the closing pan are production features too.
-        let edge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.40))
-        edge.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.65, dy: 0.40)))
-        XCTAssertTrue(waitUntil { conversation.exists && conversation.isHittable }, "Opening edge pan did not open the original drawer")
-        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.60, dy: 0.40))
-        start.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.08, dy: 0.40)))
-        XCTAssertTrue(waitUntil { menu.exists && menu.isHittable }, "Closing pan left the drawer stuck")
+        // Gesture assertions run independently, so a failing recognizer cannot
+        // prevent long-conversation and composer regression from executing.
 
         menu.tap()
         XCTAssertTrue(waitUntil { conversation.isHittable })
@@ -62,10 +89,13 @@ final class CompatibilityUITests: XCTestCase {
 
         // A long transcript must not block the toolbar/main thread while its
         // Markdown rows are being measured or while the reader is scrolling.
-        let transcript = app.scrollViews.firstMatch
+        let transcript = app.scrollViews["chat.timeline.scroll"]
+        XCTAssertTrue(transcript.waitForExistence(timeout: 5))
         transcript.swipeDown(velocity: .fast)
         menu.tap()
-        XCTAssertTrue(waitUntil(timeout: 5) { conversation.isHittable }, "Long transcript blocked the sidebar")
+        let responsive = waitUntil(timeout: 5) { conversation.isHittable }
+        if !responsive { recordFailure(app, name: "long-conversation-sidebar") }
+        XCTAssertTrue(responsive, "Long transcript blocked the sidebar")
         newSession.tap()
         XCTAssertTrue(waitUntil { app.buttons["regression.open-conversation"].isHittable })
         app.buttons["regression.open-conversation"].tap()
@@ -84,6 +114,15 @@ final class CompatibilityUITests: XCTestCase {
     private func waitUntil(timeout: TimeInterval = 8, _ predicate: @escaping () -> Bool) -> Bool {
         let expectation = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in predicate() }, object: nil)
         return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+    }
+
+    @MainActor
+    private func recordFailure(_ app: XCUIApplication, name: String) {
+        screenshot(app, name: name)
+        let hierarchy = XCTAttachment(string: app.debugDescription)
+        hierarchy.name = name + "-hierarchy"
+        hierarchy.lifetime = .keepAlways
+        add(hierarchy)
     }
 
     @MainActor

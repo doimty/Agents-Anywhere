@@ -78,6 +78,7 @@ private struct NativeChatTimeline: View {
                     .equatable()
                     .background { ChatPageScrollEdge() }
             }
+            .accessibilityIdentifier("chat.timeline.scroll")
             .scrollPosition($position)
             .scrollDismissesKeyboard(.interactively)
             .scrollIndicators(.hidden)
@@ -373,6 +374,7 @@ private struct LegacyChatTimeline: View {
                                     .equatable()
                             }
                         }
+                        .accessibilityIdentifier("chat.timeline.scroll")
                         .appScrollDismissesKeyboardInteractively()
                         .appHiddenScrollIndicators()
                         .appAlwaysVerticalBounce()

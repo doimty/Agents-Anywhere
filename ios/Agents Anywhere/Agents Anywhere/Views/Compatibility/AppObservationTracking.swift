@@ -9,10 +9,10 @@ struct AppObservationTracking<Content: View>: View {
     init(@ViewBuilder content: @escaping () -> Content) { self.content = content }
 
     var body: some View {
-        if #available(iOS 17.0, *), AppCompatibility.useNativeUI {
-            content()
-        } else {
-            WithPerceptionTracking { content() }
-        }
+        // The package chooses native Observation on iOS 17+ itself. In Debug
+        // the wrapper also scopes missing-tracking diagnostics; skipping it on
+        // modern systems reports every otherwise valid native read and can turn
+        // a long transcript into hundreds of expensive stack-trace reports.
+        WithPerceptionTracking { content() }
     }
 }

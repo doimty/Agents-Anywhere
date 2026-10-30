@@ -60,21 +60,25 @@ struct ChatComposerDock: View {
         .frame(maxWidth: ChatControlMetrics.maximumContentWidth)
         .frame(maxWidth: .infinity)
         .background {
-            ZStack {
-                Color.clear.appPhotosPicker(isPresented: pickerBinding(.photos), selection: $photos,
-                    maxSelectionCount: max(1, 5 - draft.attachments.count))
-                Color.clear.fileImporter(isPresented: pickerBinding(.files), allowedContentTypes: [.item],
-                    allowsMultipleSelection: true, onCompletion: importFiles)
+            AppObservationTracking {
+                ZStack {
+                    Color.clear.appPhotosPicker(isPresented: pickerBinding(.photos), selection: $photos,
+                        maxSelectionCount: max(1, 5 - draft.attachments.count))
+                    Color.clear.fileImporter(isPresented: pickerBinding(.files), allowedContentTypes: [.item],
+                        allowsMultipleSelection: true, onCompletion: importFiles)
+                }
             }
         }
         .sheet(isPresented: $showsOptions, onDismiss: presentPicker) {
-            ComposerOptionsSheet(settings: settings,
-                onPhotos: { queue(.photos) }, onFiles: { queue(.files) },
-                canAttach: canAttach && draft.attachments.count < 5 && importCount == 0,
-                canSelectModel: canSelectModel, canSelectPermission: canSelectPermission,
-                isLoading: isLoadingSettings, loadingError: settingsError,
-                onReload: onLoadSettings, onApply: onApplySettings, applyError: applyError, sessionChat: sessionChat)
-                .task(id: "\(canSelectModel):\(canSelectPermission)") { await onLoadSettings() }
+            AppObservationTracking {
+                ComposerOptionsSheet(settings: settings,
+                    onPhotos: { queue(.photos) }, onFiles: { queue(.files) },
+                    canAttach: canAttach && draft.attachments.count < 5 && importCount == 0,
+                    canSelectModel: canSelectModel, canSelectPermission: canSelectPermission,
+                    isLoading: isLoadingSettings, loadingError: settingsError,
+                    onReload: onLoadSettings, onApply: onApplySettings, applyError: applyError, sessionChat: sessionChat)
+                    .task(id: "\(canSelectModel):\(canSelectPermission)") { await onLoadSettings() }
+            }
         }
         .appOnChange(of: photos) { _, items in importPhotos(items) }
         .onDisappear {

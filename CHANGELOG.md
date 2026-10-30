@@ -6,7 +6,8 @@
 
 ### iOS
 
-- iOS 客户端支持 iOS 15 及以上，保留原有侧栏、会话、设备、项目页面和 Markdown 样式，旧系统上以等价交互替代不支持的动画与分享方式。
+- iOS 客户端支持 iOS 15 及以上，保留原有侧栏、会话、设备、项目页面和 Markdown 样式，旧系统上以等价交互替代不支持的动画与分享方式。（[acbf026b](https://github.com/doimty/Agents-Anywhere-ios15/commit/acbf026bce45569288f94c56af18459d3cf4bc51)）
+- 修复旧系统侧栏点击后画面不移动、长会话一次排版卡顿和历史加载提示不结束的问题；运行时操作失败后重新确认可用状态，保留草稿且不自动重发。（[acbf026b](https://github.com/doimty/Agents-Anywhere-ios15/commit/acbf026bce45569288f94c56af18459d3cf4bc51)）
 
 ### 会话创建与消息交付
 

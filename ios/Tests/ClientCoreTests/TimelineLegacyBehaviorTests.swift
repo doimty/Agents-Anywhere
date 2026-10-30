@@ -15,7 +15,8 @@ import Testing
             // A session may be doing background history work before this view
             // makes a request. That is never a local loading indicator.
             #expect(!loads.isLoadingOlder && !loads.isLoadingLatest)
-            let request = try #require(loads.begin(direction, generation: 4))
+            let started = loads.begin(direction, generation: 4)
+            let request = try #require(started)
             #expect(loads.isLoadingOlder == (direction == .older))
             #expect(loads.isLoadingLatest == (direction == .latest))
             #expect(loads.begin(.older, generation: 5) == nil)
@@ -27,9 +28,11 @@ import Testing
 
     @Test func lateCompletionAfterDisappearanceCannotClearANewerRequest() throws {
         var loads = TimelineHistoryLoadState()
-        let old = try #require(loads.begin(.older, generation: 7))
+        let started = loads.begin(.older, generation: 7)
+        let old = try #require(started)
         loads.cancel()
-        let replacement = try #require(loads.begin(.latest, generation: 7))
+        let restarted = loads.begin(.latest, generation: 7)
+        let replacement = try #require(restarted)
         #expect(old.id != replacement.id)
         let staleCompletion = loads.finish(old)
         #expect(!staleCompletion && loads.request == replacement && loads.isLoadingLatest)
@@ -39,7 +42,8 @@ import Testing
 
     @Test func networkCompletionReleasesTheSpinnerEvenWhenALazyAnchorHasNotLaidOut() throws {
         var loads = TimelineHistoryLoadState()
-        let request = try #require(loads.begin(.older, generation: 9))
+        let started = loads.begin(.older, generation: 9)
+        let request = try #require(started)
         let origin = TimelineHistoryLayout(firstRowID: "old", anchorRowID: "old", edge: .top, y: 100)
         var history = TimelineHistoryPosition(id: request.id, layout: origin, offsetY: 320, topInset: 80)
         history.receivedPage(firstRowID: "earlier")
@@ -62,7 +66,8 @@ import Testing
         scroll.geometryChanged(viewport)
         scroll.open()
         let opening = try #require(scroll.pendingBottomRequest)
-        let command = try #require(scroll.begin(opening))
+        let begun = scroll.begin(opening)
+        let command = try #require(begun)
         _ = scroll.complete(command)
         scroll.phaseChanged(.interacting, viewport: viewport)
         scroll.tailVisibilityChanged(.near, visible: false)
@@ -95,7 +100,8 @@ import Testing
         scroll.tailVisibilityChanged(.end, visible: true)
         scroll.open()
         let opening = try #require(scroll.pendingBottomRequest)
-        let command = try #require(scroll.begin(opening))
+        let begun = scroll.begin(opening)
+        let command = try #require(begun)
         _ = scroll.complete(command)
         #expect(scroll.mode == .following)
         // The same streamed row becomes taller. No row count/last-ID change is

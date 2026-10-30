@@ -9,11 +9,11 @@
 
 | 项 | 值 |
 | --- | --- |
-| 最低系统 | `IPHONEOS_DEPLOYMENT_TARGET = 15.0`（App、Widget、扩展一致） |
+| 最低系统 | `IPHONEOS_DEPLOYMENT_TARGET = 15.0`（当前 App target） |
 | 构建 SDK | Xcode 26.6 / iPhoneOS 26.5 SDK |
 | Swift tools | 6.2，`defaultIsolation(MainActor.self)` |
 | 构建产物 | 未签名 arm64 Debug IPA，`MinimumOSVersion = 15.0` |
-| 已验证 | 真机 iPhone 13 Pro（iOS 15.1.1）可安装、可启动、可进入新建会话页 |
+| 已验证 | 用户的 iPhone 13 Pro Max（iOS 15.1.1）可安装、可启动并查看会话；build 13 的侧栏和加载卡顿问题仍在修复验收中 |
 | 未验证 | 真机上的完整交互与视觉对照（见文末清单） |
 
 ## 依赖改造
@@ -22,7 +22,7 @@
 
 | 包 | 位置 | 改动 |
 | --- | --- | --- |
-| Perception 2.0.11 | `ios/Packages/Perception` | 原样 vendored，作为 iOS 15/16 的 Observation 回溯 |
+| Perception 2.0.11 | `ios/Packages/Perception` | vendored；保留原实现，增加仅 DEBUG 的回溯后端测试开关 |
 | Textual | `ios/Packages/Textual` | 楼层降到 15；参数包改有限 arity；`#Preview` 隔离在 `#if DEBUG`；TextKit1 排版与选中 |
 | SwiftUIMath | `ios/Packages/SwiftUIMath/swiftui-math-0.1.0` | 楼层降到 15；`TypographicBounds` 与宽度拟合接口对跨 target 可见 |
 
@@ -39,18 +39,21 @@ iOS 17 的 `@Observable` 在 15/16 用 Perception 的 `@Perceptible` 表达，�
 
 **关键约束**：Perception 不会自动失效视图。每个读取模型状态的 `body` 必须落在
 `AppObservationTracking { }` 里（iOS 17+ 等价于系统观察，15/16 走 `WithPerceptionTracking`）。
-漏掉时表现为「首帧正常、点按钮没反应」——状态确实变了，但视图不重画。新增视图时务必包装。
+漏掉时可能表现为「首帧正常、点按钮没反应」——状态改变，负责视觉的子树却没订阅。
+除了 `var body`，`ViewModifier.body(content:)` 以及 `GeometryReader`、`ScrollViewReader`、
+`ForEach`、sheet、overlay、safeAreaInset 等延迟执行的闭包也必须在实际读取点建 scope。
+build 13 只覆盖普通 body，没有覆盖动画 modifier 和延迟闭包；不能据此声称观察迁移已全部完成。
 
 ### 时间与并发类型
 
 `Duration`、`ContinuousClock`、`Task.sleep(for:)`、`Mutex` 都是 16+，统一换成
-`Views/Domain/Common/ClientConcurrency.swift` 里的 `ClientDuration`、`ClientClock`
+`Domain/Common/ClientConcurrency.swift` 里的 `ClientDuration`、`ClientClock`
 （`mach_continuous_time`）、`ClientTask.sleep(for:/until:)`、`ClientMutex`（`NSLock`）。
 语义保持一致：可取消、单调时钟、不会因系统时间调整而漂移。
 
 ## availability 分层
 
-所有兼容性适配集中在 `Views/Compatibility/`，其他文件不应直接写 `#available` 判断。
+共享适配集中在 `Views/Compatibility/`；必须使用新系统类型的布局、滚动和绘制实现以独立 availability 类型隔离。
 适配器保留原生路径，只在旧系统上替换：
 
 | 适配器 | 原生路径 | iOS 15 回退 |
@@ -63,11 +66,11 @@ iOS 17 的 `@Observable` 在 15/16 用 Perception 的 `@Perceptible` 表达，�
 | `appGlassEffect` / `AppGlassEffectContainer` | `.glassEffect`（iOS 26） | `ultraThinMaterial` + 连续圆角 |
 | `appScrollEdgeEffect` / `appSafeAreaBar` | `scrollEdgeEffectStyle` / `safeAreaBar` | `safeAreaInset` + 渐隐 |
 | `appOnChange` / `appOnGeometryChange` | 两参数 `onChange`、`onGeometryChange` | 单参数 `onChange`、`GeometryReader` |
-| `appScrollVisibilityChange` / `timelineVisibility` | `onScrollVisibilityChange`（18） | 挂载期间视为可见 |
+| `appScrollVisibilityChange` / `timelineVisibility` | `onScrollVisibilityChange`（18） | 一般附件按挂载生命周期；时间线另用真实 UIScrollView 视口探针 |
 | `appImpactFeedback` / `appSelectionFeedback` | `sensoryFeedback`（17） | `UIImpactFeedbackGenerator` |
 | `appWithAnimation(_:completionDelay:)` | `withAnimation(completionCriteria:)`（17） | 动画时长后回调 |
 | `appSidebarPanGesture` | `UIGestureRecognizerRepresentable`（18） | `UIPanGestureRecognizer` 桥 |
-| `appRemoveSidebarToggle` / `appSharedBackgroundHidden` | `toolbar(removing:)`、`sharedBackgroundVisibility`（17/26） | 不注入该控件即可 |
+| `appRemoveSidebarToggle` | `toolbar(removing:)`（17） | 不注入额外的系统侧栏按钮 |
 | `AppConcentricCardShape` | `ConcentricRectangle`（26） | 连续圆角 / 全出血矩形 |
 
 滚动相关（`ScrollPosition`、`onScrollPhaseChange`、`onScrollGeometryChange`、
@@ -89,7 +92,31 @@ xcrun simctl launch booted com.agentsanywhere.app --force-ios15-paths
 ```
 
 实现是 `AppCompatibility.useNativeUI`：不带参数时为真（新系统走原生实现），
-带参数时为假（所有 `#available` 分支退回 15 实现）。
+带参数时为假（使用该开关的适配器退回旧实现，不能改变真实系统的 availability）。
+
+### 验证观察回溯，而不仅是旧布局
+
+在 DEBUG 构建中同时传入下列参数，Perception 的 registrar、tracking 函数和 SwiftUI wrapper
+都切换到回溯实现；新系统的自动 Observation 不会再掩盖漏注册的子树：
+
+```sh
+xcrun simctl launch booted com.agentsanywhere.app --force-ios15-paths --force-perception-backport
+```
+
+`--force-perception-backport` 只在 DEBUG 生效，没有该参数时包保持原来的系统版本选择。
+`CompatibilityRegression` XCTest scheme 用离线数据运行原 `SidebarDrawer`、工具栏、
+`ChatTimelineView` 和 Composer；分别验证 native 和两个强制参数组合的路径。
+检查包括多次点开/关闭、边缘和关闭 pan、100 条完整 Markdown 消息加载时再打开侧栏、输入和发送。
+测试截图、结果包和原始日志由 CI 上传；它们不能替代 iOS 15.1.1 实机和真实服务的联调。
+
+### 长会话与运行时失败的处理
+
+- 旧时间线按组使用 LazyVStack，保留完整正文与原卡片；视口探针只观察自己祖先的 UIScrollView，不替换 delegate。
+- 上下两个历史方向分别持有请求状态；网络结束即结束 spinner，滚动点位恢复有自己的有界生命周期。
+- 只有实际底部可见才继续跟随；工具组共用稳定 tail，流式高度变化按固定窗口合并，用户上翻后停止跟随。
+- 后台或侧栏完全遮挡时保留最新完整消息投影，暂停隐藏正文发布；恢复时一次发布，不停止仓库订阅、不重放消息。
+- 运行时 RPC 写失败后，旧 live facts 立即失效。保留原错误和草稿，只做一轮合并的只读恢复；完整新状态成功后才恢复操作。
+- `runtime instance ... is not running (status='starting')` 表示设备端实例生命周期尚未就绪，不等于会话回合的 running/idle。不能凭这条文本猜测后台故障，亦不能把缓存回合状态当作新事实。
 
 ## 已移植范围
 
@@ -110,7 +137,7 @@ xcrun simctl launch booted com.agentsanywhere.app --force-ios15-paths
 1. **逐字流式动画**：iOS 18 的 `TextRenderer`/`TextAttribute` 不可用，15–17 直接显示同一段
    文本，没有逐字淡入；排版、行距、强调和内联样式不变。
 2. **审批坞动画**：没有 `scrollTransition` 的缩放淡出，卡片切换改为翻页按钮 + 默认动画。
-3. **滚动位置恢复**：没有 `ScrollPosition` 锚点恢复，从历史加载后回到同一行的精度略低。
+3. **滚动位置恢复**：没有 `ScrollPosition`，改为记录实际可见组的坐标和正文内部偏移，历史 prepend 后校正；懒布局完成时间与新系统不同，仍需真机对照。
 4. **顶部/底部边缘效果**：没有 `scrollEdgeEffectStyle`，用 `safeAreaInset` + 渐隐近似。
 5. **工具栏副标题**：没有 `.subtitle` placement，标题与状态合并到 principal 项。
 6. **分享**：`ShareLink` 换成 `UIActivityViewController`，导出内容一致。
@@ -123,10 +150,10 @@ xcrun simctl launch booted com.agentsanywhere.app --force-ios15-paths
 
 - CI：`.github/workflows/ios15-original-ui.yml`，macos-26 + Xcode 26.6
   - 适配器在 `arm64-apple-ios15.0` 下单独 `swiftc -typecheck`
-  - 整个 App 以 `-destination 'generic/platform=iOS'`、Release/Debug 构建，`CODE_SIGNING_ALLOWED=NO`
+  - 整个 App 以 `-destination 'generic/platform=iOS'`、Debug 配置构建，`CODE_SIGNING_ALLOWED=NO`；Release 遇到编译器 SIL 优化崩溃，未宣称通过
   - 校验 `MinimumOSVersion == 15.0`，记录 `vtool`/`otool` 输出
   - 打包未签名 IPA 并给出 SHA256
-- 真机：iPhone 13 Pro / iOS 15.1.1，build 13 可安装、可启动、可进入新建会话页
+- 真机截图反馈：iPhone 13 Pro Max / iOS 15.1.1 可启动并展示新建会话、设备和历史正文；build 13 的侧栏无响应和长对话卡顿尚未完成新版真机验收。
 
 ### 真机验收清单（未完成）
 
@@ -143,7 +170,7 @@ xcrun simctl launch booted com.agentsanywhere.app --force-ios15-paths
 ## 维护规则
 
 1. 新代码不要直接使用 iOS 16+ API。先查本文件表格，再在 `Views/Compatibility/` 增加适配器。
-2. 适配器必须保留原生路径，`#available` 判断只写在适配器内部。
+2. 适配器必须保留原生路径；新系统专有类型声明要放在完整 availability 边界内。
 3. 新增读取 `@Perceptible` 模型的视图，`body` 要包 `AppObservationTracking`。
 4. 旧系统回退不允许删功能：按钮、入口、文案都要在，可以换交互方式。
 5. 改完推 CI，用真实编译诊断验证；不要只看源码断言通过。

@@ -72,8 +72,14 @@ def main() -> int:
         ], log=log, timeout=1500)
         (args.evidence / "compatibility-ui-exit.txt").write_text(str(status) + "\n")
         if log.exists():
-            print("\n".join(log.read_text(errors="replace").splitlines()[-100:]), flush=True)
+            lines = log.read_text(errors="replace").splitlines()
+            for line in lines:
+                if " error: " in line or "Test Case '" in line:
+                    print(line, flush=True)
+            print("\n".join(lines[-70:]), flush=True)
         if result.exists():
+            run(["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", str(result)],
+                log=args.evidence / "compatibility-ui-summary.json", timeout=60)
             run(["xcrun", "xcresulttool", "export", "attachments", "--path", str(result),
                  "--output-path", str(args.evidence / "screenshots")], timeout=60)
         return status
