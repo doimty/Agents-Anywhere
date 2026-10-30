@@ -264,9 +264,14 @@ nonisolated private final class CompatibilitySessionURLProtocol: URLProtocol, @u
         let isSnapshot = fixtureHost && request.httpMethod == "GET"
             && url.path == "/api/v2/sessions/compatibility-session/snapshot"
         let isTicket = fixtureHost && request.httpMethod == "POST" && url.path == "/api/v2/ws-ticket"
+        // The first paint may read one durable page in parallel with the
+        // aggregate; it is authorized and carries no runtime facts.
+        let isTimeline = fixtureHost && request.httpMethod == "GET"
+            && url.path == "/api/v2/sessions/compatibility-session/timeline"
         let snapshotAttempt = Self.counts.withLock { counts -> Int in
             if isSnapshot { counts.snapshots += 1 }
             else if isTicket { counts.tickets += 1 }
+            else if isTimeline { }
             else { counts.unexpected += 1 }
             return counts.snapshots
         }
