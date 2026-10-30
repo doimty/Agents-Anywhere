@@ -321,264 +321,81 @@ private struct NativeChatTimeline: View {
 
 /// Same transcript and navigation intentions, using only iOS 15 scroll APIs.
 /// Geometry remains local to the renderer; reads still go through the session.
+/// iOS 15–17: the same ChatTimelineContent, row cards and explicit history
+/// loads, followed with ScrollViewReader instead of ScrollPosition and phases.
 private struct LegacyChatTimeline: View {
     let model: SessionChatModel
     let onAttachment: (V2AttachmentContent) -> Void
     let onFile: (String) -> Void
-    @State private var scrolling = TimelineScrollState()
-    @State private var viewportSample = ChatViewportSample()
-    @State private var geometrySample = LegacyTimelineGeometrySample()
-    @State private var scrollHandle = LegacyTimelineScrollHandle()
-    @State private var historyUpdates = ChatLayoutUpdate<TimelineHistoryLayout>()
-    @State private var historyLayout: TimelineHistoryLayout?
-    @State private var historyPosition: TimelineHistoryPosition?
-    @State private var hasRequestedOlder = false
-    @State private var olderLoadRequest: Int?
-    @State private var latestLoadRequest: Int?
-    @State private var latestPull = TimelineHistoryPull()
-    @State private var olderPull = TimelineHistoryPull(edge: .older)
-    @State private var olderPromptVisible = false
-    @State private var latestPromptVisible = false
-    @State private var viewportFrame = CGRect.zero
-    @State private var gestureStartOffset: CGFloat?
-    @State private var gestureOrigin: TimelineViewport?
-    @State private var gestureEndToken = 0
-    @State private var keyboardIsVisible = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.sidebarDrawerIsTransitioning) private var sidebarIsTransitioning
-    @Environment(\.sidebarDrawerObscuresDetail) private var sidebarObscuresDetail
-    @ScaledMetric(relativeTo: .caption) private var returnPillHeight: CGFloat = 32
 
-    private var viewport: TimelineViewport { viewportSample.value ?? scrolling.viewport }
-    private var navigationIsSuspended: Bool { sidebarIsTransitioning || sidebarObscuresDetail }
-    private var hasInteractions: Bool {
-        model.session.notices.notices.contains { $0.isVisible && $0.notice.type == "interaction" }
-    }
+    @State private var scrollToken = 0
+    @State private var keyboardVisible = false
+    @ScaledMetric(relativeTo: .caption) private var returnPillHeight: CGFloat = 32
 
     var body: some View {
         ZStack(alignment: .bottom) {
             ScrollViewReader { proxy in
                 ScrollView {
                     ChatTimelineContent(model: model, onAttachment: onAttachment, onFile: onFile,
-                        latestPullReady: latestPull.isReady, isLoadingLatest: latestLoadRequest != nil,
-                        olderPullReady: olderPull.isReady, isLoadingOlder: olderLoadRequest != nil,
-                        keepsOlderPrompt: hasRequestedOlder, historyAnchor: historyPosition?.origin,
-                        onLoadOlder: loadOlder, onLoadLatest: loadLatest,
-                        onHistoryLayout: historyDidLayOut,
-                        onPromptVisibility: { latestPromptVisible = $0 },
-                        onOlderPromptVisibility: { olderPromptVisible = $0 },
-                        onTailVisibility: { region, visible in scrolling.tailVisibilityChanged(region, visible: visible) })
+                        latestPullReady: false,
+                        isLoadingLatest: model.session.isLoadingHistory,
+                        olderPullReady: false,
+                        isLoadingOlder: model.session.isLoadingHistory,
+                        keepsOlderPrompt: model.session.hasOlderItems,
+                        historyAnchor: nil,
+                        onLoadOlder: { Task { await model.session.loadOlder() } },
+                        onLoadLatest: { Task { await model.session.loadLatest() } },
+                        onHistoryLayout: { _ in },
+                        onPromptVisibility: { _ in },
+                        onOlderPromptVisibility: { _ in },
+                        onTailVisibility: { _, _ in })
                         .equatable()
-                        .environment(\.legacyTimelineViewport, viewportFrame)
-                        .background { ChatPageScrollEdge() }
-                        .appOnGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) { frame in
-                            geometrySample.contentFrame = frame
-                            updateViewport()
-                        }
                 }
-                .background { LegacyTimelineScrollProbe(handle: scrollHandle).frame(width: 0, height: 0) }
-                .appScrollDismissesKeyboardInteractively().appHiddenScrollIndicators()
-                .appAlwaysVerticalBounce().appScrollEdgeEffect(.soft, for: .top)
-                .appOnGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) { frame in
-                    geometrySample.viewportFrame = frame
-                    if viewportFrame != frame { viewportFrame = frame }
-                    updateViewport()
-                }
-                .allowsHitTesting(model.isOpeningReady).accessibilityHidden(!model.isOpeningReady)
-                .simultaneousGesture(DragGesture().onChanged(dragChanged).onEnded { _ in finishDrag() })
-                .appOnChange(of: navigationIsSuspended, initial: true) { _, suspended in
-                    scrolling.setNavigationSuspended(suspended)
-                    if suspended {
-                        scrollHandle.cancelMotion()
-                        historyPosition?.cancelRestoration()
-                        latestPull.cancel(); olderPull.cancel()
-                    } else {
-                        scrolling.phaseChanged(.idle, viewport: viewport)
-                        if let historyLayout { historyDidLayOut(historyLayout) }
-                    }
-                }
-                .appOnChange(of: model.session.pendingMessages.last?.id) { _, id in
-                    if model.isOpeningReady, id != nil && !hasInteractions { scrolling.requestBottom() }
+                .appScrollDismissesKeyboardInteractively()
+                .appHiddenScrollIndicators()
+                .appAlwaysVerticalBounce()
+                .appScrollEdgeEffect(.soft, for: .top)
+                .allowsHitTesting(model.isOpeningReady)
+                .accessibilityHidden(!model.isOpeningReady)
+                .appOnChange(of: model.timeline.rows.count) { _, _ in
+                    guard model.isOpeningReady, let last = model.timeline.rows.last else { return }
+                    withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(last.id, anchor: .bottom) }
                 }
                 .appOnChange(of: model.responseRevision) { _, _ in
-                    if model.isOpeningReady { scrolling.requestBottom() }
+                    guard model.isOpeningReady, let last = model.timeline.rows.last else { return }
+                    proxy.scrollTo(last.id, anchor: .bottom)
                 }
-                .appOnChange(of: hasInteractions, initial: true) { _, presented in
-                    scrolling.setInteractionPresented(presented)
-                }
-                .appOnChange(of: model.isOpeningReady, initial: true) { _, ready in
-                    if ready { scrolling.open(interactionPresented: hasInteractions) }
-                }
-                .task(id: scrolling.pendingBottomRequest) {
-                    guard let request = scrolling.pendingBottomRequest, !navigationIsSuspended else { return }
-                    do { try await ClientTask.sleep(for: .milliseconds(24)) } catch { return }
-                    guard !Task.isCancelled, !navigationIsSuspended, let command = scrolling.begin(request) else { return }
-                    scrolling.phaseChanged(.animating, viewport: viewport)
-                    withAnimation(reduceMotion ? nil : .interactiveSpring(response: 0.28, dampingFraction: 1, blendDuration: 0.12)) {
-                        proxy.scrollTo("tail", anchor: .bottom)
-                    }
-                    do { try await ClientTask.sleep(for: .milliseconds(reduceMotion ? 0 : 300)) } catch { return }
-                    if scrolling.complete(command) { scrolling.phaseChanged(.idle, viewport: viewport) }
-                }
-                .task(id: gestureEndToken) {
-                    guard gestureEndToken > 0 else { return }
-                    let generation = scrolling.navigationGeneration
-                    do {
-                        try await ClientTask.sleep(for: .milliseconds(64))
-                        while scrollHandle.isMoving {
-                            guard !navigationIsSuspended, generation == scrolling.navigationGeneration else { return }
-                            try await ClientTask.sleep(for: .milliseconds(64))
-                        }
-                    } catch { return }
-                    guard !Task.isCancelled, !navigationIsSuspended, generation == scrolling.navigationGeneration,
-                          scrolling.activeCommand == nil else { return }
-                    scrolling.phaseChanged(.idle, viewport: viewport)
-                    scrolling.settleUserScroll()
-                }
-                .task(id: olderLoadRequest) {
-                    guard let request = olderLoadRequest else { return }
-                    await model.session.loadOlder()
-                    guard !Task.isCancelled, historyPosition?.id == request else { return }
-                    if !model.session.isValid { historyPosition = nil; olderLoadRequest = nil; return }
-                    historyPosition?.receivedPage(firstRowID: model.session.timeline.first { $0.value.isVisibleInChat }?.id)
-                }
-                .task(id: LegacyHistorySettlement(id: historyPosition?.id,
-                    ready: historyPosition?.isReadyToFinish == true, offset: historyPosition?.restoredOffset)) {
-                    guard let request = historyPosition?.id, historyPosition?.isReadyToFinish == true else { return }
-                    do { try await ClientTask.sleep(for: .milliseconds(64)) } catch { return }
-                    guard !Task.isCancelled, historyPosition?.id == request else { return }
-                    historyPosition = nil; olderLoadRequest = nil
-                }
-                .task(id: latestLoadRequest) {
-                    guard let generation = latestLoadRequest else { return }
-                    await model.session.loadLatest()
-                    guard !Task.isCancelled else { return }
-                    if scrolling.navigationGeneration == generation { scrolling.requestBottom() }
-                    latestLoadRequest = nil
+                .appOnChange(of: scrollToken) { _, _ in
+                    guard let last = model.timeline.rows.last else { return }
+                    withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(last.id, anchor: .bottom) }
                 }
             }
-            if !keyboardIsVisible, scrolling.showsBottomButton() {
+
+            if !keyboardVisible {
                 Button {
-                    latestPull.cancel(); olderPull.cancel()
-                    historyPosition?.cancelRestoration()
-                    scrolling.requestBottom()
+                    scrollToken &+= 1
                 } label: {
-                    Label(String(localized: "到底部"), appSymbol: "arrow.down").font(.caption.weight(.medium)).foregroundStyle(.primary)
+                    Label(String(localized: "到底部"), appSymbol: "arrow.down")
+                        .font(.caption.weight(.medium)).foregroundStyle(.primary)
                         .padding(.horizontal, 12).frame(height: returnPillHeight)
-                        .appGlassEffect(.interactive, in: Capsule())
+                        .background(.regularMaterial, in: Capsule())
                         .frame(minHeight: 44).contentShape(Rectangle())
                 }
-                .buttonStyle(.plain).accessibilityIdentifier("chat.timeline.bottom").padding(.bottom, 2)
+                .buttonStyle(.plain).accessibilityIdentifier("chat.timeline.bottom")
+                .padding(.bottom, 2)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity).traceChatLayout("timeline-viewport")
-        .onDisappear { historyUpdates.cancel(); scrollHandle.scrollView = nil }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in keyboardIsVisible = true }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in keyboardIsVisible = false }
-    }
-
-    private func updateViewport() {
-        let content = geometrySample.contentFrame, visible = geometrySample.viewportFrame
-        guard visible.height > 0, content.height > 0 else { return }
-        let value = TimelineViewport(contentHeight: content.height, containerHeight: visible.height,
-            offsetY: visible.minY - content.minY)
-        viewportSample.value = value
-        if scrolling.viewport.contentHeight != value.contentHeight || scrolling.viewport.visibleHeight != value.visibleHeight {
-            scrolling.geometryChanged(value)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .traceChatLayout("timeline-viewport")
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            keyboardVisible = true
         }
-    }
-    private func dragChanged(_ value: DragGesture.Value) {
-        guard !navigationIsSuspended, abs(value.translation.height) > abs(value.translation.width),
-              scrollHandle.scrollView?.isDragging == true else { return }
-        if gestureStartOffset == nil {
-            gestureStartOffset = scrollHandle.scrollView?.contentOffset.y
-            gestureOrigin = viewport
-            scrolling.phaseChanged(.interacting, viewport: viewport)
-            historyPosition?.cancelRestoration()
-            olderPull.begin(at: viewport, promptVisible: olderPromptVisible,
-                canLoad: model.session.hasOlderItems && !model.session.isLoadingHistory && olderLoadRequest == nil && latestLoadRequest == nil)
-            latestPull.begin(at: viewport, promptVisible: latestPromptVisible,
-                canLoad: model.session.hasNewerItems && !model.session.isLoadingHistory && latestLoadRequest == nil && olderLoadRequest == nil)
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            keyboardVisible = false
         }
-        updatePull()
-    }
-    private func updatePull() {
-        guard let origin = gestureOrigin, let start = gestureStartOffset, let native = scrollHandle.scrollView?.contentOffset.y else { return }
-        let current = TimelineViewport(contentHeight: viewport.contentHeight, containerHeight: viewport.visibleHeight,
-            offsetY: origin.offsetY + native - start)
-        latestPull.update(current); olderPull.update(current)
-    }
-    private func finishDrag() {
-        guard gestureStartOffset != nil else { return }
-        updatePull()
-        gestureStartOffset = nil; gestureOrigin = nil
-        let loadsOlder = olderPull.end(), loadsLatest = latestPull.end()
-        scrolling.phaseChanged(scrollHandle.isMoving ? .decelerating : .idle, viewport: viewport)
-        if loadsOlder { loadOlder() } else if loadsLatest { loadLatest() }
-        gestureEndToken &+= 1
-    }
-    private func loadOlder() {
-        guard model.session.isValid, model.session.hasOlderItems, !model.session.isLoadingHistory,
-              olderLoadRequest == nil, latestLoadRequest == nil else { return }
-        olderPull.cancel(); latestPull.cancel()
-        scrolling.browseHistory()
-        let layout = historyLayout.flatMap { $0.firstRowID == model.timeline.rows.first?.id ? $0 : nil }
-        historyPosition = TimelineHistoryPosition(id: scrolling.navigationGeneration, layout: layout,
-            offsetY: viewport.offsetY, topInset: 0)
-        hasRequestedOlder = true
-        olderLoadRequest = scrolling.navigationGeneration
-    }
-    private func loadLatest() {
-        guard model.session.isValid, model.session.hasNewerItems, !model.session.isLoadingHistory,
-              latestLoadRequest == nil, olderLoadRequest == nil else { return }
-        olderPull.cancel(); latestPull.cancel()
-        historyPosition?.cancelRestoration()
-        scrolling.requestBottom()
-        latestLoadRequest = scrolling.navigationGeneration
-    }
-    private func historyDidLayOut(_ layout: TimelineHistoryLayout) {
-        historyUpdates.submit(layout) { layout in
-            if historyLayout != layout { historyLayout = layout }
-            guard !navigationIsSuspended, var restoration = historyPosition else { return }
-            let offset = restoration.laidOut(layout, generation: scrolling.navigationGeneration)
-            if historyPosition != restoration { historyPosition = restoration }
-            if let offset { scrollHandle.restore(logicalOffset: offset, currentLogicalOffset: viewport.offsetY) }
-        }
-    }
-    private struct LegacyHistorySettlement: Equatable {
-        let id: Int?
-        let ready: Bool
-        let offset: CGFloat?
     }
 }
 
-/// Keep the latest measurement without publishing View state inside a layout
-/// callback. One main-queue delivery handles a burst; removal invalidates it.
-@MainActor private final class ChatLayoutUpdate<Value> {
-    private var pending: (() -> Void)?
-    private var scheduled = false
-    private var generation = 0
-
-    func submit(_ value: Value, apply: @escaping (Value) -> Void) {
-        pending = { apply(value) }
-        guard !scheduled else { return }
-        scheduled = true
-        let token = generation
-        DispatchQueue.main.async { [weak self] in
-            guard let self, self.generation == token else { return }
-            let update = self.pending
-            self.pending = nil
-            self.scheduled = false
-            update?()
-        }
-    }
-
-    func cancel() {
-        generation &+= 1
-        pending = nil
-        scheduled = false
-    }
-}
 
 private struct ChatTimelineContent: View, Equatable {
     let model: SessionChatModel
