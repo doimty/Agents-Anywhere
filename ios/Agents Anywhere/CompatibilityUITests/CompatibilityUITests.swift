@@ -135,6 +135,31 @@ final class CompatibilityUITests: XCTestCase {
         app.terminate()
     }
 
+    @MainActor func testBackportSessionKeyboardAvoidance() throws { try exerciseSessionKeyboard(backport: true) }
+    @MainActor func testNativeSessionKeyboardAvoidance() throws { try exerciseSessionKeyboard(backport: false) }
+
+    @MainActor
+    private func exerciseSessionKeyboard(backport: Bool) throws {
+        let app = launch(backport: backport, productionSession: true)
+        defer { app.terminate() }
+        selectFixtureSession(app)
+        let loading = app.descendants(matching: .any)["chat.opening.loading"]
+        XCTAssertTrue(waitUntil(timeout: 30) { !loading.exists })
+        assertFixtureHistory(app)
+
+        let editor = app.textViews["chat.composer.editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 10), "Production composer did not appear")
+        editor.tap()
+        let keyboard = app.keyboards.firstMatch
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 10), "Keyboard did not appear")
+        let dock = app.descendants(matching: .any)["chat.composer.dock"]
+        XCTAssertTrue(dock.exists, "Production composer dock did not appear")
+        XCTAssertLessThanOrEqual(dock.frame.maxY, keyboard.frame.minY + 4,
+            "Composer is hidden behind the keyboard")
+        XCTAssertGreaterThan(dock.frame.maxY, keyboard.frame.minY - 320,
+            "Composer jumped too far above the keyboard")
+    }
+
     @MainActor
     private func exerciseSessionOpening(backport: Bool) throws {
         let app = launch(backport: backport, productionSession: true, preobserve: true)
