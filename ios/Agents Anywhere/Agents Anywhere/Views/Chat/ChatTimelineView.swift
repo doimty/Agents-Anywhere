@@ -359,7 +359,14 @@ private struct LegacyChatTimeline: View {
                 .accessibilityHidden(!model.isOpeningReady)
                 .appOnChange(of: model.timeline.rows.count) { _, _ in
                     guard model.isOpeningReady, let last = model.timeline.rows.last else { return }
-                    withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(last.id, anchor: .bottom) }
+                    // Each batch appends a row; animating every append replays a
+                    // scroll on top of the streaming layout and stutters on older
+                    // devices. Only user-initiated jumps animate.
+                    if model.isRunning {
+                        proxy.scrollTo(last.id, anchor: .bottom)
+                    } else {
+                        withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(last.id, anchor: .bottom) }
+                    }
                 }
                 .appOnChange(of: model.responseRevision) { _, _ in
                     guard model.isOpeningReady, let last = model.timeline.rows.last else { return }

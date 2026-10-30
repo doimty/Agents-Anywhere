@@ -137,7 +137,7 @@ struct SidebarDrawer<SidebarHeader: View, SidebarContent: View, MainContent: Vie
                     edgeStyle: configuration.sidebarHeaderEdgeEffectStyle,
                     header: sidebarHeader, sidebar: sidebarContent, detail: mainContent)
             }
-        } else {
+        } else if #available(iOS 16.0, *), AppCompatibility.useNativeUI {
             // Resolve page builders above the state that changes on every pan
             // sample. Equality on the resulting page cannot prevent expensive
             // work that has already happened in its initializer.
@@ -149,6 +149,20 @@ struct SidebarDrawer<SidebarHeader: View, SidebarContent: View, MainContent: Vie
                     sidebarHeader: sidebarHeader,
                     sidebarContent: sidebarContent,
                     mainContent: mainContent
+                )
+            }
+        } else {
+            // iOS 15: drive the same sidebar from `isOpen` only. The interactive
+            // path needs a UIKit recogniser bridge and per-frame animation state,
+            // which left the drawer unresponsive on the older system.
+            GeometryReader { geometry in
+                SidebarDrawerPlainOverlay(
+                    isOpen: $isOpen,
+                    configuration: configuration,
+                    safeAreaInsets: geometry.safeAreaInsets,
+                    sidebarHeader: sidebarHeader(geometry.safeAreaInsets),
+                    sidebarContent: sidebarContent(geometry.safeAreaInsets),
+                    mainContent: mainContent(geometry.safeAreaInsets)
                 )
             }
         }
@@ -825,4 +839,57 @@ private var drawerSystemBackground: Color {
 #else
     Color.clear
 #endif
+}
+
+
+/// Deterministic drawer for iOS 15. Same sidebar, header and detail views as the
+/// interactive drawer, but the slide is derived from `isOpen` alone: no
+/// recogniser bridge and no per-frame animation state to get stuck in.
+private struct SidebarDrawerPlainOverlay<SidebarHeader: View, SidebarContent: View, MainContent: View>: View {
+    @Binding var isOpen: Bool
+    let configuration: SidebarDrawerConfiguration
+    let safeAreaInsets: EdgeInsets
+    let sidebarHeader: SidebarHeader
+    let sidebarContent: SidebarContent
+    let mainContent: MainContent
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var revealWidth: CGFloat {
+        max(UIScreen.main.bounds.width * configuration.revealFraction.clamped(to: 0.01 ... 1), 1)
+    }
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            mainContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if isOpen {
+                Color.black.opacity(0.25)
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture { isOpen = false }
+                    .accessibilityLabel(String(localized: "关闭侧栏"))
+                    .accessibilityAddTraits(.isButton)
+                    .transition(.opacity)
+            }
+
+            SidebarDrawerSidebar(
+                width: revealWidth,
+                safeAreaInsets: safeAreaInsets,
+                edgeEffectStyle: configuration.sidebarHeaderEdgeEffectStyle,
+                header: sidebarHeader,
+                content: sidebarContent
+            )
+            .offset(x: isOpen ? 0 : -revealWidth)
+            .allowsHitTesting(isOpen)
+            .accessibilityHidden(!isOpen)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .ignoresSafeArea()
+        .environment(\.sidebarDrawerPresentation, .drawer)
+        .environment(\.sidebarDrawerObscuresDetail, isOpen)
+        .environment(\.sidebarDrawerIsTransitioning, false)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.22), value: isOpen)
+    }
 }
