@@ -49,7 +49,11 @@ struct WorkspaceFilePreviewSheet: View {
                     .font(.footnote).foregroundStyle(.secondary).padding(12).frame(maxWidth: .infinity).background(.regularMaterial) }
             }
             .toolbar {
-                if isDownloading { ToolbarItem(placement: .topBarLeading) { ProgressView().accessibilityLabel(String(localized: "正在下载")) } }
+                ToolbarItem(placement: .topBarLeading) {
+                    if isDownloading {
+                        ProgressView().accessibilityLabel(String(localized: "正在下载"))
+                    }
+                }
                 ToolbarItem(placement: .topBarLeading) {
                     Button(String(localized: "重新加载"), appSymbol: "arrow.clockwise") { attempt += 1 }.disabled(!canRead || loading)
                 }

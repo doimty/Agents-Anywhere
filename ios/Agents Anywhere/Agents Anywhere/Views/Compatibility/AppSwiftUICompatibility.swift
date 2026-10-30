@@ -189,6 +189,14 @@ extension View {
         }
     }
 
+    /// View `tracking` is iOS 16; older systems keep the same text without the
+    /// extra letter spacing instead of dropping the label.
+    @ViewBuilder
+    func appTracking(_ value: CGFloat) -> some View {
+        if #available(iOS 16.0, *), AppCompatibility.useNativeUI { tracking(value) }
+        else { self }
+    }
+
     @ViewBuilder
     func appLineLimit(_ range: ClosedRange<Int>) -> some View {
         if #available(iOS 16.0, *), AppCompatibility.useNativeUI { lineLimit(range) }

@@ -19,7 +19,7 @@ struct DeviceSection<Actions: View, Content: View>: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 Text(title)
-                    .font(.footnote.weight(.semibold)).textCase(.uppercase).tracking(0.6)
+                    .font(.footnote.weight(.semibold)).textCase(.uppercase).appTracking(0.6)
                     .foregroundStyle(.secondary).lineLimit(1)
                     .accessibilityAddTraits(.isHeader)
                 Spacer(minLength: 8)

@@ -51,7 +51,7 @@ struct RootView: View {
                         Button(String(localized: "返回登录"), action: appState.returnToLogin)
                     } label: { AppSymbol("ellipsis").frame(width: 36, height: 36) }
                 }
-                .padding(14).glassEffect(.regular, in: .rect(cornerRadius: 20))
+                .padding(14).appGlassEffect(.regular, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
                 .padding(.horizontal, 22).padding(.top, 70).frame(maxWidth: 540)
             }
         }
