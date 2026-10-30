@@ -16,12 +16,26 @@ final class CompatibilityUITests: XCTestCase {
     @MainActor func testNativeLongConversation() throws { try exerciseConversation(backport: false) }
     @MainActor func testBackportEdgeAndClosingPan() throws { try exerciseGestures(backport: true) }
     @MainActor func testNativeEdgeAndClosingPan() throws { try exerciseGestures(backport: false) }
+    @MainActor func testBackportSessionOpening() throws { try exerciseSessionOpening(backport: true) }
+    @MainActor func testNativeSessionOpening() throws { try exerciseSessionOpening(backport: false) }
+    @MainActor func testBackportSessionCancellation() throws { try exerciseSessionCancellation(backport: true) }
+    @MainActor func testNativeSessionCancellation() throws { try exerciseSessionCancellation(backport: false) }
+    @MainActor func testBackportSessionErrorAndRetry() throws { try exerciseSessionErrorAndRetry(backport: true) }
+    @MainActor func testNativeSessionErrorAndRetry() throws { try exerciseSessionErrorAndRetry(backport: false) }
 
     @MainActor
-    private func launch(backport: Bool) -> XCUIApplication {
+    private func launch(backport: Bool, productionSession: Bool = false, slowSnapshot: Bool = false,
+                        preobserve: Bool = false, failFirstSnapshot: Bool = false) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication(bundleIdentifier: "com.agentsanywhere.app")
-        app.launchArguments = ["--compatibility-regression", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        // AppState is constructed even for the offline scene. An invalid URL in
+        // NSArgumentDomain makes its restore guard stop before reading Keychain.
+        app.launchArguments = ["--compatibility-regression", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                               "-agentsAnywhere.serverURL", "http://["]
+        if productionSession { app.launchArguments.append("--compatibility-production-session") }
+        if slowSnapshot { app.launchArguments.append("--compatibility-slow-snapshot") }
+        if preobserve { app.launchArguments.append("--compatibility-preobserve") }
+        if failFirstSnapshot { app.launchArguments.append("--compatibility-fail-first-snapshot") }
         if backport {
             app.launchArguments += ["--force-ios15-paths", "--force-perception-backport"]
         }
@@ -119,6 +133,148 @@ final class CompatibilityUITests: XCTestCase {
         XCTAssertTrue(waitUntil(timeout: queryBudget) { (editor.value as? String ?? "") != "Local regression reply" }, "Committed send did not clear the draft")
         screenshot(app, name: backport ? "backport-after-send" : "native-after-send")
         app.terminate()
+    }
+
+    @MainActor
+    private func exerciseSessionOpening(backport: Bool) throws {
+        let app = launch(backport: backport, productionSession: true, preobserve: true)
+        defer { app.terminate() }
+        selectFixtureSession(app)
+
+        let loading = app.descendants(matching: .any)["chat.opening.loading"]
+        XCTAssertTrue(loading.waitForExistence(timeout: 15), "The real session opening mask was never shown")
+        // No tap or other stimulus after the delayed snapshot is delivered: the
+        // production overlay must observe readiness and remove itself on its own.
+        XCTAssertTrue(waitUntil(timeout: 30) { !loading.exists }, "The real opening mask remained after the snapshot")
+        assertFixtureHistory(app)
+
+        openFixtureDrawer(app)
+        let counts = app.staticTexts["regression.sidebar.requests"].label
+        XCTAssertEqual(requestCount("snapshots", in: counts), 1, counts)
+        XCTAssertEqual(requestCount("completed", in: counts), 1, counts)
+        XCTAssertEqual(requestCount("primed", in: counts), 1, counts)
+        XCTAssertEqual(requestCount("unexpected", in: counts), 0, counts)
+    }
+
+    @MainActor
+    private func exerciseSessionErrorAndRetry(backport: Bool) throws {
+        let app = launch(backport: backport, productionSession: true, failFirstSnapshot: true)
+        defer { app.terminate() }
+        selectFixtureSession(app)
+        let loading = app.descendants(matching: .any)["chat.opening.loading"]
+        XCTAssertTrue(loading.waitForExistence(timeout: 15), "The real session opening mask was never shown")
+
+        // Let the failed snapshot alone update the production mask.
+        let error = app.staticTexts["chat.opening.error"]
+        let retry = app.buttons["chat.opening.retry"]
+        XCTAssertTrue(error.waitForExistence(timeout: 30), "Snapshot failure did not replace the spinner with an error")
+        XCTAssertTrue(retry.waitForExistence(timeout: 10), "Snapshot failure did not offer retry")
+        XCTAssertFalse(error.label.isEmpty)
+        XCTAssertFalse(loading.exists, "Snapshot failure left the spinner visible")
+        retry.tap()
+        XCTAssertTrue(loading.waitForExistence(timeout: 10), "Retry did not show loading")
+        XCTAssertTrue(waitUntil(timeout: 40) { !loading.exists }, "Retry did not finish")
+        assertFixtureHistory(app)
+
+        openFixtureDrawer(app)
+        let counts = app.staticTexts["regression.sidebar.requests"].label
+        XCTAssertEqual(requestCount("snapshots", in: counts), 2, counts)
+        XCTAssertEqual(requestCount("failed", in: counts), 1, counts)
+        XCTAssertEqual(requestCount("completed", in: counts), 1, counts)
+        XCTAssertEqual(requestCount("unexpected", in: counts), 0, counts)
+    }
+
+    @MainActor
+    private func exerciseSessionCancellation(backport: Bool) throws {
+        let app = launch(backport: backport, productionSession: true, slowSnapshot: true)
+        defer { app.terminate() }
+        selectFixtureSession(app)
+        let loading = app.descendants(matching: .any)["chat.opening.loading"]
+        XCTAssertTrue(loading.waitForExistence(timeout: 15))
+        XCTAssertFalse(waitUntil(timeout: 1) { !loading.exists }, "Slow snapshot returned before cancellation")
+
+        // Leave while the snapshot is in flight, then background and re-enter.
+        // The next visit must reuse that in-flight read, not start a second one.
+        openFixtureDrawer(app)
+        app.buttons["regression.sidebar.new"].tap()
+        let requests = app.staticTexts["regression.requests"]
+        XCTAssertTrue(requests.waitForExistence(timeout: 10))
+        let pending = requests.label
+        XCTAssertEqual(requestCount("snapshots", in: pending), 1, pending)
+        XCTAssertEqual(requestCount("completed", in: pending), 0, pending)
+        XCUIDevice.shared.press(.home)
+        XCTAssertTrue(waitUntil(timeout: 10) { app.state == .runningBackground || app.state == .runningBackgroundSuspended })
+        app.activate()
+        selectFixtureSession(app)
+        XCTAssertTrue(waitUntil(timeout: 40) { !loading.exists }, "Returning did not finish the shared snapshot")
+        assertFixtureHistory(app)
+
+        // The fixture holds a live ticket open. Backgrounding the selected
+        // session must cancel it without repeating the durable snapshot.
+        openFixtureDrawer(app)
+        let sidebarRequests = app.staticTexts["regression.sidebar.requests"]
+        XCTAssertTrue(sidebarRequests.waitForExistence(timeout: 10))
+        let beforeBackground = sidebarRequests.label
+        XCTAssertGreaterThanOrEqual(requestCount("tickets", in: beforeBackground) ?? -1, 1, beforeBackground)
+        let previousCancellations = requestCount("cancelled", in: beforeBackground) ?? -1
+        XCUIDevice.shared.press(.home)
+        XCTAssertTrue(waitUntil(timeout: 10) { app.state == .runningBackground || app.state == .runningBackgroundSuspended })
+        app.activate()
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.45)).tap()
+        openFixtureDrawer(app)
+        let afterBackground = sidebarRequests.label
+        XCTAssertGreaterThan(requestCount("cancelled", in: afterBackground) ?? -1,
+                             previousCancellations, afterBackground)
+        app.buttons["regression.sidebar.new"].tap()
+        XCTAssertTrue(requests.waitForExistence(timeout: 10))
+        assertSingleFixtureSnapshot(requests.label)
+
+        for _ in 0..<2 {
+            selectFixtureSession(app)
+            assertFixtureHistory(app)
+            openFixtureDrawer(app)
+            app.buttons["regression.sidebar.new"].tap()
+            XCTAssertTrue(requests.waitForExistence(timeout: 10))
+            assertSingleFixtureSnapshot(requests.label)
+        }
+    }
+
+    @MainActor
+    private func selectFixtureSession(_ app: XCUIApplication) {
+        openFixtureDrawer(app)
+        let conversation = app.buttons["regression.sidebar.conversation"]
+        XCTAssertTrue(waitUntil { conversation.isHittable }, "Fixture sidebar was not interactive")
+        conversation.tap()
+    }
+
+    @MainActor
+    private func openFixtureDrawer(_ app: XCUIApplication) {
+        let menu = app.buttons["chat.sidebar.open"]
+        XCTAssertTrue(menu.waitForExistence(timeout: 15))
+        let frame = menu.frame
+        XCTAssertGreaterThan(frame.width, 0)
+        app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: frame.midX, dy: frame.midY)).tap()
+        XCTAssertTrue(waitUntil { app.buttons["regression.sidebar.new"].isHittable }, "Fixture drawer did not open")
+    }
+
+    @MainActor
+    private func assertFixtureHistory(_ app: XCUIApplication) {
+        let history = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Offline history from delayed snapshot")).firstMatch
+        XCTAssertTrue(history.waitForExistence(timeout: 30), "The original history text was not accessible")
+        XCTAssertFalse(history.frame.isEmpty, "The original history text has no visible frame")
+        XCTAssertTrue(app.frame.intersects(history.frame), "The original history text is offscreen")
+    }
+
+    private func assertSingleFixtureSnapshot(_ counts: String) {
+        XCTAssertEqual(requestCount("snapshots", in: counts), 1, counts)
+        XCTAssertEqual(requestCount("completed", in: counts), 1, counts)
+        XCTAssertEqual(requestCount("unexpected", in: counts), 0, counts)
+    }
+
+    private func requestCount(_ key: String, in label: String) -> Int? {
+        label.split(separator: " ").first { $0.hasPrefix(key + "=") }
+            .flatMap { Int($0.dropFirst(key.count + 1)) }
     }
 
     @MainActor

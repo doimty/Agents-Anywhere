@@ -217,9 +217,12 @@ struct SessionChatView: View, Equatable {
             VStack(spacing: 12) {
                 if let error = model.openingError, !model.timeline.hasPresentedSnapshot {
                     Text(error).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        .accessibilityIdentifier("chat.opening.error")
                     Button(String(localized: "重试")) { Task { await model.prepareOpening() } }
+                        .accessibilityIdentifier("chat.opening.retry")
                 } else {
                     ProgressView().progressViewStyle(.circular).accessibilityLabel(String(localized: "正在加载会话"))
+                        .accessibilityIdentifier("chat.opening.loading")
                 }
             }
             .padding(24).frame(maxWidth: 320)
