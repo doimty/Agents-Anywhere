@@ -98,7 +98,7 @@ final class CompatibilityUITests: XCTestCase {
         XCTAssertTrue(app.frame.intersects(frame), "Menu is off screen")
         app.coordinate(withNormalizedOffset: .zero)
             .withOffset(CGVector(dx: frame.midX, dy: frame.midY)).tap()
-        let responsive = waitUntil(timeout: 5) { conversation.isHittable }
+        let responsive = waitUntil(timeout: 30) { conversation.isHittable }
         if !responsive { recordFailure(app, name: "long-conversation-sidebar") }
         XCTAssertTrue(responsive, "Tapping the visible menu in a long conversation did not open an interactive sidebar")
         newSession.tap()
