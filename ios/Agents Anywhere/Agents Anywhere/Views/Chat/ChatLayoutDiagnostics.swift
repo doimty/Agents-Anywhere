@@ -33,12 +33,12 @@ private struct ChatLayoutTrace: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onGeometryChange(for: CGSize.self, of: \.size) { previous, next in
+            .appOnGeometryChange(for: CGSize.self, of: { $0.size }) { previous, next in
                 guard transitioning || obscured, previous.height > 0,
                       abs(next.height - previous.height) > 1 || abs(next.width - previous.width) > 1 else { return }
                 Self.log.debug("Drawer component \(name, privacy: .public) [\(state, privacy: .public)]: size \(previous.width, privacy: .public)x\(previous.height, privacy: .public) -> \(next.width, privacy: .public)x\(next.height, privacy: .public)")
             }
-            .onChange(of: state) { previous, next in
+            .appOnChange(of: state) { previous, next in
                 guard transitioning || obscured else { return }
                 Self.log.debug("Drawer component \(name, privacy: .public): state \(previous, privacy: .public) -> \(next, privacy: .public)")
             }

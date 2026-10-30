@@ -18,7 +18,7 @@ struct SessionTargetSheet: View {
         AppNavigationStack {
             List {
                 if devices.isEmpty {
-                    ContentUnavailableView(String(localized: "No devices"), appSymbol: "desktopcomputer")
+                    AppContentUnavailableView(String(localized: "No devices"), appSymbol: "desktopcomputer")
                 }
                 Section {
                     ForEach(devices) { device in
