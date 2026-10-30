@@ -42,8 +42,12 @@ struct AuthScreen<Content: View>: View {
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
-            if showsCancel {
-                SheetCloseToolbar(action: onCancel)
+            // Conditional toolbar content (buildIf) is iOS 16; keep the item and
+            // decide inside its view so iOS 15 gets the same leading close.
+            ToolbarItem(placement: .topBarLeading) {
+                if showsCancel {
+                    SheetCloseButton(action: onCancel)
+                }
             }
         }
     }
