@@ -17,7 +17,10 @@ final class SessionChatModel {
     var error: String?
     var settingsError: String?
     private(set) var isOpeningPrepared = false
-    var isOpeningReady: Bool { isOpeningPrepared && timeline.hasPresentedSnapshot }
+    /// Only the authoritative aggregate satisfies readiness; a preview page does
+    /// not, because it carries no runtime facts.
+    private(set) var hasAuthoritativeOpening = false
+    var isOpeningReady: Bool { hasAuthoritativeOpening && timeline.hasPresentedSnapshot }
     /// A durable page shown before the aggregate returns. Writes stay disabled:
     /// they depend on fresh runtime facts, which this preview never provides.
     private(set) var isShowingHistoricPreview = false
@@ -217,33 +220,39 @@ final class SessionChatModel {
         // page is independently authorized and carries no runtime facts, so it
         // only fills the first paint; the aggregate still replaces it.
         let preview = Task { [weak self] in await self?.presentHistoricPreview() }
-        defer { preview.cancel() }
         do {
             // Both cold and cached visits begin with one latest page. Older
             // records are added only by the user's explicit history requests.
             _ = try await repository.open(sessionId: session.id)
         } catch {
-            preview.cancel()
             guard !Task.isCancelled else { return }
+            // The preview is deliberately not cancelled: a durable page is still
+            // useful when only the runtime reads failed. Authoritative success
+            // below is what prevents it from ever overwriting real state.
             openingError = error.localizedDescription
         }
-        preview.cancel()
-        guard session.isValid, !Task.isCancelled else { return }
+        guard session.isValid, !Task.isCancelled else { preview.cancel(); return }
         if let data = repository.cached(sessionId: session.id) {
             timeline.presentOpening(data.items, pendingMessages: session.pendingMessages)
+            hasAuthoritativeOpening = true
+            isShowingHistoricPreview = false
         }
-        isShowingHistoricPreview = false
         isOpeningPrepared = true
     }
 
     /// Best-effort first paint. Any failure stays silent because the
     /// authoritative read owns the user-visible error and the retry action.
     private func presentHistoricPreview() async {
-        guard !timeline.hasPresentedSnapshot, repository.cached(sessionId: session.id) == nil else { return }
+        // A fast aggregate needs no preview. Waiting briefly keeps the normal
+        // path at one request and only helps when the runtime reads stall.
+        do { try await ClientTask.sleep(for: .milliseconds(350)) } catch { return }
+        guard !Task.isCancelled, session.isValid, !hasAuthoritativeOpening,
+              !timeline.hasPresentedSnapshot,
+              repository.cached(sessionId: session.id) == nil else { return }
         do {
             let page = try await repository.previewTimelinePage(sessionId: session.id)
             guard !Task.isCancelled, session.isValid, !timeline.hasPresentedSnapshot,
-                  !isOpeningPrepared else { return }
+                  !hasAuthoritativeOpening else { return }
             let items = page.items.filter(\.isVisibleInChat)
             guard !items.isEmpty else { return }
             timeline.presentOpening(items, pendingMessages: session.pendingMessages)

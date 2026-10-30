@@ -276,6 +276,7 @@ import Testing
         await model.prepareOpening()
         #expect(model.openingError != nil)
         #expect(model.isOpeningPrepared && !model.isOpeningReady)
+        try await eventually { model.isShowingHistoricPreview }
         #expect(model.timeline.rows.map(\.id) == ["historic"] && model.isContentVisible)
         #expect(!model.session.canSend)
     }
