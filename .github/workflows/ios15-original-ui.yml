@@ -96,7 +96,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          products="$RUNNER_TEMP/DeviceDerivedData/Build/Products/Release-iphoneos"
+          products="$RUNNER_TEMP/DeviceDerivedData/Build/Products/Debug-iphoneos"
           app="$products/Agents Anywhere.app"
           test -f "$app/Info.plist" || { ls -la "$products"; exit 1; }
           floor="$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$app/Info.plist")"
