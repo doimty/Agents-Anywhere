@@ -14,14 +14,25 @@ struct OneTimeCodeField: View {
     }
 
     var body: some View {
+        Group {
+            // `kerning` on a view is iOS 16; the older field keeps the same
+            // monospaced, centered digits without extra letter spacing.
+            if #available(iOS 16.0, *), AppCompatibility.useNativeUI {
+                field.kerning(8)
+            } else {
+                field
+            }
+        }
+        .multilineTextAlignment(.center)
+        .keyboardType(.numberPad).textContentType(.oneTimeCode)
+        .textInputAutocapitalization(.never).autocorrectionDisabled()
+        .padding(.vertical, 10)
+        .accessibilityLabel(title)
+    }
+
+    private var field: some View {
         TextField(String(repeating: "0", count: length), text: digits)
             .textFieldStyle(.plain)
             .font(.system(.largeTitle, design: .monospaced).weight(.medium))
-            .kerning(8)
-            .multilineTextAlignment(.center)
-            .keyboardType(.numberPad).textContentType(.oneTimeCode)
-            .textInputAutocapitalization(.never).autocorrectionDisabled()
-            .padding(.vertical, 10)
-            .accessibilityLabel(title)
     }
 }
