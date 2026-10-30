@@ -42,10 +42,12 @@ struct AppRouteNavigationStack<Route: Hashable, Root: View, Destination: View>: 
 struct AppRouteNavigationLink<Route: Hashable, Label: View>: View {
     let value: Route
     @Binding var path: [Route]
+    private let showsChevron: Bool
     private let label: Label
 
-    init(value: Route, path: Binding<[Route]>, @ViewBuilder label: () -> Label) {
-        self.value = value; _path = path; self.label = label()
+    init(value: Route, path: Binding<[Route]>, showsChevron: Bool = true,
+         @ViewBuilder label: () -> Label) {
+        self.value = value; _path = path; self.showsChevron = showsChevron; self.label = label()
     }
 
     var body: some View {
@@ -56,10 +58,12 @@ struct AppRouteNavigationLink<Route: Hashable, Label: View>: View {
                 HStack(spacing: 6) {
                     label
                     Spacer(minLength: 6)
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                        .accessibilityHidden(true)
+                    if showsChevron {
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
+                    }
                 }.frame(maxWidth: .infinity, alignment: .leading)
             }.buttonStyle(.plain).accessibilityAddTraits(.isLink)
         }

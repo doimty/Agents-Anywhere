@@ -43,7 +43,7 @@ struct ComposerOptionsSheet: View {
                         Button(String(localized: "重新加载")) { Task { await onReload() } }
                     }
                     VStack(spacing: 0) {
-                        AppRouteNavigationLink(value: Page.models, path: $path) {
+                        AppRouteNavigationLink(value: Page.models, path: $path, showsChevron: false) {
                             optionRow(
                                 String(localized: "dashboard.new.modelAndReasoning"),
                                 icon: "sparkles",
@@ -52,7 +52,7 @@ struct ComposerOptionsSheet: View {
                         }
                         .disabled(isLoading || !canSelectModel || settings.catalog.models.isEmpty)
                         Divider().padding(.leading, 52)
-                        AppRouteNavigationLink(value: Page.permissions, path: $path) {
+                        AppRouteNavigationLink(value: Page.permissions, path: $path, showsChevron: false) {
                             optionRow(
                                 String(localized: "权限"),
                                 icon: "checkmark.shield",

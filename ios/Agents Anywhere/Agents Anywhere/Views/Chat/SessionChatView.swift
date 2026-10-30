@@ -168,6 +168,18 @@ struct SessionChatView: View, Equatable {
             transaction.disablesAnimations = true
             withTransaction(transaction) { hasStartedLoading = true }
         }
+        .task {
+            // Opening from the sidebar used to wait for the drawer to report
+            // "settled", which depends on a motion completion that a stray pan
+            // during the closing animation can discard. Entering the same
+            // session from the device page needs no such signal, so a missing
+            // one left only the sidebar path spinning. Load after a bounded wait.
+            do { try await ClientTask.sleep(for: .milliseconds(900)) } catch { return }
+            guard !hasStartedLoading, session.isValid else { return }
+            var transaction = Transaction(animation: nil)
+            transaction.disablesAnimations = true
+            withTransaction(transaction) { hasStartedLoading = true }
+        }
         .task(id: hasStartedLoading) {
             guard hasStartedLoading else { return }
             // Reattaching a loaded detail only resumes observation.
