@@ -24,6 +24,7 @@ struct ChatTimelineView: View {
     @State private var nativePhase = TimelineScrollState.Phase.idle
     /// The return pill would sit on top of the keyboard while typing.
     @State private var keyboardIsVisible = false
+    @State private var legacyScrollToken = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.sidebarDrawerIsTransitioning) private var sidebarIsTransitioning
     @Environment(\.sidebarDrawerObscuresDetail) private var sidebarObscuresDetail
@@ -37,7 +38,76 @@ struct ChatTimelineView: View {
     }
     private var viewport: TimelineViewport { viewportSample.value ?? scrolling.viewport }
     private var navigationIsSuspended: Bool { sidebarIsTransitioning || sidebarObscuresDetail }
+
     var body: some View {
+        if #available(iOS 18.0, *), AppCompatibility.useNativeUI {
+            nativeTimeline
+        } else {
+            legacyTimeline
+        }
+    }
+
+    /// iOS 15-17 keep the identical transcript, composer spacing and row cards.
+    /// Scroll phase/geometry callbacks and ScrollPosition do not exist there, so
+    /// this path follows new content with ScrollViewReader and leaves history
+    /// paging to the same explicit loading controls.
+    private var legacyTimeline: some View {
+        ZStack(alignment: .bottom) {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    ChatTimelineContent(model: model, onAttachment: onAttachment, onFile: onFile,
+                        latestPullReady: false, isLoadingLatest: latestLoadRequest != nil,
+                        olderPullReady: false, isLoadingOlder: olderLoadRequest != nil,
+                        keepsOlderPrompt: hasRequestedOlder, historyAnchor: nil,
+                        onLoadOlder: loadOlder, onLoadLatest: loadLatest,
+                        onHistoryLayout: { _ in },
+                        onPromptVisibility: { _ in },
+                        onOlderPromptVisibility: { _ in },
+                        onTailVisibility: { _, _ in })
+                        .equatable()
+                }
+                .scrollDismissesKeyboard(.interactively)
+                .scrollIndicators(.hidden)
+                .allowsHitTesting(model.isOpeningReady)
+                .accessibilityHidden(!model.isOpeningReady)
+                .appOnChange(of: model.timeline.rows.count) { _, _ in
+                    guard model.isOpeningReady, let last = model.timeline.rows.last else { return }
+                    withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(last.id, anchor: .bottom) }
+                }
+                .appOnChange(of: model.responseRevision) { _, _ in
+                    guard model.isOpeningReady, let last = model.timeline.rows.last else { return }
+                    proxy.scrollTo(last.id, anchor: .bottom)
+                }
+                .appOnChange(of: legacyScrollToken) { _, _ in
+                    guard let last = model.timeline.rows.last else { return }
+                    withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(last.id, anchor: .bottom) }
+                }
+            }
+            if !keyboardIsVisible, scrolling.showsBottomButton() {
+                Button {
+                    legacyScrollToken &+= 1
+                } label: {
+                    Label(String(localized: "到底部"), appSymbol: "arrow.down").font(.caption.weight(.medium)).foregroundStyle(.primary)
+                        .padding(.horizontal, 12).frame(height: returnPillHeight)
+                        .background(.regularMaterial, in: Capsule())
+                        .frame(minHeight: 44).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain).accessibilityIdentifier("chat.timeline.bottom")
+                .padding(.bottom, 2)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .traceChatLayout("timeline-viewport")
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            keyboardIsVisible = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            keyboardIsVisible = false
+        }
+    }
+
+    @available(iOS 18.0, *)
+    private var nativeTimeline: some View {
         // A sibling overlay receives taps independently of the scroll view's
         // deceleration recognizer. The explicit return intent survives its callbacks.
         ZStack(alignment: .bottom) {
@@ -229,6 +299,7 @@ struct ChatTimelineView: View {
             keyboardIsVisible = false
         }
     }
+    @available(iOS 18.0, *)
     private func loadOlder() {
         guard model.session.isValid, model.session.hasOlderItems,
               !model.session.isLoadingHistory, olderLoadRequest == nil, latestLoadRequest == nil else { return }
@@ -241,6 +312,7 @@ struct ChatTimelineView: View {
         hasRequestedOlder = true
         olderLoadRequest = scrolling.navigationGeneration
     }
+    @available(iOS 18.0, *)
     private func loadLatest() {
         guard model.session.isValid, model.session.hasNewerItems,
               !model.session.isLoadingHistory, latestLoadRequest == nil, olderLoadRequest == nil else { return }
@@ -249,6 +321,7 @@ struct ChatTimelineView: View {
         scrolling.requestBottom()
         latestLoadRequest = scrolling.navigationGeneration
     }
+    @available(iOS 18.0, *)
     private func scrollToBottom(_ command: TimelineScrollState.BottomCommand) {
         withAnimation(reduceMotion ? nil : .interactiveSpring(response: 0.28, dampingFraction: 1, blendDuration: 0.12),
             completionCriteria: .removed) {
@@ -260,12 +333,14 @@ struct ChatTimelineView: View {
             if scrolling.complete(command) { releaseScrollPosition() }
         }
     }
+    @available(iOS 18.0, *)
     private func releaseScrollPosition() {
         guard position.edge != nil || position.point != nil else { return }
         var transaction = Transaction(animation: nil)
         transaction.disablesAnimations = true
         withTransaction(transaction) { position.isPositionedByUser = true }
     }
+    @available(iOS 18.0, *)
     private func historyDidLayOut(_ layout: TimelineHistoryLayout) {
         historyUpdates.submit(layout) { layout in
             if historyLayout != layout { historyLayout = layout }

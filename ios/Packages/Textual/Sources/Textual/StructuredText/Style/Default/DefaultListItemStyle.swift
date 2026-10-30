@@ -36,9 +36,11 @@ extension StructuredText.ListItemStyle where Self == StructuredText.DefaultListI
     .init(markerSpacing: markerSpacing)
   }
 }
+#if DEBUG
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview("OrderedList") {
   StructuredText(
     markdown: """
@@ -68,6 +70,7 @@ extension StructuredText.ListItemStyle where Self == StructuredText.DefaultListI
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview("UnorderedList") {
   StructuredText(
     markdown: """
@@ -83,3 +86,4 @@ extension StructuredText.ListItemStyle where Self == StructuredText.DefaultListI
   .textual.textSelection(.enabled)
   .textual.unorderedListMarker(.hierarchical(.disc, .circle, .square))
 }
+#endif

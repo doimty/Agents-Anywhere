@@ -27,7 +27,9 @@ extension StructuredText.BlockQuoteStyle where Self == StructuredText.GitHubBloc
     .init()
   }
 }
+#if DEBUG
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview {
   StructuredText(
     markdown: """
@@ -42,3 +44,4 @@ extension StructuredText.BlockQuoteStyle where Self == StructuredText.GitHubBloc
   .textual.blockQuoteStyle(.gitHub)
   .textual.paragraphStyle(.gitHub)
 }
+#endif

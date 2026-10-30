@@ -43,7 +43,9 @@ extension StructuredText.HeadingStyle where Self == StructuredText.GitHubHeading
     .init()
   }
 }
+#if DEBUG
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview {
   ScrollView {
     StructuredText(
@@ -68,3 +70,4 @@ extension StructuredText.HeadingStyle where Self == StructuredText.GitHubHeading
   .textual.headingStyle(.gitHub)
   .textual.paragraphStyle(.gitHub)
 }
+#endif

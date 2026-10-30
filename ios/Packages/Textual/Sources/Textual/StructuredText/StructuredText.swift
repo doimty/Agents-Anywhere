@@ -167,9 +167,11 @@ extension StructuredText {
     )
   }
 }
+#if DEBUG
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview(traits: .fixedLayout(width: 400, height: 600)) {
   @Previewable @State var width: CGFloat = 200
 
@@ -209,6 +211,7 @@ extension StructuredText {
   }
 }
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview("Custom Emoji") {
   let emoji: Set<Emoji> = [
     Emoji(shortcode: "dog", url: URL(string: "https://picsum.photos/id/237/32/32")!),
@@ -228,3 +231,4 @@ extension StructuredText {
     .padding()
   }
 }
+#endif

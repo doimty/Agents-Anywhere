@@ -124,7 +124,9 @@ extension AnimationClock {
 }
 
 // MARK: - Preview
+#if DEBUG
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview("JPEG") {
   @Previewable @State var image: Image?
 
@@ -144,6 +146,7 @@ extension AnimationClock {
   }
 }
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview("GIF") {
   @Previewable @State var image: Image?
 
@@ -166,6 +169,7 @@ extension AnimationClock {
   }
 }
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview("APNG") {
   @Previewable @State var image: Image?
 
@@ -188,6 +192,7 @@ extension AnimationClock {
   }
 }
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview("webP") {
   @Previewable @State var image: Image?
 
@@ -207,6 +212,7 @@ extension AnimationClock {
   }
 }
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview("HEIC") {
   @Previewable @State var image: Image?
 
@@ -228,3 +234,4 @@ extension AnimationClock {
     )
   }
 }
+#endif

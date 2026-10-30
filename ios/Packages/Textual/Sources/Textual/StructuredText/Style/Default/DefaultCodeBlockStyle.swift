@@ -34,9 +34,11 @@ extension StructuredText.CodeBlockStyle where Self == StructuredText.DefaultCode
     .init()
   }
 }
+#if DEBUG
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview {
   StructuredText(
     markdown: """
@@ -57,3 +59,4 @@ extension StructuredText.CodeBlockStyle where Self == StructuredText.DefaultCode
   .padding()
   .textual.textSelection(.enabled)
 }
+#endif

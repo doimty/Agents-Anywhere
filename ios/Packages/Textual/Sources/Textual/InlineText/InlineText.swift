@@ -152,9 +152,11 @@ extension InlineText {
 }
 
 // MARK: - Previews
+#if DEBUG
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview("Custom Emoji") {
   ScrollView {
     InlineText(
@@ -170,3 +172,4 @@ extension InlineText {
   }
   .textual.textSelection(.enabled)
 }
+#endif

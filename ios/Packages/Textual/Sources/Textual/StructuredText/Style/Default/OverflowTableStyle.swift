@@ -55,9 +55,11 @@ extension StructuredText.TableStyle where Self == StructuredText.OverflowTableSt
     .init(relativeWidth: relativeWidth)
   }
 }
+#if DEBUG
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview {
   StructuredText(
     markdown: """
@@ -76,3 +78,4 @@ extension StructuredText.TableStyle where Self == StructuredText.OverflowTableSt
   .padding()
   .textual.tableStyle(.overflow)
 }
+#endif

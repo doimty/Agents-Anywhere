@@ -148,9 +148,11 @@ extension StructuredText {
     }
   }
 }
+#if DEBUG
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview {
   @Previewable @State var textAlignment = TextAlignment.leading
   @Previewable @State var blockSpacing: CGFloat = 1
@@ -200,3 +202,4 @@ extension StructuredText {
   .multilineTextAlignment(textAlignment)
   .padding()
 }
+#endif

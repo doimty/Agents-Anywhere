@@ -22,9 +22,11 @@ extension StructuredText.ThematicBreakStyle where Self == StructuredText.Divider
     .init()
   }
 }
+#if DEBUG
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview {
   StructuredText(
     markdown: """
@@ -38,3 +40,4 @@ extension StructuredText.ThematicBreakStyle where Self == StructuredText.Divider
   .padding()
   .textual.textSelection(.enabled)
 }
+#endif

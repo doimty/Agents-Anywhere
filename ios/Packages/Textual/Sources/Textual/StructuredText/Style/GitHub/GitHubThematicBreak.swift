@@ -22,7 +22,9 @@ extension StructuredText.ThematicBreakStyle where Self == StructuredText.GitHubT
     .init()
   }
 }
+#if DEBUG
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview {
   StructuredText(
     markdown: """
@@ -37,3 +39,4 @@ extension StructuredText.ThematicBreakStyle where Self == StructuredText.GitHubT
   .textual.paragraphStyle(.gitHub)
   .textual.thematicBreakStyle(.gitHub)
 }
+#endif

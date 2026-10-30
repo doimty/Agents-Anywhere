@@ -38,9 +38,11 @@ extension StructuredText.BlockQuoteStyle where Self == StructuredText.DefaultBlo
     .init(backgroundColor: .asideBackground, borderColor: .asideBorder)
   }
 }
+#if DEBUG
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview {
   StructuredText(
     markdown: """
@@ -54,3 +56,4 @@ extension StructuredText.BlockQuoteStyle where Self == StructuredText.DefaultBlo
   .padding()
   .textual.textSelection(.enabled)
 }
+#endif

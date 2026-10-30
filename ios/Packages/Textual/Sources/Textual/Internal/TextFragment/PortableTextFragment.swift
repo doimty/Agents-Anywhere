@@ -167,7 +167,7 @@ struct AnchoredPortableTextLayout {
 }
 
 struct PortableTextLayoutKey: PreferenceKey {
-  static let defaultValue: [AnchoredPortableTextLayout] = []
+  static var defaultValue: [AnchoredPortableTextLayout] { [] }
   static func reduce(value: inout [AnchoredPortableTextLayout], nextValue: () -> [AnchoredPortableTextLayout]) {
     value.append(contentsOf: nextValue())
   }

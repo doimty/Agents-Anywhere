@@ -54,7 +54,9 @@ extension StructuredText.TableStyle where Self == StructuredText.GitHubTableStyl
     .init()
   }
 }
+#if DEBUG
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #Preview {
   StructuredText(
     markdown: """
@@ -76,3 +78,4 @@ extension StructuredText.TableStyle where Self == StructuredText.GitHubTableStyl
   .textual.tableCellStyle(.gitHub)
   .textual.tableStyle(.gitHub)
 }
+#endif
