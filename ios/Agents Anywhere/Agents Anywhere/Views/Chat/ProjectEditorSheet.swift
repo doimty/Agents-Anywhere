@@ -28,19 +28,27 @@ struct ProjectEditorSheet: View {
         let path = draft.path.trimmingCharacters(in: .whitespacesAndNewlines)
         return path == "~" || path.hasPrefix("~/") || path.hasPrefix("~\\") || ProjectWorkspacePath.key(path, deviceOS: device?.deviceOs) != nil
     }
+    private var selectableDevices: [V2Connector] {
+        repository.connectors.filter { $0.status == .online || $0.id == draft.connectorID }
+    }
+
+    private var deviceSelection: Binding<String> {
+        Binding(get: { draft.connectorID }, set: { draft.selectDevice($0) })
+    }
+
     var body: some View {
         AppNavigationStack {
             Form {
                 Section(String(localized: "运行设备")) {
                     if draft.original != nil {
-                        LabeledContent(String(localized: "设备"), value: device?.name ?? draft.connectorID)
+                        AppLabeledContent(String(localized: "设备"), value: device?.name ?? draft.connectorID)
                     } else {
-                        Picker(String(localized: "设备"), selection: Binding(get: { draft.connectorID }, set: { draft.selectDevice($0) })) {
+                        Picker(String(localized: "设备"), selection: deviceSelection) {
                             Text(String(localized: "选择设备")).tag("")
-                            ForEach(repository.connectors.filter { $0.status == .online || $0.id == draft.connectorID }) { device in
-                                Text(device.name).tag(device.id).disabled(device.status != .online)
+                            ForEach(selectableDevices) { candidate in
+                                Text(candidate.name).tag(candidate.id).disabled(candidate.status != .online)
                             }
-                        }.pickerStyle(.navigationLink)
+                        }.appNavigationLinkPickerStyle()
                         if device?.status != .online {
                             Text(String(localized: "请选择在线设备后创建项目。"))
                                 .font(.footnote).foregroundStyle(.secondary)
@@ -55,8 +63,6 @@ struct ProjectEditorSheet: View {
                         } else {
                             AppMultilineTextField(String(localized: "设备上的完整路径"),
                             text: Binding(get: { draft.path }, set: updatePath), lineLimit: 1...4)
-                                .font(.system(.body, design: .monospaced))
-                                .textInputAutocapitalization(.never).autocorrectionDisabled().disabled(device == nil)
                                 .font(.system(.body, design: .monospaced))
                                 .textInputAutocapitalization(.never).autocorrectionDisabled().disabled(device == nil)
                         }

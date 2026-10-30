@@ -204,6 +204,14 @@ extension View {
 
     /// View `tracking` is iOS 16; older systems keep the same text without the
     /// extra letter spacing instead of dropping the label.
+    /// `.pickerStyle(.navigationLink)` is iOS 16; iOS 15 keeps the default menu
+    /// picker with the same options and the same selection binding.
+    @ViewBuilder
+    func appNavigationLinkPickerStyle() -> some View {
+        if #available(iOS 16.0, *), AppCompatibility.useNativeUI { pickerStyle(.navigationLink) }
+        else { self }
+    }
+
     /// `.menuStyle(.button)` is iOS 16; the default menu style stays on iOS 15.
     @ViewBuilder
     func appButtonMenuStyle() -> some View {
