@@ -86,7 +86,10 @@ extension StructuredText {
     }
 
     private func cell(row: Int, column: Int) -> some View {
-      let content: AttributedSubstring = rows[row][column][...]
+      // `[...]` on AttributedString resolves to the unbounded-range overload,
+      // which is not a RangeExpression here; slice with explicit indices.
+      let source = rows[row][column]
+      let content: AttributedSubstring = source[source.startIndex..<source.endIndex]
       let label = TableCell(content, row: row, column: column)
       let columnWidth: CGFloat? = widths[column]
       let rowHeight: CGFloat? = heights[row]
