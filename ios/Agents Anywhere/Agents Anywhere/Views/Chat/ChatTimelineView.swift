@@ -654,6 +654,7 @@ private struct ChatTimelineContent: View, Equatable {
                             .equatable()
                     }
                     .id(group.id)
+                    .modifier(TimelineRowAccessibility(usesNativeScroll: legacyScroll == nil))
                     .background {
                         if let legacyScroll {
                             AppTimelineAnchorProbe(driver: legacyScroll.driver, groupID: group.id)
@@ -728,6 +729,36 @@ private struct ChatTimelineContent: View, Equatable {
             }
             .traceChatLayout("timeline-content", state: "groups=\(groups.count), footers=\(actions.count), running=\(running)")
         }
+    }
+}
+
+/// Native VStack keeps history geometry realized for precise restoration, but
+/// its offscreen Markdown must not make every accessibility/toolbar query walk
+/// thousands of text and link nodes. Rows become accessible as scrolling reveals
+/// them; their layout, drawing, text selection and history remain unchanged.
+private struct TimelineRowAccessibility: ViewModifier {
+    let usesNativeScroll: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *), usesNativeScroll {
+            content.modifier(VisibleTimelineAccessibility())
+        } else {
+            content
+        }
+    }
+}
+
+@available(iOS 18.0, *)
+private struct VisibleTimelineAccessibility: ViewModifier {
+    @State private var isVisible = false
+
+    func body(content: Content) -> some View {
+        content
+            .onScrollVisibilityChange(threshold: 0) { visible in
+                if isVisible != visible { isVisible = visible }
+            }
+            .accessibilityHidden(!isVisible)
     }
 }
 
