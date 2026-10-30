@@ -50,10 +50,13 @@ struct ChatComposer: View {
     @ViewBuilder private var composerLayout: some View {
         if #available(iOS 16.0, *), AppCompatibility.useNativeUI {
             ComposerLayout(expanded: draft.isExpanded, maximumEditorHeight: maximumEditorHeight, controls: controls) {
-                optionsButton
-                textEditor
-                sendButton
-                if showsCommands { commandsButton }
+                // Each slot is built by this Layout's own builder, outside the
+                // composer's body scope, so every slot that reads the draft
+                // needs its own tracking registration.
+                AppObservationTracking { optionsButton }
+                AppObservationTracking { textEditor }
+                AppObservationTracking { sendButton }
+                if showsCommands { AppObservationTracking { commandsButton } }
             }
         } else {
             ComposerLayoutLegacy(expanded: draft.isExpanded, maximumEditorHeight: maximumEditorHeight,
