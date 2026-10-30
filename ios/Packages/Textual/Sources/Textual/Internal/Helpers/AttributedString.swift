@@ -73,7 +73,10 @@ extension AttributedString {
       let range: Range<AttributedString.Index>
     }
 
-    private struct Boundary: Equatable {
+    /// Deliberately not Equatable: synthesised equality would compare
+    /// `AttributedString.Runs.Index`, whose `==` is absent from Foundation on
+    /// iOS 15 and aborts the process at launch.
+    private struct Boundary {
       let index: AttributedString.Runs.Index
       let intent: PresentationIntent.IntentType?
     }
