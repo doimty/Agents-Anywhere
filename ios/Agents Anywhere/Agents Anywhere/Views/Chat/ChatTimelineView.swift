@@ -87,8 +87,8 @@ private struct NativeChatTimeline: View {
             .defaultScrollAnchor(.top, for: .initialOffset)
             .defaultScrollAnchor(.top, for: .alignment)
             .defaultScrollAnchor(.top, for: .sizeChanges)
-            .allowsHitTesting(model.isOpeningReady)
-            .accessibilityHidden(!model.isOpeningReady)
+            .allowsHitTesting(model.isContentVisible)
+            .accessibilityHidden(!model.isContentVisible)
             .onScrollPhaseChange { _, phase, context in
                 // A phase callback carries a newer authoritative sample.
                 viewportUpdates.cancel()
@@ -171,15 +171,15 @@ private struct NativeChatTimeline: View {
                 }
             }
             .onChange(of: model.session.pendingMessages.last?.id) { _, id in
-                if model.isOpeningReady, id != nil && !hasInteractions { scrolling.requestBottom() }
+                if model.isContentVisible, id != nil && !hasInteractions { scrolling.requestBottom() }
             }
             .onChange(of: model.responseRevision) { _, _ in
-                if model.isOpeningReady { scrolling.requestBottom() }
+                if model.isContentVisible { scrolling.requestBottom() }
             }
             .onChange(of: hasInteractions, initial: true) { _, presented in
                 scrolling.setInteractionPresented(presented)
             }
-            .onChange(of: model.isOpeningReady, initial: true) { _, ready in
+            .onChange(of: model.isContentVisible, initial: true) { _, ready in
                 if ready { scrolling.open(interactionPresented: hasInteractions) }
             }
             .onChange(of: scrolling.navigationGeneration) { _, _ in
@@ -379,13 +379,13 @@ private struct LegacyChatTimeline: View {
                         .appHiddenScrollIndicators()
                         .appAlwaysVerticalBounce()
                         .appScrollEdgeEffect(.soft, for: .top)
-                        .allowsHitTesting(model.isOpeningReady)
-                        .accessibilityHidden(!model.isOpeningReady)
+                        .allowsHitTesting(model.isContentVisible)
+                        .accessibilityHidden(!model.isContentVisible)
                         .appOnChange(of: viewportIsActive, initial: true) { _, active in
                             scrolling.setNavigationSuspended(!active)
                             if !active { driver.suspend() }
                         }
-                        .appOnChange(of: model.isOpeningReady, initial: true) { _, ready in
+                        .appOnChange(of: model.isContentVisible, initial: true) { _, ready in
                             if ready { scrolling.open(interactionPresented: hasInteractions) }
                         }
                         .appOnChange(of: hasInteractions, initial: true) { _, presented in
@@ -393,13 +393,13 @@ private struct LegacyChatTimeline: View {
                             if presented { driver.cancelHistoryRestoration() }
                         }
                         .appOnChange(of: model.session.pendingMessages.last?.id) { _, id in
-                            if model.isOpeningReady, id != nil && !hasInteractions {
+                            if model.isContentVisible, id != nil && !hasInteractions {
                                 driver.cancelHistoryRestoration()
                                 scrolling.requestBottom()
                             }
                         }
                         .appOnChange(of: model.responseRevision) { _, _ in
-                            if model.isOpeningReady {
+                            if model.isContentVisible {
                                 driver.cancelHistoryRestoration()
                                 scrolling.requestBottom()
                             }

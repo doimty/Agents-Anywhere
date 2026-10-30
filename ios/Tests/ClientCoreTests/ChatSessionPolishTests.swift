@@ -223,6 +223,63 @@ import Testing
         #expect(http.count("messages") == 1)
     }
 
+    @Test func slowAggregateShowsTheDurablePageFirstAndStillYieldsToIt() async throws {
+        let http = TestHTTPTransport(), gate = TestGate()
+        http.respond = { call in
+            if call.path.hasSuffix("snapshot") { await gate.wait(); return try http.defaultResponse(call) }
+            if call.path.hasSuffix("timeline") {
+                return try JSONSerialization.data(withJSONObject: [
+                    "sessionId": "session",
+                    "items": [try itemObject(id: "historic", order: 1, text: "Durable history")],
+                    "nextSeq": 10, "hasMore": false,
+                ])
+            }
+            return try http.defaultResponse(call)
+        }
+        let repo = repository(transport: http)
+        defer { gate.release(); repo.reset() }
+        let model = SessionChatModel(session: repo.session(id: "session"), repository: repo,
+            attachments: .init(attachmentAPI: V2AttachmentAPI(transport: http)))
+        let opening = Task { await model.prepareOpening() }
+        try await eventually { model.isShowingHistoricPreview }
+        // The reader sees authorized history while the aggregate is still
+        // running its runtime reads, but nothing becomes writable.
+        #expect(model.timeline.rows.map(\.id) == ["historic"])
+        #expect(model.isContentVisible && !model.isOpeningReady)
+        #expect(!model.session.canSend && !model.canAttach)
+        #expect(model.openingError == nil)
+
+        gate.release()
+        await opening.value
+        // The authoritative aggregate replaces the preview page.
+        #expect(model.isOpeningReady && !model.isShowingHistoricPreview)
+        #expect(model.timeline.rows.map(\.id) == ["item"])
+    }
+
+    @Test func aggregateFailureKeepsThePreviewAndStillReportsTheError() async throws {
+        let http = TestHTTPTransport()
+        http.respond = { call in
+            if call.path.hasSuffix("snapshot") { throw URLError(.timedOut) }
+            if call.path.hasSuffix("timeline") {
+                return try JSONSerialization.data(withJSONObject: [
+                    "sessionId": "session",
+                    "items": [try itemObject(id: "historic", order: 1, text: "Durable history")],
+                    "nextSeq": 10, "hasMore": false,
+                ])
+            }
+            return try http.defaultResponse(call)
+        }
+        let repo = repository(transport: http)
+        defer { repo.reset() }
+        let model = SessionChatModel(session: repo.session(id: "session"), repository: repo,
+            attachments: .init(attachmentAPI: V2AttachmentAPI(transport: http)))
+        await model.prepareOpening()
+        #expect(model.openingError != nil)
+        #expect(model.isOpeningPrepared && !model.isOpeningReady)
+        #expect(model.timeline.rows.map(\.id) == ["historic"] && model.isContentVisible)
+        #expect(!model.session.canSend)
+    }
+
     @Test func echoCannotEraseANewDraftEvenWhenItsTextMatchesTheSentMessage() async throws {
         let http = TestHTTPTransport(), realtime = TestRealtimeAPI(), gate = TestGate()
         let repo = repository(transport: http, realtime: realtime)

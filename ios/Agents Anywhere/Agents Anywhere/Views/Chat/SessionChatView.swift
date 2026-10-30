@@ -66,14 +66,14 @@ struct SessionChatView: View, Equatable {
                 }
                     .overlay {
                         AppObservationTracking {
-                            if model.isOpeningReady && model.timeline.rows.isEmpty && model.timeline.pendingMessages.isEmpty {
+                            if model.isContentVisible && model.timeline.rows.isEmpty && model.timeline.pendingMessages.isEmpty {
                                 VStack(spacing: 12) {
                                     Text(String(localized: "在这里继续你的任务")).foregroundStyle(.secondary)
                                 }.allowsHitTesting(false)
                             }
                         }
                     }
-                    .overlay { if !model.isOpeningReady { openingMask } }
+                    .overlay { if !model.isContentVisible { openingMask } }
                     .safeAreaInset(edge: .bottom, spacing: 0) {
                         AppObservationTracking {
                             VStack(spacing: 0) {

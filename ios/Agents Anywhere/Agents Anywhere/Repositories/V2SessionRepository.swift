@@ -181,6 +181,21 @@ final class V2SessionRepository {
         return try await hydrate(entry)
     }
 
+    /// A durable, independently authorized page for the first paint only.
+    ///
+    /// The aggregate snapshot runs the runtime reads (notices, capabilities)
+    /// before returning history, so a slow or starting runtime can hold the
+    /// spinner for its RPC timeouts. This read installs no projection, advances
+    /// no event cursor and acknowledges no write; the caller replaces it with
+    /// the authoritative aggregate as soon as that arrives.
+    func previewTimelinePage(sessionId: V2SessionID, limit: Int = 100) async throws -> V2SessionTimelinePage {
+        try requireNetwork()
+        let entry = entry(for: sessionId)
+        try requireCurrent(entry)
+        guard entry.projection == nil else { throw CacheError.invalidated }
+        return try await detail.latestItems(sessionId: sessionId, limit: limit)
+    }
+
     func loadOlder(sessionId: V2SessionID, limit: Int = 100) async throws -> V2SessionData {
         try requireNetwork()
         _ = try await load(sessionId: sessionId)
