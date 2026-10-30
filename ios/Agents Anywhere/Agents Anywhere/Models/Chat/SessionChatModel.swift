@@ -219,6 +219,12 @@ final class SessionChatModel {
         // starting runtime can hold the spinner for its RPC timeouts. A durable
         // page is independently authorized and carries no runtime facts, so it
         // only fills the first paint; the aggregate still replaces it.
+        // Paint whatever is already authorized before touching the network: a
+        // cached window must not wait on a fresh aggregate to become visible.
+        if let cached = repository.cached(sessionId: session.id) {
+            timeline.presentOpening(cached.items, pendingMessages: session.pendingMessages)
+            isShowingHistoricPreview = true
+        }
         let preview = Task { [weak self] in await self?.presentHistoricPreview() }
         do {
             // Both cold and cached visits begin with one latest page. Older
