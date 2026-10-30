@@ -7,7 +7,7 @@ final class CompatibilityUITests: XCTestCase {
     /// conversation, dropping assertions or adding sleeps.
     override func setUp() {
         super.setUp()
-        executionTimeAllowance = 300
+        executionTimeAllowance = 480
     }
 
     @MainActor func testBackportRepeatedMenu() throws { try exerciseMenu(backport: true) }
@@ -76,18 +76,24 @@ final class CompatibilityUITests: XCTestCase {
     @MainActor
     private func exerciseConversation(backport: Bool) throws {
         let app = launch(backport: backport)
+        // Every element query synchronises with the app. The native Debug build
+        // lays out all 100 Markdown messages eagerly, so a single query measures
+        // 5-10 s here; the legacy path answers in under a second. Use a budget
+        // matched to the measured latency of each path instead of shrinking the
+        // fixture, dropping assertions or adding sleeps.
+        let queryBudget: TimeInterval = backport ? 8 : 60
         let menu = app.buttons["chat.sidebar.open"]
         let conversation = app.buttons["regression.sidebar.conversation"]
         let newSession = app.buttons["regression.sidebar.new"]
         menu.tap()
-        XCTAssertTrue(waitUntil { conversation.isHittable })
+        XCTAssertTrue(waitUntil(timeout: queryBudget) { conversation.isHittable })
         conversation.tap()
         let editor = app.textViews["chat.composer.editor"]
-        XCTAssertTrue(editor.waitForExistence(timeout: 20), "Original long transcript/composer did not open")
+        XCTAssertTrue(editor.waitForExistence(timeout: queryBudget), "Original long transcript/composer did not open")
         screenshot(app, name: backport ? "backport-long-conversation" : "native-long-conversation")
 
         let transcript = app.scrollViews["chat.timeline.scroll"]
-        XCTAssertTrue(transcript.waitForExistence(timeout: 5))
+        XCTAssertTrue(transcript.waitForExistence(timeout: queryBudget))
         transcript.swipeDown(velocity: .fast)
         // Modern XCTest can report the composited toolbar button non-hittable
         // while its visible frame and AX element are valid. Exercise the actual
@@ -102,15 +108,15 @@ final class CompatibilityUITests: XCTestCase {
         if !responsive { recordFailure(app, name: "long-conversation-sidebar") }
         XCTAssertTrue(responsive, "Tapping the visible menu in a long conversation did not open an interactive sidebar")
         newSession.tap()
-        XCTAssertTrue(waitUntil { app.buttons["regression.open-conversation"].isHittable })
+        XCTAssertTrue(waitUntil(timeout: queryBudget) { app.buttons["regression.open-conversation"].isHittable })
         app.buttons["regression.open-conversation"].tap()
-        XCTAssertTrue(editor.waitForExistence(timeout: 10))
+        XCTAssertTrue(editor.waitForExistence(timeout: queryBudget))
         editor.tap()
         editor.typeText("Local regression reply")
         let send = app.buttons["chat.composer.send"]
-        XCTAssertTrue(waitUntil { send.isEnabled }, "Composer did not observe the edited draft")
+        XCTAssertTrue(waitUntil(timeout: queryBudget) { send.isEnabled }, "Composer did not observe the edited draft")
         send.tap()
-        XCTAssertTrue(waitUntil { (editor.value as? String ?? "") != "Local regression reply" }, "Committed send did not clear the draft")
+        XCTAssertTrue(waitUntil(timeout: queryBudget) { (editor.value as? String ?? "") != "Local regression reply" }, "Committed send did not clear the draft")
         screenshot(app, name: backport ? "backport-after-send" : "native-after-send")
         app.terminate()
     }

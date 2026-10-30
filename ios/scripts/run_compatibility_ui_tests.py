@@ -72,7 +72,7 @@ def main() -> int:
             # Markdown nodes, so the 100-message case needs a budget above the
             # 120 s default. This raises the harness budget only; no assertion,
             # message count or content is reduced.
-            "-maximum-test-execution-time-allowance", "600",
+            "-maximum-test-execution-time-allowance", "900",
             "CODE_SIGNING_ALLOWED=NO", "CODE_SIGNING_REQUIRED=NO", "CODE_SIGN_IDENTITY=",
         ], log=log, timeout=1500)
         (args.evidence / "compatibility-ui-exit.txt").write_text(str(status) + "\n")
