@@ -397,6 +397,34 @@ private struct LegacyChatTimeline: View {
 }
 
 
+/// Keep the latest measurement without publishing View state inside a layout
+/// callback. One main-queue delivery handles a burst; removal invalidates it.
+@MainActor private final class ChatLayoutUpdate<Value> {
+    private var pending: (() -> Void)?
+    private var scheduled = false
+    private var generation = 0
+
+    func submit(_ value: Value, apply: @escaping (Value) -> Void) {
+        pending = { apply(value) }
+        guard !scheduled else { return }
+        scheduled = true
+        let token = generation
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.generation == token else { return }
+            let update = self.pending
+            self.pending = nil
+            self.scheduled = false
+            update?()
+        }
+    }
+
+    func cancel() {
+        generation &+= 1
+        pending = nil
+        scheduled = false
+    }
+}
+
 private struct ChatTimelineContent: View, Equatable {
     let model: SessionChatModel
     let onAttachment: (V2AttachmentContent) -> Void
