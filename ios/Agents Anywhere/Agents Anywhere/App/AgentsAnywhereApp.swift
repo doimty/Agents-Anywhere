@@ -1,4 +1,5 @@
 import SwiftUI
+import PerceptionCore
 
 @main
 struct AgentsAnywhereApp: App {
@@ -20,7 +21,7 @@ struct AgentsAnywhereApp: App {
                     #endif
                 }
                 .preferredColorScheme(appearance.colorScheme)
-                .onChange(of: scenePhase) { _, phase in
+                .appOnChange(of: scenePhase) { _, phase in
                     if phase == .background { appState.setAppInBackground(true) }
                     else if phase == .active { appState.setAppInBackground(false) }
                 }
