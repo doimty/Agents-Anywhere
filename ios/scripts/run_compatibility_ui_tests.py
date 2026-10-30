@@ -58,7 +58,7 @@ def main() -> int:
         if device.get("state") != "Booted":
             if run(["xcrun", "simctl", "boot", udid]) != 0:
                 return 1
-        if run(["xcrun", "simctl", "bootstatus", udid, "-b"], timeout=240) != 0:
+        if run(["xcrun", "simctl", "bootstatus", udid, "-b"], timeout=600) != 0:
             return 1
         status = run([
             "xcodebuild", "test", "-project", "ios/Agents Anywhere/Agents Anywhere.xcodeproj",
