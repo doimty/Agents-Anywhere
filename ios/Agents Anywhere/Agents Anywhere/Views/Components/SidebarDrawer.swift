@@ -312,7 +312,7 @@ private struct SidebarDrawerInteractive<
                 }
             }
         }
-        .ignoresSafeArea()
+        .ignoresSafeArea(.container)
         .environment(\.sidebarDrawerPresentation, .drawer)
         .environment(\.sidebarDrawerObscuresDetail, isOpen || motion.restingProgress > 0)
         .environment(\.sidebarDrawerIsTransitioning, isAnimating || dragStartProgress != nil
@@ -688,7 +688,7 @@ private struct SidebarDrawerMainCard<Content: View>: View {
             // The untransformed host supplies all original insets, including
             // the keyboard. Apply them once inside the page, never again from
             // this moving card's intersection with the window.
-            .ignoresSafeArea()
+            .ignoresSafeArea(.container)
             .frame(width: size.width, height: size.height)
             .background(drawerSystemBackground, in: screenShape)
             .clipShape(screenShape)

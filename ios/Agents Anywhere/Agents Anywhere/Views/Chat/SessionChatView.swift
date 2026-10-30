@@ -25,7 +25,6 @@ struct SessionChatView: View, Equatable {
     @State private var openingTimedOut = false
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.sidebarDrawerObscuresDetail) private var sidebarObscuresDetail
     @ScaledMetric(relativeTo: .body) private var bodyLineHeight: CGFloat = 22
     @ScaledMetric(relativeTo: .footnote) private var takeoverPillHeight: CGFloat = 32
 
@@ -187,7 +186,10 @@ struct SessionChatView: View, Equatable {
             guard !Task.isCancelled else { return }
             await model.timeline.run(sessionID: session.id, repository: model.repository)
         }
-        .appOnChange(of: scenePhase != .active || sidebarObscuresDetail, initial: true) { _, suspended in
+        .appOnChange(of: scenePhase != .active, initial: true) { _, suspended in
+            // The drawer owns hit-testing and visual occlusion. It must not
+            // suspend the session's initial snapshot: a stale drawer motion
+            // state would otherwise leave rows staged forever behind the mask.
             model.timeline.setPresentationSuspended(suspended)
         }
         .sheet(item: $sheet) { destination in

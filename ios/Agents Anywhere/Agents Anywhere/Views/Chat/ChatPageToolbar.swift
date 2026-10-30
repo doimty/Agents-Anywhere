@@ -12,9 +12,8 @@ struct ChatDetailNavigation: ViewModifier {
         Group {
             if presentation == .drawer {
                 AppNavigationStack { content }
-                    .ignoresSafeArea(.keyboard)
-                    // Preserve the drawer's stable, untransformed safe area,
-                    // including keyboard avoidance. Pages add no other inset.
+                    // The drawer ignores the container safe area, but keeps the
+                    // keyboard safe area so bottom composers move with the keyboard.
                     .padding(insets)
             } else {
                 content

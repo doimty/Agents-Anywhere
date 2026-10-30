@@ -59,7 +59,6 @@ struct ChatComposerDock: View {
         .appOnChange(of: sessionChat?.optionsRequest) { _, _ in showsOptions = true }
         .frame(maxWidth: ChatControlMetrics.maximumContentWidth)
         .frame(maxWidth: .infinity)
-        .appKeyboardBottomInset()
         .background {
             AppObservationTracking {
                 ZStack {
