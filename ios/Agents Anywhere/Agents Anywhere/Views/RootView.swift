@@ -1,4 +1,5 @@
 import SwiftUI
+import PerceptionCore
 
 struct RootView: View {
     @Environment(AppState.self) private var appState
