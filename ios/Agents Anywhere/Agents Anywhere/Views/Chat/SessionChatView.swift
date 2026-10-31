@@ -224,6 +224,17 @@ struct SessionChatView: View, Equatable {
         .onDisappear {
             model.timeline.setPresentationSuspended(false)
             if previewURL == nil { cleanPreview() }
+            // A composer that still holds focus leaves the keyboard's inset
+            // reserved on the WINDOW, and SwiftUI applies that window-wide: the
+            // next page's bottom controls read the inflated safe area and float
+            // upward. Release the responder at the source; this is a no-op when
+            // nothing is focused.
+            session.composer.isFocused = false
+            let keyWindow = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap(\.windows)
+                .first(where: \.isKeyWindow)
+            _ = keyWindow?.endEditing(true)
         }
         .appOnChange(of: session.failure, initial: true) { _, failure in
             toasts.update(source: "session", failure: failure, canRetry: failure?.kind != .authentication)
