@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// The phone drawer needs a navigation host inside its moving card. The iPad
 /// detail already has the split view's host; nesting another stack there would
@@ -7,20 +8,47 @@ struct ChatDetailNavigation: ViewModifier {
     let insets: EdgeInsets
     @Environment(\.sidebarDrawerPresentation) private var presentation
     @Environment(\.colorScheme) private var colorScheme
+    @State private var keyboardHeight: CGFloat = 0
 
     func body(content: Content) -> some View {
         Group {
             if presentation == .drawer {
                 AppNavigationStack { content }
-                    // The drawer ignores the container safe area, but keeps the
-                    // keyboard safe area so bottom composers move with the keyboard.
-                    .padding(insets)
+                    // The page keeps the keyboard safe area so its own bottom
+                    // inset follows the keyboard. The drawer already reports the
+                    // keyboard inside these insets, so padding with the raw value
+                    // lifts the whole page a second time and strands the composer
+                    // far above the keyboard. Pad with the container part only.
+                    .padding(containerInsets)
+                    .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { note in
+                        guard let frame = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+                              let window = UIApplication.shared.connectedScenes
+                                .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first else {
+                            keyboardHeight = 0
+                            return
+                        }
+                        let height = max(0, window.bounds.maxY - frame.minY)
+                        if abs(height - keyboardHeight) > 0.5 { keyboardHeight = height }
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                        keyboardHeight = 0
+                    }
             } else {
                 content
             }
         }
         .background(Color(uiColor: .systemBackground))
         .tint(AppTheme.primaryControlBackground(colorScheme))
+    }
+
+    /// Only subtract when the reported inset really contains the keyboard;
+    /// otherwise the container's own bottom inset stays untouched.
+    private var containerInsets: EdgeInsets {
+        let bottom = keyboardHeight > 0 && insets.bottom >= keyboardHeight - 24
+            ? max(0, insets.bottom - keyboardHeight)
+            : insets.bottom
+        return EdgeInsets(top: insets.top, leading: insets.leading,
+                          bottom: bottom, trailing: insets.trailing)
     }
 }
 
